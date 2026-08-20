@@ -1,0 +1,36 @@
+# Dependencies
+node_modules/
+
+# Build / framework caches
+dist/
+.output/
+.nitro/
+.vinxi/
+.tanstack/
+.vercel/
+*.tsbuildinfo
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Logs and OS
+*.log
+.DS_Store
+Thumbs.db
+
+# Test / QA artifacts
+coverage/
+screenshots/
+playwright-report/
+test-results/
+
+# Grok App Builder internals (not part of the product)
+.grok/
+AGENTS.md
+AGENTS.project.md
+artifacts/
+.node_modules.lock

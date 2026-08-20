@@ -1,0 +1,20 @@
+import { randomBytes, randomUUID } from "node:crypto";
+
+export function newId(prefix: string): string {
+  return `${prefix}_${randomUUID().replaceAll("-", "")}`;
+}
+
+export function opaqueRef(): string {
+  return randomBytes(9).toString("base64url");
+}
+
+export const DEMO = {
+  tenantId: "tenant_platform_demo",
+  orgId: "org_global_university",
+  issuerId: "iss_registrar",
+  validRef: "demo-valid-bcs",
+  revokedRef: "demo-revoked-bcs",
+  expiredRef: "demo-expired-bcs",
+  tamperedDocId: "doc_tampered_demo",
+  statusListId: "https://trust.matrixly.ai/credentials/status/demo",
+} as const;

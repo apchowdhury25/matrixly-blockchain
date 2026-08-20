@@ -1,0 +1,40 @@
+import { Link } from "@tanstack/react-router";
+import { UserButton } from "@/lib/auth/gates";
+import { useCurrentUserState } from "@/lib/auth/use-current-user";
+import { Wordmark } from "@/components/brand/logo";
+
+export function PublicHeader() {
+  const { user, isPending } = useCurrentUserState();
+  return (
+    <header className="sticky top-0 z-20 border-b border-rule/80 bg-paper/90 backdrop-blur-sm">
+      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
+        <Wordmark />
+        <nav className="flex items-center gap-1 text-sm">
+          <Link to="/verify" className="hidden rounded-sm px-3 py-2 text-ink-soft hover:text-ink sm:inline">
+            Verify
+          </Link>
+          <Link to="/trust" className="hidden rounded-sm px-3 py-2 text-ink-soft hover:text-ink sm:inline">
+            Trust model
+          </Link>
+          {isPending ? (
+            <div className="h-9 w-20 animate-pulse rounded-sm bg-rule/60" />
+          ) : user ? (
+            <div className="flex items-center gap-3">
+              <Link to="/app" className="rounded-sm px-3 py-2 text-ink-soft hover:text-ink">
+                Issuer console
+              </Link>
+              <UserButton />
+            </div>
+          ) : (
+            <Link
+              to="/login"
+              className="rounded-sm bg-pine px-4 py-2 text-sm font-medium text-pine-fg hover:bg-pine-deep"
+            >
+              Issuer sign in
+            </Link>
+          )}
+        </nav>
+      </div>
+    </header>
+  );
+}
