@@ -1,4 +1,5 @@
 import { Check, Shield, ShieldAlert, ShieldOff, ShieldX } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 
 export type VerifyView = {
@@ -28,6 +29,7 @@ export type VerifyView = {
   holderProofValid?: boolean;
   holderDid?: string;
   holderMatchesSubject?: boolean | null;
+  reportRef?: string;
 };
 
 const tone: Record<VerifyView["status"], string> = {
@@ -130,6 +132,13 @@ export function ResultCard({ result }: { result: VerifyView }) {
           {result.ledgerBlockHash ? <p>ledger {result.ledgerBlockHash}</p> : null}
           {result.issuerDid ? <p>did {result.issuerDid}</p> : null}
           {result.holderDid ? <p>holder {result.holderDid}</p> : null}
+        </div>
+      ) : null}
+      {result.reportRef ? (
+        <div className="border-t border-rule px-6 py-4 text-sm">
+          <Link to="/report/$ref" params={{ ref: result.reportRef }} className="underline">
+            Signed verification report
+          </Link>
         </div>
       ) : null}
     </section>

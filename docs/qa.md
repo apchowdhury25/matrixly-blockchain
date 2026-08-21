@@ -63,6 +63,13 @@ Also confirm:
 - [ ] Issuer **Status** page shows a signed list; public `/status/demo` opens the document
 - [ ] After revoking a newly issued diploma, public verify becomes `REVOKED` and the status list hash changes
 
+## Phase 6 — Audit
+
+- [ ] Verify the valid diploma; open **Signed verification report**
+- [ ] Report page: signature PASS, ledger anchor PASS, no holder name on the page
+- [ ] Tamper the playground; a new report is `INVALID` and still signed
+- [ ] Issuer **Audit**: chain intact, event hashes present
+
 ## Out of scope until a later phase
 
 - S3 / IPFS object storage

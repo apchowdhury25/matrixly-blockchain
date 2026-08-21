@@ -24,6 +24,7 @@ import { Route as AppLedgerRouteImport } from './routes/app/ledger'
 import { Route as AppStatusRouteImport } from './routes/app/status'
 import { Route as DidMultibaseRouteImport } from './routes/did.$multibase'
 import { Route as PresentRefRouteImport } from './routes/present.$ref'
+import { Route as ReportRefRouteImport } from './routes/report.$ref'
 import { Route as StatusIdRouteImport } from './routes/status.$id'
 import { Route as VerifyIndexRouteImport } from './routes/verify/index'
 import { Route as VerifyRefRouteImport } from './routes/verify/$ref'
@@ -106,6 +107,11 @@ const PresentRefRoute = PresentRefRouteImport.update({
   path: '/present/$ref',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ReportRefRoute = ReportRefRouteImport.update({
+  id: '/report/$ref',
+  path: '/report/$ref',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const StatusIdRoute = StatusIdRouteImport.update({
   id: '/status/$id',
   path: '/status/$id',
@@ -152,6 +158,7 @@ export interface FileRoutesByFullPath {
   '/app/status': typeof AppStatusRoute
   '/did/$multibase': typeof DidMultibaseRoute
   '/present/$ref': typeof PresentRefRoute
+  '/report/$ref': typeof ReportRefRoute
   '/status/$id': typeof StatusIdRoute
   '/verify/$ref': typeof VerifyRefRoute
   '/app/': typeof AppIndexRoute
@@ -173,6 +180,7 @@ export interface FileRoutesByTo {
   '/app/status': typeof AppStatusRoute
   '/did/$multibase': typeof DidMultibaseRoute
   '/present/$ref': typeof PresentRefRoute
+  '/report/$ref': typeof ReportRefRoute
   '/status/$id': typeof StatusIdRoute
   '/verify/$ref': typeof VerifyRefRoute
   '/app': typeof AppIndexRoute
@@ -197,6 +205,7 @@ export interface FileRoutesById {
   '/app/status': typeof AppStatusRoute
   '/did/$multibase': typeof DidMultibaseRoute
   '/present/$ref': typeof PresentRefRoute
+  '/report/$ref': typeof ReportRefRoute
   '/status/$id': typeof StatusIdRoute
   '/verify/$ref': typeof VerifyRefRoute
   '/app/': typeof AppIndexRoute
@@ -222,6 +231,7 @@ export interface FileRouteTypes {
     | '/app/status'
     | '/did/$multibase'
     | '/present/$ref'
+    | '/report/$ref'
     | '/status/$id'
     | '/verify/$ref'
     | '/app/'
@@ -243,6 +253,7 @@ export interface FileRouteTypes {
     | '/app/status'
     | '/did/$multibase'
     | '/present/$ref'
+    | '/report/$ref'
     | '/status/$id'
     | '/verify/$ref'
     | '/app'
@@ -266,6 +277,7 @@ export interface FileRouteTypes {
     | '/app/status'
     | '/did/$multibase'
     | '/present/$ref'
+    | '/report/$ref'
     | '/status/$id'
     | '/verify/$ref'
     | '/app/'
@@ -283,6 +295,7 @@ export interface RootRouteChildren {
   TrustRoute: typeof TrustRoute
   DidMultibaseRoute: typeof DidMultibaseRoute
   PresentRefRoute: typeof PresentRefRoute
+  ReportRefRoute: typeof ReportRefRoute
   StatusIdRoute: typeof StatusIdRoute
   VerifyRefRoute: typeof VerifyRefRoute
   VerifyIndexRoute: typeof VerifyIndexRoute
@@ -396,6 +409,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PresentRefRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/report/$ref': {
+      id: '/report/$ref'
+      path: '/report/$ref'
+      fullPath: '/report/$ref'
+      preLoaderRoute: typeof ReportRefRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/status/$id': {
       id: '/status/$id'
       path: '/status/$id'
@@ -489,6 +509,7 @@ const rootRouteChildren: RootRouteChildren = {
   TrustRoute: TrustRoute,
   DidMultibaseRoute: DidMultibaseRoute,
   PresentRefRoute: PresentRefRoute,
+  ReportRefRoute: ReportRefRoute,
   StatusIdRoute: StatusIdRoute,
   VerifyRefRoute: VerifyRefRoute,
   VerifyIndexRoute: VerifyIndexRoute,

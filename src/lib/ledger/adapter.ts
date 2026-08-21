@@ -58,6 +58,15 @@ export type CredentialStatusRecord = {
   at: string;
 };
 
+export type VerificationAnchorRecord = {
+  reportId: string;
+  reportHash: string;
+  credentialHash: string;
+  resultStatus: string;
+  verifierDid: string;
+  at: string;
+};
+
 export type LedgerSubmitResult = {
   blockHash: string;
   seq: number;
@@ -72,11 +81,13 @@ export interface DistributedLedgerAdapter {
   registerDid(record: DidLedgerRecord): Promise<LedgerSubmitResult>;
   registerCredential(record: CredentialLedgerRecord): Promise<LedgerSubmitResult>;
   registerDocumentAnchor(record: DocumentAnchorRecord): Promise<LedgerSubmitResult>;
+  registerVerificationAnchor(record: VerificationAnchorRecord): Promise<LedgerSubmitResult>;
   setCredentialStatus(record: CredentialStatusRecord): Promise<LedgerSubmitResult>;
   getIssuer(issuerId: string): Promise<IssuerLedgerRecord | null>;
   getDid(did: string): Promise<DidLedgerRecord | null>;
   getCredential(credentialId: string): Promise<CredentialLedgerRecord | null>;
   getDocumentAnchor(documentHash: string): Promise<DocumentAnchorRecord | null>;
+  getVerificationAnchor(reportHash: string): Promise<VerificationAnchorRecord | null>;
   getCredentialStatus(credentialId: string): Promise<CredentialStatusRecord | null>;
   getLatestBlock(): Promise<{ seq: number; blockHash: string } | null>;
   verifyChain(): Promise<{ valid: boolean; length: number; reason?: string }>;

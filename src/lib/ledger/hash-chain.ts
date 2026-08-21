@@ -9,6 +9,7 @@ import type {
   IssuerLedgerRecord,
   LedgerRecordKind,
   LedgerSubmitResult,
+  VerificationAnchorRecord,
 } from "./adapter";
 
 export const GENESIS_PREV =
@@ -152,6 +153,10 @@ export class HashChainLedgerAdapter implements DistributedLedgerAdapter {
     return this.commit("DOCUMENT_ANCHOR", record as unknown as Record<string, unknown>);
   }
 
+  async registerVerificationAnchor(record: VerificationAnchorRecord): Promise<LedgerSubmitResult> {
+    return this.commit("VERIFICATION_ANCHOR", record as unknown as Record<string, unknown>);
+  }
+
   async setCredentialStatus(record: CredentialStatusRecord): Promise<LedgerSubmitResult> {
     const cred = await this.getCredential(record.credentialId);
     if (!cred) throw new Error("Unknown credential");
@@ -184,6 +189,13 @@ export class HashChainLedgerAdapter implements DistributedLedgerAdapter {
     return this.latestOf<DocumentAnchorRecord>(
       "DOCUMENT_ANCHOR",
       (r) => r.documentHash === documentHash,
+    );
+  }
+
+  async getVerificationAnchor(reportHash: string): Promise<VerificationAnchorRecord | null> {
+    return this.latestOf<VerificationAnchorRecord>(
+      "VERIFICATION_ANCHOR",
+      (r) => r.reportHash === reportHash,
     );
   }
 

@@ -109,6 +109,7 @@ Preview serves the built output (default Vite preview port **8081**).
 | `/did/:multibase` | Public DID document for a `did:key` |
 | `/app/audit` | Audit log |
 | `/trust` | Trust model explanation |
+| `/report/:ref` | Signed verification report (hash-anchored) |
 
 The playground covers four independent failure modes. Each check can fail on its own:
 

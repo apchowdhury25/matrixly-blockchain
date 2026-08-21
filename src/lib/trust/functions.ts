@@ -12,11 +12,18 @@ import { issueStatusListCredential } from "@/lib/credentials/status-list-credent
 import { renderDiplomaPdf } from "@/lib/documents/diploma";
 import { buildEvidence, parseEvidence, type DocumentEvidence } from "@/lib/documents/evidence";
 import { verifyCredential, type VerificationResult } from "@/lib/verification/pipeline";
+import {
+  buildVerificationReport,
+  signVerificationReport,
+  verificationReportHash,
+  verifyVerificationReport,
+} from "@/lib/verification/report";
 import { didDocumentHash, didKeyFromMultibase, resolveDidKey } from "@/lib/identity/did";
 import { assertActiveSigningKey, createHolderIdentity, createIssuerIdentity } from "@/lib/identity/keys";
 import { assertPermission, permissionMap } from "@/lib/identity/roles";
+import { AUDIT_GENESIS, verifyAuditSequence } from "@/lib/audit/chain";
 import { ensureDemoSeed } from "./seed";
-import { audit, getLedger } from "./runtime";
+import { audit, getLedger, getPlatformVerifier } from "./runtime";
 import { DEMO, newId, opaqueRef } from "./ids";
 import { openSecret, sealSecret } from "./seal";
 
@@ -37,13 +44,62 @@ type CredentialRow = {
   issued_at: string;
 };
 
-function toResultView(result: VerificationResult, extra?: { holderName?: string; degreeName?: string; opaqueRef?: string }) {
+function toResultView(
+  result: VerificationResult,
+  extra?: { holderName?: string; degreeName?: string; opaqueRef?: string; reportRef?: string },
+) {
   return {
     ...result,
     holderName: extra?.holderName,
     degreeName: extra?.degreeName,
     opaqueRef: extra?.opaqueRef,
+    reportRef: extra?.reportRef,
   };
+}
+
+async function persistVerificationReport(input: {
+  result: VerificationResult;
+  credential: Record<string, unknown>;
+  opaqueRef?: string | null;
+  credentialRowId?: string | null;
+  tenantId?: string | null;
+}): Promise<{ reportRef: string; reportHash: string }> {
+  const verifier = await getPlatformVerifier();
+  const secretKey = decodeSecretKeyHex(openSecret(verifier.secretKeyHex));
+  const reportId = `urn:uuid:${crypto.randomUUID()}`;
+  const report = signVerificationReport(
+    buildVerificationReport({
+      reportId,
+      verifierDid: verifier.did,
+      credentialId: String(input.credential.id ?? input.credentialRowId ?? reportId),
+      credentialHash: credentialHash(input.credential),
+      documentHash: input.result.documentHash,
+      result: input.result,
+    }),
+    secretKey,
+  );
+  const reportHashValue = verificationReportHash(report as unknown as Record<string, unknown>);
+  const ledger = await getLedger();
+  const anchored = await ledger.registerVerificationAnchor({
+    reportId,
+    reportHash: reportHashValue,
+    credentialHash: report.credentialHash,
+    resultStatus: report.result,
+    verifierDid: verifier.did,
+    at: report.created,
+  });
+  const reportRef = opaqueRef();
+  const sql = await getSql();
+  await sql`
+    insert into verification_requests (
+      id, opaque_ref, credential_id, result_status, result_json,
+      report_json, report_hash, opaque_report_ref, verifier_did, ledger_block_hash
+    ) values (
+      ${newId("vrf")}, ${input.opaqueRef ?? null}, ${input.credentialRowId ?? null}, ${input.result.status},
+      ${JSON.stringify(input.result)}, ${JSON.stringify(report)}, ${reportHashValue}, ${reportRef},
+      ${verifier.did}, ${anchored.blockHash}
+    )`;
+  return { reportRef, reportHash: reportHashValue };
 }
 
 export const getDemoCatalog = createServerFn({ method: "GET" }).handler(async () => {
@@ -135,20 +191,25 @@ export const verifyOpaqueRef = createServerFn({ method: "POST" })
       },
       ledger,
     );
-    await sql`
-      insert into verification_requests (id, opaque_ref, credential_id, result_status, result_json)
-      values (${crypto.randomUUID()}, ${data.ref}, ${row.id}, ${result.status}, ${JSON.stringify(result)})`;
+    const persisted = await persistVerificationReport({
+      result,
+      credential,
+      opaqueRef: data.ref,
+      credentialRowId: row.id,
+      tenantId: row.tenant_id,
+    });
     await audit({
       tenantId: row.tenant_id,
       action: "credential.verified",
       resourceType: "credential",
       resourceId: row.id,
-      metadata: { status: result.status, mode: data.mode },
+      metadata: { status: result.status, mode: data.mode, reportRef: persisted.reportRef },
     });
     return toResultView(result, {
       holderName: row.holder_name,
       degreeName: row.degree_name,
       opaqueRef: row.opaque_ref,
+      reportRef: persisted.reportRef,
     });
   });
 
@@ -208,13 +269,16 @@ export const verifyUploaded = createServerFn({ method: "POST" })
       },
       ledger,
     );
-    await sql`
-      insert into verification_requests (id, opaque_ref, credential_id, result_status, result_json)
-      values (${crypto.randomUUID()}, ${null}, ${id || null}, ${result.status}, ${JSON.stringify(result)})`;
+    const persisted = await persistVerificationReport({
+      result,
+      credential,
+      credentialRowId: id || null,
+    });
     const subject = credential.credentialSubject as { name?: string; degree?: { name?: string } } | undefined;
     return toResultView(result, {
       holderName: subject?.name,
       degreeName: subject?.degree?.name,
+      reportRef: persisted.reportRef,
     });
   });
 
@@ -800,18 +864,84 @@ export const listAudit = createServerFn({ method: "GET" })
     const ws = await workspaceFor(context.userId);
     assertPermission(ws.role, "readAudit");
     const sql = await getSql();
-    return sql<{
+    const rows = await sql<{
       id: string;
       action: string;
       resource_type: string;
       resource_id: string | null;
       created_at: string;
+      prev_hash: string | null;
+      event_hash: string | null;
+      metadata_json: string;
     }>`
-      select id, action, resource_type, resource_id, created_at::text as created_at
+      select id, action, resource_type, resource_id, created_at::text as created_at,
+             prev_hash, event_hash, metadata_json
       from audit_events
       where tenant_id = ${ws.tenantId}
-      order by created_at desc
-      limit 50`;
+      order by created_at asc
+      limit 200`;
+    const linked = rows
+      .filter((r) => r.event_hash && r.prev_hash)
+      .map((r) => ({
+        id: r.id,
+        action: r.action,
+        resourceType: r.resource_type,
+        resourceId: r.resource_id,
+        metadata: JSON.parse(r.metadata_json || "{}") as Record<string, unknown>,
+        createdAt: r.created_at,
+        prevHash: r.prev_hash!,
+        eventHash: r.event_hash!,
+      }));
+    const chain = verifyAuditSequence(linked);
+    return {
+      chain,
+      genesis: AUDIT_GENESIS,
+      events: [...rows].reverse().map((r) => ({
+        id: r.id,
+        action: r.action,
+        resource_type: r.resource_type,
+        resource_id: r.resource_id,
+        created_at: r.created_at,
+        event_hash: r.event_hash,
+      })),
+    };
+  });
+
+export const getPublicVerificationReport = createServerFn({ method: "POST" })
+  .validator((raw: unknown) => z.object({ ref: z.string().min(6).max(80) }).parse(raw))
+  .handler(async ({ data }) => {
+    await ensureDemoSeed();
+    const sql = await getSql();
+    const rows = await sql<{
+      report_json: string | null;
+      report_hash: string | null;
+      verifier_did: string | null;
+      ledger_block_hash: string | null;
+      result_status: string;
+      opaque_report_ref: string | null;
+    }>`
+      select report_json, report_hash, verifier_did, ledger_block_hash, result_status, opaque_report_ref
+      from verification_requests
+      where opaque_report_ref = ${data.ref}`;
+    const row = rows[0];
+    if (!row?.report_json) throw new Error("Verification report not found");
+    const report = JSON.parse(row.report_json) as Record<string, unknown>;
+    const proof = verifyVerificationReport(report);
+    const ledger = await getLedger();
+    const anchor = row.report_hash ? await ledger.getVerificationAnchor(row.report_hash) : null;
+    const chain = await ledger.verifyChain();
+    return {
+      ref: row.opaque_report_ref,
+      resultStatus: row.result_status,
+      reportJson: row.report_json,
+      reportHash: row.report_hash,
+      verifierDid: row.verifier_did,
+      ledgerBlockHash: row.ledger_block_hash,
+      signatureValid: proof.ok,
+      signatureReason: proof.reason ?? null,
+      ledgerAnchored: Boolean(anchor),
+      chainValid: chain.valid,
+    };
   });
 
 export const listKeys = createServerFn({ method: "GET" })
@@ -1213,14 +1343,20 @@ export const verifyPresentationRef = createServerFn({ method: "POST" })
         ? (JSON.parse(lists[0].credential_json) as Record<string, unknown>)
         : undefined,
     });
-    await sql`
-      insert into verification_requests (id, opaque_ref, credential_id, result_status, result_json)
-      values (
-        ${newId("vrf")}, ${data.ref}, ${row.credential_id}, ${result.status}, ${JSON.stringify(result)}
-      )`;
+    const persisted = await persistVerificationReport({
+      result,
+      credential: cred
+        ? (JSON.parse(cred.credential_json) as Record<string, unknown>)
+        : (JSON.parse(row.presentation_json) as Record<string, unknown>),
+      opaqueRef: data.ref,
+      credentialRowId: row.credential_id,
+      tenantId: cred?.tenant_id,
+    });
     return toResultView(
       { ...result, reasons: result.reasons },
-      cred ? { holderName: cred.holder_name, degreeName: cred.degree_name, opaqueRef: data.ref } : { opaqueRef: data.ref },
+      cred
+        ? { holderName: cred.holder_name, degreeName: cred.degree_name, opaqueRef: data.ref, reportRef: persisted.reportRef }
+        : { opaqueRef: data.ref, reportRef: persisted.reportRef },
     );
   });
 

@@ -31,6 +31,7 @@ function TrustModel() {
           <li>Check the signed Bitstring Status List credential, then the revocation bit. A database REVOKED flag is not enough.</li>
           <li>Apply the verifier policy (default: signed status list, issuer on ledger, ledger anchor, unrevoked).</li>
           <li>If a presentation is supplied, verify the holder proof first. A valid envelope cannot launder an invalid credential.</li>
+          <li>Sign a verification report (hashes and check flags only) and anchor its hash on the ledger.</li>
         </ol>
         <h2 className="mt-10 font-display text-2xl">Identity</h2>
         <p className="mt-3 leading-relaxed text-ink-soft">

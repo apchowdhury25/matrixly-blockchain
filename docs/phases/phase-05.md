@@ -15,4 +15,4 @@ Completed 21 August 2026.
 
 - Multi-purpose status lists (suspension vs revocation)
 - External HTTP status-list crawler (this runtime resolves from the issuer store)
-- Phase 6 (audit completeness / verification reports as signed artifacts)
+- Phase 6 (audit completeness / verification reports as signed artifacts) was implemented separately.

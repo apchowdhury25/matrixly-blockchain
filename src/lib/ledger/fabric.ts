@@ -6,6 +6,7 @@ import type {
   DocumentAnchorRecord,
   IssuerLedgerRecord,
   LedgerSubmitResult,
+  VerificationAnchorRecord,
 } from "./adapter";
 
 /**
@@ -43,6 +44,9 @@ export class FabricLedgerAdapter implements DistributedLedgerAdapter {
   async registerDocumentAnchor(_record: DocumentAnchorRecord): Promise<LedgerSubmitResult> {
     this.refuse();
   }
+  async registerVerificationAnchor(_record: VerificationAnchorRecord): Promise<LedgerSubmitResult> {
+    this.refuse();
+  }
   async setCredentialStatus(_record: CredentialStatusRecord): Promise<LedgerSubmitResult> {
     this.refuse();
   }
@@ -56,6 +60,9 @@ export class FabricLedgerAdapter implements DistributedLedgerAdapter {
     this.refuse();
   }
   async getDocumentAnchor(_documentHash: string): Promise<DocumentAnchorRecord | null> {
+    this.refuse();
+  }
+  async getVerificationAnchor(_reportHash: string): Promise<VerificationAnchorRecord | null> {
     this.refuse();
   }
   async getCredentialStatus(_credentialId: string): Promise<CredentialStatusRecord | null> {

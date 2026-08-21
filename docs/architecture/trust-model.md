@@ -13,5 +13,6 @@ Verifier determination of authenticity:
 9. Verifier policy `matrixly.default.v1` (signed status list, issuer on ledger, ledger anchor, unrevoked)
 10. If a presentation is supplied: holder DID resolves, holder `authentication` proof verifies, then the inner credential is verified independently
 11. If `credentialSubject.id` is bound, it must equal the presenting holder DID
+12. A signed VerificationReport is issued; its hash is ledger-anchored. Holder PII is not in the report.
 
 A central `verified = true` column is never the source of truth.
