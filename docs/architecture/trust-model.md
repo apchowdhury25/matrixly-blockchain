@@ -3,8 +3,8 @@
 Verifier determination of authenticity:
 
 1. W3C VC 2.0 structure
-2. Issuer DID resolution (`did:key` Ed25519)
-3. Issuer ACTIVE on the ledger
+2. Issuer DID resolution (`did:key` Ed25519; unsupported methods fail closed)
+3. Issuer ACTIVE on the ledger (registry status is independent of DID method math)
 4. Data Integrity proof (`eddsa-jcs-2022` over RFC 8785 JCS)
 5. SHA-256 of supplied document bytes equals bound `documentHash`
 6. Document hash and credential hash exist as ledger payloads

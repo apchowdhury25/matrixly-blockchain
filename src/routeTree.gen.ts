@@ -19,6 +19,7 @@ import { Route as AppCredentialsRouteImport } from './routes/app/credentials'
 import { Route as AppIssueRouteImport } from './routes/app/issue'
 import { Route as AppKeysRouteImport } from './routes/app/keys'
 import { Route as AppLedgerRouteImport } from './routes/app/ledger'
+import { Route as DidMultibaseRouteImport } from './routes/did.$multibase'
 import { Route as VerifyIndexRouteImport } from './routes/verify/index'
 import { Route as VerifyRefRouteImport } from './routes/verify/$ref'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
@@ -73,6 +74,11 @@ const AppLedgerRoute = AppLedgerRouteImport.update({
   path: '/ledger',
   getParentRoute: () => AppRouteRoute,
 } as any)
+const DidMultibaseRoute = DidMultibaseRouteImport.update({
+  id: '/did/$multibase',
+  path: '/did/$multibase',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const VerifyIndexRoute = VerifyIndexRouteImport.update({
   id: '/verify/',
   path: '/verify/',
@@ -99,6 +105,7 @@ export interface FileRoutesByFullPath {
   '/app/issue': typeof AppIssueRoute
   '/app/keys': typeof AppKeysRoute
   '/app/ledger': typeof AppLedgerRoute
+  '/did/$multibase': typeof DidMultibaseRoute
   '/verify/$ref': typeof VerifyRefRoute
   '/app/': typeof AppIndexRoute
   '/verify/': typeof VerifyIndexRoute
@@ -113,6 +120,7 @@ export interface FileRoutesByTo {
   '/app/issue': typeof AppIssueRoute
   '/app/keys': typeof AppKeysRoute
   '/app/ledger': typeof AppLedgerRoute
+  '/did/$multibase': typeof DidMultibaseRoute
   '/verify/$ref': typeof VerifyRefRoute
   '/app': typeof AppIndexRoute
   '/verify': typeof VerifyIndexRoute
@@ -129,6 +137,7 @@ export interface FileRoutesById {
   '/app/issue': typeof AppIssueRoute
   '/app/keys': typeof AppKeysRoute
   '/app/ledger': typeof AppLedgerRoute
+  '/did/$multibase': typeof DidMultibaseRoute
   '/verify/$ref': typeof VerifyRefRoute
   '/app/': typeof AppIndexRoute
   '/verify/': typeof VerifyIndexRoute
@@ -146,6 +155,7 @@ export interface FileRouteTypes {
     | '/app/issue'
     | '/app/keys'
     | '/app/ledger'
+    | '/did/$multibase'
     | '/verify/$ref'
     | '/app/'
     | '/verify/'
@@ -160,6 +170,7 @@ export interface FileRouteTypes {
     | '/app/issue'
     | '/app/keys'
     | '/app/ledger'
+    | '/did/$multibase'
     | '/verify/$ref'
     | '/app'
     | '/verify'
@@ -175,6 +186,7 @@ export interface FileRouteTypes {
     | '/app/issue'
     | '/app/keys'
     | '/app/ledger'
+    | '/did/$multibase'
     | '/verify/$ref'
     | '/app/'
     | '/verify/'
@@ -186,6 +198,7 @@ export interface RootRouteChildren {
   AppRouteRoute: typeof AppRouteRouteWithChildren
   LoginRoute: typeof LoginRoute
   TrustRoute: typeof TrustRoute
+  DidMultibaseRoute: typeof DidMultibaseRoute
   VerifyRefRoute: typeof VerifyRefRoute
   VerifyIndexRoute: typeof VerifyIndexRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
@@ -263,6 +276,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppLedgerRouteImport
       parentRoute: typeof AppRouteRoute
     }
+    '/did/$multibase': {
+      id: '/did/$multibase'
+      path: '/did/$multibase'
+      fullPath: '/did/$multibase'
+      preLoaderRoute: typeof DidMultibaseRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/verify/': {
       id: '/verify/'
       path: '/verify'
@@ -314,6 +334,7 @@ const rootRouteChildren: RootRouteChildren = {
   AppRouteRoute: AppRouteRouteWithChildren,
   LoginRoute: LoginRoute,
   TrustRoute: TrustRoute,
+  DidMultibaseRoute: DidMultibaseRoute,
   VerifyRefRoute: VerifyRefRoute,
   VerifyIndexRoute: VerifyIndexRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,

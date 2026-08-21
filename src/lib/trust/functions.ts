@@ -4,18 +4,14 @@ import { getSql } from "@/lib/db";
 import { authMiddleware } from "@/lib/auth/middleware";
 import { inspectBytes } from "@/lib/crypto/inspect";
 import { sha256Bytes } from "@/lib/crypto/hash";
-import {
-  decodeSecretKeyHex,
-  didDocument,
-  encodeDidKey,
-  encodeSecretKeyHex,
-  generateEd25519KeyPair,
-  publicKeyMultibase,
-} from "@/lib/crypto/ed25519";
+import { decodeSecretKeyHex } from "@/lib/crypto/ed25519";
 import { credentialHash, issueCredential } from "@/lib/credentials/issue";
 import { decodeStatusList, emptyStatusList, encodeStatusList, setBit } from "@/lib/credentials/status-list";
 import { renderDiplomaPdf } from "@/lib/documents/diploma";
 import { verifyCredential, type VerificationResult } from "@/lib/verification/pipeline";
+import { didDocumentHash, didKeyFromMultibase, resolveDidKey } from "@/lib/identity/did";
+import { assertActiveSigningKey, createIssuerIdentity } from "@/lib/identity/keys";
+import { assertPermission, permissionMap } from "@/lib/identity/roles";
 import { ensureDemoSeed } from "./seed";
 import { audit, getLedger } from "./runtime";
 import { DEMO, newId, opaqueRef } from "./ids";
@@ -323,28 +319,34 @@ async function workspaceFor(userId: string): Promise<Workspace> {
   const tenantId = newId("tenant");
   const orgId = newId("org");
   const issuerId = newId("iss");
-  const keys = generateEd25519KeyPair();
-  const did = encodeDidKey(keys.publicKey);
+  const identity = createIssuerIdentity(sealSecret);
+  const did = identity.did;
   await sql`insert into tenants (id, slug, name, kind) values (${tenantId}, ${tenantId}, ${"Issuer workspace"}, ${"CUSTOMER"})`;
-  await sql`insert into memberships (id, tenant_id, user_id, role) values (${newId("mem")}, ${tenantId}, ${userId}, ${"TENANT_ADMIN"})`;
+  await sql`insert into memberships (id, tenant_id, user_id, role, status) values (${newId("mem")}, ${tenantId}, ${userId}, ${"TENANT_ADMIN"}, ${"ACTIVE"})`;
   await sql`insert into organizations (id, tenant_id, name, org_type, status) values (${orgId}, ${tenantId}, ${"Your organization"}, ${"UNIVERSITY"}, ${"ACTIVE"})`;
   await sql`insert into issuers (id, tenant_id, organization_id, name, did, status) values (${issuerId}, ${tenantId}, ${orgId}, ${"Registrar"}, ${did}, ${"ACTIVE"})`;
-  await sql`insert into dids (id, tenant_id, did, document_json, public_key_multibase) values (
-    ${newId("did")}, ${tenantId}, ${did}, ${JSON.stringify(didDocument(did, keys.publicKey))}, ${publicKeyMultibase(keys.publicKey)}
+  await sql`insert into dids (id, tenant_id, did, document_json, public_key_multibase, status, document_hash) values (
+    ${newId("did")}, ${tenantId}, ${did}, ${JSON.stringify(identity.document)}, ${identity.publicKeyMultibase}, ${"ACTIVE"}, ${identity.documentHash}
   )`;
-  await sql`insert into key_secrets (id, tenant_id, did, secret_key_hex, status) values (
-    ${newId("key")}, ${tenantId}, ${did}, ${sealSecret(encodeSecretKeyHex(keys.secretKey))}, ${"ACTIVE"}
+  await sql`insert into key_secrets (id, tenant_id, did, secret_key_hex, status, public_key_multibase, purpose) values (
+    ${newId("key")}, ${tenantId}, ${did}, ${identity.sealedSecretHex}, ${"ACTIVE"}, ${identity.publicKeyMultibase}, ${"assertionMethod"}
   )`;
   await sql`insert into status_lists (id, tenant_id, issuer_id, encoded_list, next_index) values (
     ${`https://trust.matrixly.ai/credentials/status/${issuerId}`}, ${tenantId}, ${issuerId}, ${encodeStatusList(emptyStatusList())}, ${0}
   )`;
   const ledger = await getLedger();
+  await ledger.registerDid({
+    did,
+    documentHash: identity.documentHash,
+    publicKeyMultibase: identity.publicKeyMultibase,
+    status: "ACTIVE",
+  });
   await ledger.registerIssuer({
     issuerId: did,
     issuerDid: did,
     name: "Registrar",
     status: "ACTIVE",
-    publicKeyMultibase: publicKeyMultibase(keys.publicKey),
+    publicKeyMultibase: identity.publicKeyMultibase,
   });
   await audit({
     tenantId,
@@ -379,11 +381,13 @@ export const getWorkspace = createServerFn({ method: "GET" })
         (select count(*) from credentials where tenant_id = ${ws.tenantId} and status = 'REVOKED') as revoked,
         (select count(*) from verification_requests) as verifications
     `;
-    const dids = await sql<{ did: string; public_key_multibase: string; created_at: string }>`
-      select did, public_key_multibase, created_at::text as created_at from dids where tenant_id = ${ws.tenantId}`;
+    const dids = await sql<{ did: string; public_key_multibase: string; created_at: string; status: string }>`
+      select did, public_key_multibase, created_at::text as created_at, coalesce(status, 'ACTIVE') as status
+      from dids where tenant_id = ${ws.tenantId} order by created_at desc`;
     return {
       ...ws,
       userId: context.userId,
+      permissions: permissionMap(ws.role),
       stats: {
         issued: Number(stats[0]?.issued ?? 0),
         revoked: Number(stats[0]?.revoked ?? 0),
@@ -426,16 +430,19 @@ export const issueDegree = createServerFn({ method: "POST" })
   )
   .handler(async ({ context, data }) => {
     const ws = await workspaceFor(context.userId);
+    assertPermission(ws.role, "issue");
     const sql = await getSql();
     const replay = await sql<{ opaque_ref: string; id: string }>`
       select opaque_ref, id from credentials
       where tenant_id = ${ws.tenantId} and idempotency_key = ${data.idempotencyKey}`;
     if (replay[0]) return { ref: replay[0].opaque_ref, id: replay[0].id, replayed: true };
 
-    const secrets = await sql<{ secret_key_hex: string }>`
-      select secret_key_hex from key_secrets where tenant_id = ${ws.tenantId} and did = ${ws.issuerDid} and status = 'ACTIVE'`;
+    const secrets = await sql<{ secret_key_hex: string; status: string }>`
+      select secret_key_hex, status from key_secrets
+      where tenant_id = ${ws.tenantId} and did = ${ws.issuerDid} and status = 'ACTIVE'`;
     const sealed = secrets[0]?.secret_key_hex;
     if (!sealed) throw new Error("Signing key is not available");
+    assertActiveSigningKey(secrets[0]!.status);
     const secretKey = decodeSecretKeyHex(openSecret(sealed));
 
     const lists = await sql<{ id: string; encoded_list: string; next_index: number }>`
@@ -523,6 +530,7 @@ export const revokeCredential = createServerFn({ method: "POST" })
   .validator((raw: unknown) => z.object({ id: z.string().min(8) }).parse(raw))
   .handler(async ({ context, data }) => {
     const ws = await workspaceFor(context.userId);
+    assertPermission(ws.role, "revoke");
     const sql = await getSql();
     const rows = await sql<{ id: string; status_list_index: number }>`
       select id, status_list_index from credentials where id = ${data.id} and tenant_id = ${ws.tenantId}`;
@@ -558,6 +566,7 @@ export const listAudit = createServerFn({ method: "GET" })
   .middleware([authMiddleware])
   .handler(async ({ context }) => {
     const ws = await workspaceFor(context.userId);
+    assertPermission(ws.role, "readAudit");
     const sql = await getSql();
     return sql<{
       id: string;
@@ -577,14 +586,135 @@ export const listKeys = createServerFn({ method: "GET" })
   .middleware([authMiddleware])
   .handler(async ({ context }) => {
     const ws = await workspaceFor(context.userId);
+    assertPermission(ws.role, "readKeys");
     const sql = await getSql();
-    return sql<{
+    const keys = await sql<{
       did: string;
       public_key_multibase: string;
+      status: string;
+      document_hash: string | null;
       created_at: string;
+      key_status: string | null;
     }>`
-      select did, public_key_multibase, created_at::text as created_at
-      from dids where tenant_id = ${ws.tenantId}`;
+      select
+        d.did,
+        d.public_key_multibase,
+        coalesce(d.status, 'ACTIVE') as status,
+        d.document_hash,
+        d.created_at::text as created_at,
+        k.status as key_status
+      from dids d
+      left join key_secrets k on k.did = d.did and k.tenant_id = d.tenant_id
+      where d.tenant_id = ${ws.tenantId}
+      order by d.created_at desc`;
+    return {
+      role: ws.role,
+      issuerDid: ws.issuerDid,
+      permissions: permissionMap(ws.role),
+      keys,
+    };
+  });
+
+export const rotateIssuerKey = createServerFn({ method: "POST" })
+  .middleware([authMiddleware])
+  .handler(async ({ context }) => {
+    const ws = await workspaceFor(context.userId);
+    assertPermission(ws.role, "rotateKeys");
+    const sql = await getSql();
+    const identity = createIssuerIdentity(sealSecret);
+    const previousDid = ws.issuerDid;
+    const now = new Date().toISOString();
+
+    await sql`
+      update key_secrets
+      set status = 'ROTATED', rotated_at = ${now}, rotated_to_did = ${identity.did}
+      where tenant_id = ${ws.tenantId} and did = ${previousDid} and status = 'ACTIVE'`;
+    await sql`
+      update dids
+      set status = 'ROTATED', superseded_by = ${identity.did}, rotated_at = ${now}
+      where tenant_id = ${ws.tenantId} and did = ${previousDid}`;
+    await sql`
+      insert into dids (id, tenant_id, did, document_json, public_key_multibase, status, document_hash)
+      values (
+        ${newId("did")}, ${ws.tenantId}, ${identity.did}, ${JSON.stringify(identity.document)},
+        ${identity.publicKeyMultibase}, ${"ACTIVE"}, ${identity.documentHash}
+      )`;
+    await sql`
+      insert into key_secrets (id, tenant_id, did, secret_key_hex, status, public_key_multibase, purpose)
+      values (
+        ${newId("key")}, ${ws.tenantId}, ${identity.did}, ${identity.sealedSecretHex},
+        ${"ACTIVE"}, ${identity.publicKeyMultibase}, ${"assertionMethod"}
+      )`;
+    await sql`
+      update issuers set did = ${identity.did}
+      where id = ${ws.issuerId} and tenant_id = ${ws.tenantId}`;
+
+    const ledger = await getLedger();
+    await ledger.registerDid({
+      did: identity.did,
+      documentHash: identity.documentHash,
+      publicKeyMultibase: identity.publicKeyMultibase,
+      status: "ACTIVE",
+      controllerDid: previousDid,
+    });
+    await ledger.registerIssuer({
+      issuerId: identity.did,
+      issuerDid: identity.did,
+      name: ws.issuerName,
+      status: "ACTIVE",
+      publicKeyMultibase: identity.publicKeyMultibase,
+    });
+    await audit({
+      tenantId: ws.tenantId,
+      actorUserId: context.userId,
+      action: "issuer.key.rotated",
+      resourceType: "did",
+      resourceId: identity.did,
+      metadata: { previousDid },
+    });
+    return {
+      did: identity.did,
+      publicKeyMultibase: identity.publicKeyMultibase,
+      previousDid,
+      documentHash: identity.documentHash,
+    };
+  });
+
+export const resolveDidDocument = createServerFn({ method: "POST" })
+  .validator((raw: unknown) =>
+    z
+      .object({
+        did: z.string().min(8).max(200).optional(),
+        multibase: z.string().min(8).max(200).optional(),
+      })
+      .parse(raw),
+  )
+  .handler(async ({ data }) => {
+    const did = data.did ?? (data.multibase ? didKeyFromMultibase(data.multibase) : "");
+    const resolved = resolveDidKey(did);
+    if (!resolved.ok) {
+      return { ok: false as const, reason: resolved.reason, did };
+    }
+    const sql = await getSql();
+    const rows = await sql<{
+      status: string;
+      document_hash: string | null;
+      public_key_multibase: string;
+    }>`
+      select coalesce(status, 'ACTIVE') as status, document_hash, public_key_multibase
+      from dids where did = ${resolved.did} limit 1`;
+    const registered = rows[0];
+    return {
+      ok: true as const,
+      did: resolved.did,
+      method: resolved.method,
+      publicKeyMultibase: resolved.publicKeyMultibase,
+      verificationMethod: resolved.verificationMethod,
+      document: resolved.document,
+      documentHash: didDocumentHash(resolved.document),
+      registered: Boolean(registered),
+      registryStatus: registered?.status ?? "UNREGISTERED",
+    };
   });
 
 export const getIssuerCredential = createServerFn({ method: "POST" })

@@ -1,6 +1,7 @@
 import type {
   CredentialLedgerRecord,
   CredentialStatusRecord,
+  DidLedgerRecord,
   DistributedLedgerAdapter,
   DocumentAnchorRecord,
   IssuerLedgerRecord,
@@ -33,6 +34,9 @@ export class FabricLedgerAdapter implements DistributedLedgerAdapter {
   async registerIssuer(_record: IssuerLedgerRecord): Promise<LedgerSubmitResult> {
     this.refuse();
   }
+  async registerDid(_record: DidLedgerRecord): Promise<LedgerSubmitResult> {
+    this.refuse();
+  }
   async registerCredential(_record: CredentialLedgerRecord): Promise<LedgerSubmitResult> {
     this.refuse();
   }
@@ -43,6 +47,9 @@ export class FabricLedgerAdapter implements DistributedLedgerAdapter {
     this.refuse();
   }
   async getIssuer(_issuerId: string): Promise<IssuerLedgerRecord | null> {
+    this.refuse();
+  }
+  async getDid(_did: string): Promise<DidLedgerRecord | null> {
     this.refuse();
   }
   async getCredential(_credentialId: string): Promise<CredentialLedgerRecord | null> {

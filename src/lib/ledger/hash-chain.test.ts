@@ -42,6 +42,21 @@ test("duplicate credential registration is rejected", async () => {
   await assert.rejects(() => ledger.registerCredential(record));
 });
 
+test("DID registration is append-only and retrievable", async () => {
+  const ledger = new HashChainLedgerAdapter(new MemoryLedgerStore());
+  const rec = {
+    did: "did:key:zIssuer",
+    documentHash: "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    publicKeyMultibase: "zIssuer",
+    status: "ACTIVE" as const,
+  };
+  await ledger.registerDid(rec);
+  const found = await ledger.getDid(rec.did);
+  assert.equal(found?.documentHash, rec.documentHash);
+  const again = await ledger.registerDid(rec);
+  assert.equal(typeof again.blockHash, "string");
+});
+
 test("Fabric adapter refuses to fake transactions", async () => {
   const fabric = new FabricLedgerAdapter();
   await assert.rejects(() => fabric.registerCredential({
@@ -53,5 +68,11 @@ test("Fabric adapter refuses to fake transactions", async () => {
     status: "ACTIVE",
     issuedAt: "2026-08-20T00:00:00.000Z",
     version: 1,
+  }));
+  await assert.rejects(() => fabric.registerDid({
+    did: "did:key:z",
+    documentHash: "sha256:00",
+    publicKeyMultibase: "z",
+    status: "ACTIVE",
   }));
 });

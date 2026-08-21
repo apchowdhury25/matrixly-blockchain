@@ -3,6 +3,7 @@ import { sha256Bytes, sha256Utf8 } from "../crypto/hash";
 import type {
   CredentialLedgerRecord,
   CredentialStatusRecord,
+  DidLedgerRecord,
   DistributedLedgerAdapter,
   DocumentAnchorRecord,
   IssuerLedgerRecord,
@@ -98,7 +99,7 @@ export class HashChainLedgerAdapter implements DistributedLedgerAdapter {
   }
 
   async registerIssuer(record: IssuerLedgerRecord): Promise<LedgerSubmitResult> {
-    const existing = await this.getIssuer(record.issuerId);
+    const existing = await this.getIssuer(record.issuerDid);
     if (existing) {
       const latest = await this.getLatestBlock();
       if (!latest) throw new Error("Issuer exists without ledger head");
@@ -111,6 +112,22 @@ export class HashChainLedgerAdapter implements DistributedLedgerAdapter {
       };
     }
     return this.commit("ISSUER", record as unknown as Record<string, unknown>);
+  }
+
+  async registerDid(record: DidLedgerRecord): Promise<LedgerSubmitResult> {
+    const existing = await this.getDid(record.did);
+    if (existing) {
+      const latest = await this.getLatestBlock();
+      if (!latest) throw new Error("DID exists without ledger head");
+      return {
+        blockHash: latest.blockHash,
+        seq: latest.seq,
+        previousHash: latest.blockHash,
+        payloadHash: latest.blockHash,
+        timestamp: new Date().toISOString(),
+      };
+    }
+    return this.commit("DID", record as unknown as Record<string, unknown>);
   }
 
   async registerCredential(record: CredentialLedgerRecord): Promise<LedgerSubmitResult> {
@@ -130,7 +147,14 @@ export class HashChainLedgerAdapter implements DistributedLedgerAdapter {
   }
 
   async getIssuer(issuerId: string): Promise<IssuerLedgerRecord | null> {
-    return this.latestOf<IssuerLedgerRecord>("ISSUER", (r) => r.issuerId === issuerId);
+    return this.latestOf<IssuerLedgerRecord>(
+      "ISSUER",
+      (r) => r.issuerId === issuerId || r.issuerDid === issuerId,
+    );
+  }
+
+  async getDid(did: string): Promise<DidLedgerRecord | null> {
+    return this.latestOf<DidLedgerRecord>("DID", (r) => r.did === did);
   }
 
   async getCredential(credentialId: string): Promise<CredentialLedgerRecord | null> {

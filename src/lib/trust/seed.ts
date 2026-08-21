@@ -10,6 +10,7 @@ import { sha256Bytes } from "@/lib/crypto/hash";
 import { issueCredential, credentialHash } from "@/lib/credentials/issue";
 import { emptyStatusList, encodeStatusList, setBit } from "@/lib/credentials/status-list";
 import { renderDiplomaPdf, tamperOneByte } from "@/lib/documents/diploma";
+import { didDocumentHash } from "@/lib/identity/did";
 import { getLedger, audit } from "./runtime";
 import { DEMO } from "./ids";
 import { sealSecret } from "./seal";
@@ -57,23 +58,33 @@ async function seedDemo(): Promise<void> {
   await sql`
     insert into organizations (id, tenant_id, name, org_type, status)
     values (${DEMO.orgId}, ${DEMO.tenantId}, ${"Global University"}, ${"UNIVERSITY"}, ${"ACTIVE"})`;
+  const document = didDocument(did, keys.publicKey);
+  const documentHash = didDocumentHash(document);
   await sql`
     insert into issuers (id, tenant_id, organization_id, name, did, status)
     values (${DEMO.issuerId}, ${DEMO.tenantId}, ${DEMO.orgId}, ${"Office of the Registrar"}, ${did}, ${"ACTIVE"})`;
   await sql`
-    insert into dids (id, tenant_id, did, document_json, public_key_multibase)
+    insert into dids (id, tenant_id, did, document_json, public_key_multibase, status, document_hash)
     values (
       ${"did_demo_registrar"},
       ${DEMO.tenantId},
       ${did},
-      ${JSON.stringify(didDocument(did, keys.publicKey))},
-      ${publicKeyMultibase(keys.publicKey)}
+      ${JSON.stringify(document)},
+      ${publicKeyMultibase(keys.publicKey)},
+      ${"ACTIVE"},
+      ${documentHash}
     )`;
   await sql`
-    insert into key_secrets (id, tenant_id, did, secret_key_hex, status)
-    values (${"key_demo_registrar"}, ${DEMO.tenantId}, ${did}, ${sealed}, ${"ACTIVE"})`;
+    insert into key_secrets (id, tenant_id, did, secret_key_hex, status, public_key_multibase, purpose)
+    values (${"key_demo_registrar"}, ${DEMO.tenantId}, ${did}, ${sealed}, ${"ACTIVE"}, ${publicKeyMultibase(keys.publicKey)}, ${"assertionMethod"})`;
 
   const ledger = await getLedger();
+  await ledger.registerDid({
+    did,
+    documentHash,
+    publicKeyMultibase: publicKeyMultibase(keys.publicKey),
+    status: "ACTIVE",
+  });
   await ledger.registerIssuer({
     issuerId: did,
     issuerDid: did,

@@ -1,7 +1,8 @@
-import { decodeDidKey, verifyDocumentProof } from "../crypto/ed25519";
+import { verifyDocumentProof } from "../crypto/ed25519";
 import { hashesEqual, sha256Bytes } from "../crypto/hash";
 import { validateCredentialStructure } from "../credentials/issue";
 import { decodeStatusList, getBit } from "../credentials/status-list";
+import { resolveDidKey } from "../identity/did";
 import type { DistributedLedgerAdapter } from "../ledger/adapter";
 
 export type VerificationInput = {
@@ -91,13 +92,12 @@ export async function verifyCredential(
     return result;
   }
 
-  let publicKey: Uint8Array;
-  try {
-    publicKey = decodeDidKey(issuerDid);
-  } catch (err) {
-    reasons.push(`Issuer DID could not be resolved (${issuerDid}): ${(err as Error).message}`);
+  const resolved = resolveDidKey(issuerDid);
+  if (!resolved.ok) {
+    reasons.push(`Issuer DID could not be resolved (${issuerDid}): ${resolved.reason}`);
     return result;
   }
+  const publicKey = resolved.publicKey;
 
   const issuerRecord = await ledger.getIssuer(issuerDid).catch(() => null);
   const issuerByDid = issuerRecord ?? (await findIssuerByDid(ledger, issuerDid));

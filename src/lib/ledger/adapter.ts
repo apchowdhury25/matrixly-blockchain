@@ -43,6 +43,14 @@ export type DocumentAnchorRecord = {
   issuerDid: string;
 };
 
+export type DidLedgerRecord = {
+  did: string;
+  documentHash: string;
+  publicKeyMultibase: string;
+  status: "ACTIVE" | "ROTATED" | "REVOKED";
+  controllerDid?: string;
+};
+
 export type CredentialStatusRecord = {
   credentialId: string;
   status: CredentialLedgerRecord["status"];
@@ -61,10 +69,12 @@ export type LedgerSubmitResult = {
 export interface DistributedLedgerAdapter {
   readonly name: string;
   registerIssuer(record: IssuerLedgerRecord): Promise<LedgerSubmitResult>;
+  registerDid(record: DidLedgerRecord): Promise<LedgerSubmitResult>;
   registerCredential(record: CredentialLedgerRecord): Promise<LedgerSubmitResult>;
   registerDocumentAnchor(record: DocumentAnchorRecord): Promise<LedgerSubmitResult>;
   setCredentialStatus(record: CredentialStatusRecord): Promise<LedgerSubmitResult>;
   getIssuer(issuerId: string): Promise<IssuerLedgerRecord | null>;
+  getDid(did: string): Promise<DidLedgerRecord | null>;
   getCredential(credentialId: string): Promise<CredentialLedgerRecord | null>;
   getDocumentAnchor(documentHash: string): Promise<DocumentAnchorRecord | null>;
   getCredentialStatus(credentialId: string): Promise<CredentialStatusRecord | null>;

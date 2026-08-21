@@ -1,10 +1,17 @@
 import { createCipheriv, createDecipheriv, createHash, randomBytes } from "node:crypto";
 
 function wrappingKey(): Buffer {
-  const secret =
-    (typeof process !== "undefined" && process.env.BETTER_AUTH_SECRET?.trim()) ||
-    "matrixly-trust-dev-wrapping-key";
-  return createHash("sha256").update(`matrixly-kms:${secret}`).digest();
+  const secret = typeof process !== "undefined" ? process.env.BETTER_AUTH_SECRET?.trim() : undefined;
+  if (!secret) {
+    const databaseUrl = typeof process !== "undefined" ? process.env.DATABASE_URL?.trim() : undefined;
+    if (databaseUrl) {
+      throw new Error(
+        "BETTER_AUTH_SECRET is required to wrap signing keys when DATABASE_URL is set. Refusing the preview fallback.",
+      );
+    }
+  }
+  const material = secret || "matrixly-trust-dev-wrapping-key";
+  return createHash("sha256").update(`matrixly-kms:${material}`).digest();
 }
 
 /** AES-256-GCM seal. Stored value is ciphertext, never a raw secret key. */

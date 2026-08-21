@@ -98,7 +98,8 @@ Preview serves the built output (default Vite preview port **8081**).
 | `/app/issue` | Issue a new diploma (PDF → hash → VC → ledger) |
 | `/app/credentials` | Issued credentials |
 | `/app/ledger` | Hash-chain inspector |
-| `/app/keys` | Public keys / DID (private keys never leave the server) |
+| `/app/keys` | Public keys / DID (private keys never leave the server). Admins can rotate. |
+| `/did/:multibase` | Public DID document for a `did:key` |
 | `/app/audit` | Audit log |
 | `/trust` | Trust model explanation |
 
@@ -127,6 +128,7 @@ The playground covers four independent failure modes. Each check can fail on its
 ```
 src/
   lib/crypto/          SHA-256, RFC 8785 JCS, Ed25519, did:key
+  lib/identity/        DID resolution, RBAC, key lifecycle
   lib/credentials/     VC 2.0 issuance and Bitstring Status List
   lib/verification/    Independent verification pipeline
   lib/ledger/          Hash-chain adapter + Fabric adapter (refuse-to-fake)
@@ -151,6 +153,8 @@ Chaincode lives in `chaincode/document-registry/`. It stores credential hash, do
 
 - Original PDFs stay off-chain
 - Signing keys are AES-256-GCM sealed and are never returned by the API
+- Key rotation creates a new `did:key`; historical credentials still verify
+- Tenant roles: `TENANT_ADMIN` (rotate + issue), `ISSUER` (issue/revoke), `AUDITOR` (read)
 - Issuer APIs are tenant-scoped; public verify uses opaque references only
 - Verification never trusts a database `VALID` flag as the source of truth
 - Do not claim regulatory compliance from this repository alone
@@ -160,6 +164,7 @@ Chaincode lives in `chaincode/document-registry/`. It stores credential hash, do
 | Variable | Required | Purpose |
 |---|---|---|
 | `DATABASE_URL` | No | Postgres / Neon. Unset → PGLite |
+| `BETTER_AUTH_SECRET` | When `DATABASE_URL` is set | Wraps Ed25519 secrets with AES-256-GCM |
 | `VITE_AUTH_ENABLED` | No | `"true"` / `"false"`. Defaults on when unset |
 
 Never commit `.env` files or private keys.
