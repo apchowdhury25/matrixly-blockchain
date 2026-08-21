@@ -154,9 +154,9 @@ The playground covers four independent failure modes. Each check can fail on its
 
 ## QA
 
-Step-by-step module (all phases): [docs/qa.md](docs/qa.md).
-
-Latest automated results: [docs/qa/RESULTS.md](docs/qa/RESULTS.md).
+Step-by-step procedures: [docs/qa/STEPS.md](docs/qa/STEPS.md).  
+Module index: [docs/qa.md](docs/qa.md).  
+Automated results: [docs/qa/RESULTS.md](docs/qa/RESULTS.md).
 
 **Documents (Phase 3)** — sign in, open `/app/documents`:
 
