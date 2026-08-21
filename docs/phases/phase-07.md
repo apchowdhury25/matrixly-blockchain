@@ -92,9 +92,13 @@ Endorse policy (network, not code): `AND('Org1MSP.peer','Org2MSP.peer')` for pro
 
 ### WP2 — Fabric Gateway adapter (real SDK)
 
-Package: `@hyperledger/fabric-gateway` + `@grpc/grpc-js`.
+Package: `@hyperledger/fabric-gateway` (v1.12.x explored) + `@grpc/grpc-js`.
 
-Required env (all must be present or connect throws):
+Do **not** use `fabric-network` / `fabric-client`.
+
+Connection and mapping: [docs/architecture/fabric-gateway.md](../architecture/fabric-gateway.md).
+
+Required env (all must be present or `connect` is never called — `refuse()`):
 
 | Variable | Purpose |
 |---|---|
