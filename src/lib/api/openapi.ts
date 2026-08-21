@@ -1,3 +1,5 @@
+import { responseBodies } from "./examples";
+
 export const openApiSpec = {
   openapi: "3.0.3",
   info: {
@@ -80,8 +82,38 @@ export const openApiSpec = {
           },
         },
         responses: {
-          "200": { description: "Verification ran. Read `status` — UNAUTHORIZED is never 200." },
-          "401": { description: "Missing or invalid API key. Does not return VALID." },
+          "200": {
+            description: "Verification ran. Read `status` — UNAUTHORIZED is never 200.",
+            content: {
+              "application/json": {
+                examples: {
+                  valid: { summary: "Valid diploma", value: responseBodies.validRef },
+                  revoked: { summary: "Revoked diploma", value: responseBodies.revokedRef },
+                  expired: { summary: "Expired diploma", value: responseBodies.expiredRef },
+                  includeSubject: {
+                    summary: "Valid with holder display name",
+                    value: responseBodies.includeSubject,
+                  },
+                  unknown: { summary: "Unknown ref", value: responseBodies.unknownRef },
+                  emptyCredential: {
+                    summary: "Posted empty credential",
+                    value: responseBodies.emptyCredential,
+                  },
+                  emptyPresentation: {
+                    summary: "Posted empty presentation",
+                    value: responseBodies.emptyPresentation,
+                  },
+                  tamper: { summary: "Document hash mismatch", value: responseBodies.tamper },
+                },
+              },
+            },
+          },
+          "401": {
+            description: "Missing or invalid API key. Does not return VALID.",
+            content: {
+              "application/json": { example: responseBodies.missingKey },
+            },
+          },
           "400": { description: "Malformed body." },
         },
       },
@@ -90,7 +122,20 @@ export const openApiSpec = {
       get: {
         summary: "Fetch a signed verification report (hashes and flags only)",
         parameters: [{ name: "ref", in: "path", required: true, schema: { type: "string" } }],
-        responses: { "200": { description: "Signed report" }, "401": { description: "Unauthorized" } },
+        responses: {
+          "200": {
+            description: "Signed report",
+            content: {
+              "application/json": { example: responseBodies.report },
+            },
+          },
+          "401": {
+            description: "Unauthorized",
+            content: {
+              "application/json": { example: responseBodies.missingKey },
+            },
+          },
+        },
       },
     },
     "/api/v1/openapi.json": {

@@ -46,6 +46,7 @@ function DevelopersPage() {
     examples.revokedRef,
     examples.expiredRef,
     examples.includeSubject,
+    examples.unknownRef,
     examples.tamper,
     examples.postedCredential,
     examples.presentation,
@@ -77,7 +78,9 @@ function DevelopersPage() {
           <a href="/api/v1/openapi.json" className="underline underline-offset-4">
             /api/v1/openapi.json
           </a>
-          .
+          . Response bodies below are complete JSON from a live call. Issuer DID, hashes, and{" "}
+          <span className="font-mono">reportRef</span> change if the demo tenant is re-seeded;
+          field names and check flags do not.
         </p>
         <div className="mt-8 overflow-x-auto rounded-xl border border-rule bg-paper-raised">
           <table className="w-full min-w-[520px] text-left text-sm">
