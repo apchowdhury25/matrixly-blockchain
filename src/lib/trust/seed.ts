@@ -17,6 +17,7 @@ import { buildEvidence } from "@/lib/documents/evidence";
 import { getLedger, audit } from "./runtime";
 import { DEMO } from "./ids";
 import { openSecret, sealSecret } from "./seal";
+import { hashApiKey } from "@/lib/api/keys";
 
 const globalSeed = globalThis as typeof globalThis & { __matrixlySeed__?: Promise<void> };
 
@@ -27,6 +28,7 @@ export async function ensureDemoSeed(): Promise<void> {
     if (existing.length) {
       await ensureDemoDelivery();
       await ensureDemoStatusList();
+      await ensureDemoApiKey();
       return;
     }
     const tenant = await sql<{ id: string }>`select id from tenants where id = ${DEMO.tenantId}`;
@@ -48,6 +50,7 @@ export async function ensureDemoSeed(): Promise<void> {
       await sql`delete from tenants where id = ${DEMO.tenantId}`;
     }
     await seedDemo();
+    await ensureDemoApiKey();
   })().catch((err) => {
     globalSeed.__matrixlySeed__ = undefined;
     throw err;
@@ -368,3 +371,22 @@ async function ensureDemoStatusList(): Promise<void> {
     set credential_json = ${JSON.stringify(slc)}, credential_hash = ${credentialHash(slc)}, updated_at = now()
     where id = ${lists[0].id}`;
 }
+
+async function ensureDemoApiKey(): Promise<void> {
+  const sql = await getSql();
+  const have = await sql<{ id: string }>`select id from verifier_api_keys where id = ${DEMO.apiKeyId}`;
+  if (have[0]) return;
+  const prefix = DEMO.apiKey.slice(0, 20);
+  await sql`
+    insert into verifier_api_keys (id, tenant_id, created_by_user_id, name, prefix, secret_hash, status)
+    values (
+      ${DEMO.apiKeyId},
+      ${DEMO.tenantId},
+      ${null},
+      ${"Demo verifier"},
+      ${prefix},
+      ${hashApiKey(DEMO.apiKey)},
+      ${"ACTIVE"}
+    )`;
+}
+

@@ -11,6 +11,7 @@ const links = [
   { to: "/app/ledger", label: "Ledger" },
   { to: "/app/status", label: "Status" },
   { to: "/app/keys", label: "Keys" },
+  { to: "/app/api-keys", label: "API keys" },
   { to: "/app/audit", label: "Audit" },
 ] as const;
 

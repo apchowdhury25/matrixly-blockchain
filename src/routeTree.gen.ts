@@ -11,10 +11,12 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppRouteRouteImport } from './routes/app/route'
+import { Route as DevelopersRouteImport } from './routes/developers'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as TrustRouteImport } from './routes/trust'
 import { Route as WalletRouteRouteImport } from './routes/wallet/route'
 import { Route as AppIndexRouteImport } from './routes/app/index'
+import { Route as AppApiKeysRouteImport } from './routes/app/api-keys'
 import { Route as AppAuditRouteImport } from './routes/app/audit'
 import { Route as AppCredentialsRouteImport } from './routes/app/credentials'
 import { Route as AppDocumentsRouteImport } from './routes/app/documents'
@@ -30,7 +32,10 @@ import { Route as VerifyIndexRouteImport } from './routes/verify/index'
 import { Route as VerifyRefRouteImport } from './routes/verify/$ref'
 import { Route as WalletIndexRouteImport } from './routes/wallet/index'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
+import { Route as ApiV1OpenapiDotjsonRouteImport } from './routes/api/v1/openapi[.]json'
+import { Route as ApiV1VerifyRouteImport } from './routes/api/v1/verify'
 import { Route as WalletClaimTokenRouteImport } from './routes/wallet/claim.$token'
+import { Route as ApiV1ReportsRefRouteImport } from './routes/api/v1/reports.$ref'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -40,6 +45,11 @@ const IndexRoute = IndexRouteImport.update({
 const AppRouteRoute = AppRouteRouteImport.update({
   id: '/app',
   path: '/app',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DevelopersRoute = DevelopersRouteImport.update({
+  id: '/developers',
+  path: '/developers',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -60,6 +70,11 @@ const WalletRouteRoute = WalletRouteRouteImport.update({
 const AppIndexRoute = AppIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => AppRouteRoute,
+} as any)
+const AppApiKeysRoute = AppApiKeysRouteImport.update({
+  id: '/api-keys',
+  path: '/api-keys',
   getParentRoute: () => AppRouteRoute,
 } as any)
 const AppAuditRoute = AppAuditRouteImport.update({
@@ -137,18 +152,35 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiV1OpenapiDotjsonRoute = ApiV1OpenapiDotjsonRouteImport.update({
+  id: '/api/v1/openapi.json',
+  path: '/api/v1/openapi.json',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiV1VerifyRoute = ApiV1VerifyRouteImport.update({
+  id: '/api/v1/verify',
+  path: '/api/v1/verify',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const WalletClaimTokenRoute = WalletClaimTokenRouteImport.update({
   id: '/claim/$token',
   path: '/claim/$token',
   getParentRoute: () => WalletRouteRoute,
+} as any)
+const ApiV1ReportsRefRoute = ApiV1ReportsRefRouteImport.update({
+  id: '/api/v1/reports/$ref',
+  path: '/api/v1/reports/$ref',
+  getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/app': typeof AppRouteRouteWithChildren
   '/wallet': typeof WalletRouteRouteWithChildren
+  '/developers': typeof DevelopersRoute
   '/login': typeof LoginRoute
   '/trust': typeof TrustRoute
+  '/app/api-keys': typeof AppApiKeysRoute
   '/app/audit': typeof AppAuditRoute
   '/app/credentials': typeof AppCredentialsRoute
   '/app/documents': typeof AppDocumentsRoute
@@ -165,12 +197,17 @@ export interface FileRoutesByFullPath {
   '/verify/': typeof VerifyIndexRoute
   '/wallet/': typeof WalletIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/v1/openapi.json': typeof ApiV1OpenapiDotjsonRoute
+  '/api/v1/verify': typeof ApiV1VerifyRoute
   '/wallet/claim/$token': typeof WalletClaimTokenRoute
+  '/api/v1/reports/$ref': typeof ApiV1ReportsRefRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/developers': typeof DevelopersRoute
   '/login': typeof LoginRoute
   '/trust': typeof TrustRoute
+  '/app/api-keys': typeof AppApiKeysRoute
   '/app/audit': typeof AppAuditRoute
   '/app/credentials': typeof AppCredentialsRoute
   '/app/documents': typeof AppDocumentsRoute
@@ -187,15 +224,20 @@ export interface FileRoutesByTo {
   '/verify': typeof VerifyIndexRoute
   '/wallet': typeof WalletIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/v1/openapi.json': typeof ApiV1OpenapiDotjsonRoute
+  '/api/v1/verify': typeof ApiV1VerifyRoute
   '/wallet/claim/$token': typeof WalletClaimTokenRoute
+  '/api/v1/reports/$ref': typeof ApiV1ReportsRefRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/app': typeof AppRouteRouteWithChildren
   '/wallet': typeof WalletRouteRouteWithChildren
+  '/developers': typeof DevelopersRoute
   '/login': typeof LoginRoute
   '/trust': typeof TrustRoute
+  '/app/api-keys': typeof AppApiKeysRoute
   '/app/audit': typeof AppAuditRoute
   '/app/credentials': typeof AppCredentialsRoute
   '/app/documents': typeof AppDocumentsRoute
@@ -212,7 +254,10 @@ export interface FileRoutesById {
   '/verify/': typeof VerifyIndexRoute
   '/wallet/': typeof WalletIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/v1/openapi.json': typeof ApiV1OpenapiDotjsonRoute
+  '/api/v1/verify': typeof ApiV1VerifyRoute
   '/wallet/claim/$token': typeof WalletClaimTokenRoute
+  '/api/v1/reports/$ref': typeof ApiV1ReportsRefRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -220,8 +265,10 @@ export interface FileRouteTypes {
     | '/'
     | '/app'
     | '/wallet'
+    | '/developers'
     | '/login'
     | '/trust'
+    | '/app/api-keys'
     | '/app/audit'
     | '/app/credentials'
     | '/app/documents'
@@ -238,12 +285,17 @@ export interface FileRouteTypes {
     | '/verify/'
     | '/wallet/'
     | '/api/auth/$'
+    | '/api/v1/openapi.json'
+    | '/api/v1/verify'
     | '/wallet/claim/$token'
+    | '/api/v1/reports/$ref'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/developers'
     | '/login'
     | '/trust'
+    | '/app/api-keys'
     | '/app/audit'
     | '/app/credentials'
     | '/app/documents'
@@ -260,14 +312,19 @@ export interface FileRouteTypes {
     | '/verify'
     | '/wallet'
     | '/api/auth/$'
+    | '/api/v1/openapi.json'
+    | '/api/v1/verify'
     | '/wallet/claim/$token'
+    | '/api/v1/reports/$ref'
   id:
     | '__root__'
     | '/'
     | '/app'
     | '/wallet'
+    | '/developers'
     | '/login'
     | '/trust'
+    | '/app/api-keys'
     | '/app/audit'
     | '/app/credentials'
     | '/app/documents'
@@ -284,13 +341,17 @@ export interface FileRouteTypes {
     | '/verify/'
     | '/wallet/'
     | '/api/auth/$'
+    | '/api/v1/openapi.json'
+    | '/api/v1/verify'
     | '/wallet/claim/$token'
+    | '/api/v1/reports/$ref'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRouteRoute: typeof AppRouteRouteWithChildren
   WalletRouteRoute: typeof WalletRouteRouteWithChildren
+  DevelopersRoute: typeof DevelopersRoute
   LoginRoute: typeof LoginRoute
   TrustRoute: typeof TrustRoute
   DidMultibaseRoute: typeof DidMultibaseRoute
@@ -300,6 +361,9 @@ export interface RootRouteChildren {
   VerifyRefRoute: typeof VerifyRefRoute
   VerifyIndexRoute: typeof VerifyIndexRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
+  ApiV1OpenapiDotjsonRoute: typeof ApiV1OpenapiDotjsonRoute
+  ApiV1VerifyRoute: typeof ApiV1VerifyRoute
+  ApiV1ReportsRefRoute: typeof ApiV1ReportsRefRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -316,6 +380,13 @@ declare module '@tanstack/react-router' {
       path: '/app'
       fullPath: '/app'
       preLoaderRoute: typeof AppRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/developers': {
+      id: '/developers'
+      path: '/developers'
+      fullPath: '/developers'
+      preLoaderRoute: typeof DevelopersRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -344,6 +415,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/app/'
       preLoaderRoute: typeof AppIndexRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
+    '/app/api-keys': {
+      id: '/app/api-keys'
+      path: '/api-keys'
+      fullPath: '/app/api-keys'
+      preLoaderRoute: typeof AppApiKeysRouteImport
       parentRoute: typeof AppRouteRoute
     }
     '/app/audit': {
@@ -451,6 +529,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/v1/openapi.json': {
+      id: '/api/v1/openapi.json'
+      path: '/api/v1/openapi.json'
+      fullPath: '/api/v1/openapi.json'
+      preLoaderRoute: typeof ApiV1OpenapiDotjsonRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/v1/verify': {
+      id: '/api/v1/verify'
+      path: '/api/v1/verify'
+      fullPath: '/api/v1/verify'
+      preLoaderRoute: typeof ApiV1VerifyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/wallet/claim/$token': {
       id: '/wallet/claim/$token'
       path: '/claim/$token'
@@ -458,10 +550,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WalletClaimTokenRouteImport
       parentRoute: typeof WalletRouteRoute
     }
+    '/api/v1/reports/$ref': {
+      id: '/api/v1/reports/$ref'
+      path: '/api/v1/reports/$ref'
+      fullPath: '/api/v1/reports/$ref'
+      preLoaderRoute: typeof ApiV1ReportsRefRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 interface AppRouteRouteChildren {
+  AppApiKeysRoute: typeof AppApiKeysRoute
   AppAuditRoute: typeof AppAuditRoute
   AppCredentialsRoute: typeof AppCredentialsRoute
   AppDocumentsRoute: typeof AppDocumentsRoute
@@ -473,6 +573,7 @@ interface AppRouteRouteChildren {
 }
 
 const AppRouteRouteChildren: AppRouteRouteChildren = {
+  AppApiKeysRoute: AppApiKeysRoute,
   AppAuditRoute: AppAuditRoute,
   AppCredentialsRoute: AppCredentialsRoute,
   AppDocumentsRoute: AppDocumentsRoute,
@@ -505,6 +606,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRouteRoute: AppRouteRouteWithChildren,
   WalletRouteRoute: WalletRouteRouteWithChildren,
+  DevelopersRoute: DevelopersRoute,
   LoginRoute: LoginRoute,
   TrustRoute: TrustRoute,
   DidMultibaseRoute: DidMultibaseRoute,
@@ -514,6 +616,9 @@ const rootRouteChildren: RootRouteChildren = {
   VerifyRefRoute: VerifyRefRoute,
   VerifyIndexRoute: VerifyIndexRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
+  ApiV1OpenapiDotjsonRoute: ApiV1OpenapiDotjsonRoute,
+  ApiV1VerifyRoute: ApiV1VerifyRoute,
+  ApiV1ReportsRefRoute: ApiV1ReportsRefRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

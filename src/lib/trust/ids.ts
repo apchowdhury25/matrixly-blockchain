@@ -16,6 +16,8 @@ export const DEMO = {
   revokedRef: "demo-revoked-bcs",
   expiredRef: "demo-expired-bcs",
   claimToken: "demo-claim-valid-bcs",
+  apiKey: "mtx_live_demo_verifier_qa_only",
+  apiKeyId: "key_demo_verifier",
   tamperedDocId: "doc_tampered_demo",
   statusListId: "https://trust.matrixly.ai/credentials/status/demo",
 } as const;

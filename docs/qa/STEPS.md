@@ -390,6 +390,59 @@ Minimum 8 clicks:
 
 ---
 
+## Phase 8 — Verifier API
+
+Public docs: **Developers**. Keys: sign in as tenant admin → **API keys**.
+
+### 8.1 No key must not be VALID
+
+`POST /api/v1/verify` with `{ "ref": "demo-valid-bcs" }` and no Authorization.
+
+**PASS if** HTTP 401, `verified: false`, `status: "UNAUTHORIZED"`.  
+**FAIL if** the body says `VALID`.
+
+### 8.2 Garbage bearer
+
+`Authorization: Bearer mtx_live_not-a-real-key` → 401, not VALID.
+
+### 8.3 OpenAPI is public
+
+Open `/api/v1/openapi.json` (no key). JSON `openapi` is `3.0.3`, path `/api/v1/verify` exists.
+
+### 8.4 Developers page
+
+Header **Developers**. States a missing key is 401 never VALID.
+
+### 8.5 Create a key
+
+**API keys** → name “QA verifier” → **Create key**. Secret `mtx_live_…` shown once. Table shows prefix only. Reload must not reveal the secret.
+
+### 8.6 Authenticated verify
+
+This preview seeds `mtx_live_demo_verifier_qa_only` (hashed at rest, same as any other key). Or use a key you created in 8.5.
+
+`POST /api/v1/verify` with `Authorization: Bearer <secret>` and `{ "ref": "demo-valid-bcs" }`.
+
+**PASS if** 200, `status: "VALID"`, checks for signature / ledger / signed status list true, JSON has no `Alex`/`Rivera`, `reportRef` present.
+
+### 8.7 Tamper via API
+
+Same key, `{ "ref": "demo-valid-bcs", "documentB64": "<one-byte-different PDF>" }` → `INVALID`, `checks.documentSha256` false.
+
+### 8.8 Revoke key
+
+**Revoke** on the key, repeat 8.6 → 401.
+
+### 8.9 RBAC
+
+`manageApiKeys` is TENANT_ADMIN only. Auditor cannot mint keys.
+
+### 8.10 Regression
+
+Phase 1 four outcomes still hold. Ledger still `HashChainLedgerAdapter`.
+
+---
+
 ## Traps (do not mis-score)
 
 | Action | Wrong reading | Correct |
@@ -400,3 +453,5 @@ Minimum 8 clicks:
 | Holder VP VALID | “Issuer signature was replaced” | Holder signs the envelope; inner VC is separate |
 | Audit row `credential.verified` | “That’s the proof” | Proof is the signed report + ledger hash |
 | Ledger adapter HashChain | “Phase 7 failed” | Preview default is hash-chain. Fabric refuse is the Phase 7 property |
+| Verify API 401 | “API is broken” | No key must never return VALID |
+

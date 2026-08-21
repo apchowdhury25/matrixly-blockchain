@@ -36,7 +36,7 @@ Issuer → Identity → Document → SHA-256 → VC 2.0 → Ed25519
 | 4 Holder | Shipped | Wallet, claim, VP |
 | 5 Status | Shipped | Signed Bitstring Status List + verifier policy |
 | 6 Audit | Shipped | Signed verification reports, hash-chained audit |
-| 7 Production adapters | Shipped (preview + fail-closed) | Factory + Gateway mapping + storage/KMS ports. Live Fabric/S3 still require operator infra. |
+| 8 Verifier API | Shipped | Bearer keys, `POST /api/v1/verify`, OpenAPI. 401 never returns VALID. |
 
 Phase write-ups: [docs/phases/](docs/phases/). Architecture: [docs/architecture/trust-model.md](docs/architecture/trust-model.md). Fabric Gateway mapping: [docs/architecture/fabric-gateway.md](docs/architecture/fabric-gateway.md).
 
@@ -168,6 +168,14 @@ Automated results: [docs/qa/RESULTS.md](docs/qa/RESULTS.md).
 
 Do not use “upload a `.exe` renamed to `.pdf`” as a positive test. That file is an executable and must fail closed.
 
+**Verifier API (Phase 8)** — public docs at `/developers`:
+
+1. `POST /api/v1/verify` with no key → **401**, never `VALID`
+2. Sign in → **API keys** → create a key (secret shown once)
+3. `POST /api/v1/verify` with `Authorization: Bearer mtx_live_…` and `{ "ref": "demo-valid-bcs" }` → `VALID`, no holder name
+4. OpenAPI: `/api/v1/openapi.json`
+
+
 ## Scripts
 
 | Command | Purpose |
@@ -192,7 +200,7 @@ src/
   lib/ledger/          Hash-chain + Fabric Gateway adapter (refuse-to-fake)
   lib/storage/         Object storage port (db / fs / s3-refuse)
   lib/documents/       Diploma PDF generation, ingest, evidence packages
-  lib/audit/           Tenant audit hash chain
+  lib/api/             Verifier API keys, machine result, OpenAPI
   lib/trust/           Runtime, seed, server functions
   routes/              Public verifier, issuer console, wallet, auth
 chaincode/
@@ -216,6 +224,7 @@ Chaincode lives in `chaincode/document-registry/`. It stores credential hash, do
 - Key rotation creates a new `did:key`; historical credentials still verify
 - Tenant roles: `TENANT_ADMIN` (rotate + issue), `ISSUER` (issue/revoke), `AUDITOR` (read)
 - Issuer APIs are tenant-scoped; public verify uses opaque references only
+- Verifier API keys are SHA-256 hashed, shown once; unauthenticated verify is 401 never VALID
 - Verification never trusts a database `VALID` flag as the source of truth
 - Do not claim regulatory compliance from this repository alone
 

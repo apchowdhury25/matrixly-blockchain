@@ -54,6 +54,12 @@ function Overview() {
         >
           View credentials
         </Link>
+        <Link
+          to="/app/api-keys"
+          className="inline-flex h-11 items-center rounded-sm border border-rule px-5 text-sm"
+        >
+          API keys
+        </Link>
       </div>
       <div className="mt-10 rounded-xl border border-rule bg-paper-raised p-5">
         <p className="text-sm text-stone">Issuer DID</p>

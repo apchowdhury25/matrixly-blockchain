@@ -12,18 +12,15 @@ import { issueStatusListCredential } from "@/lib/credentials/status-list-credent
 import { renderDiplomaPdf } from "@/lib/documents/diploma";
 import { buildEvidence, parseEvidence, type DocumentEvidence } from "@/lib/documents/evidence";
 import { verifyCredential, type VerificationResult } from "@/lib/verification/pipeline";
-import {
-  buildVerificationReport,
-  signVerificationReport,
-  verificationReportHash,
-  verifyVerificationReport,
-} from "@/lib/verification/report";
+import { persistVerificationReport } from "@/lib/verification/persist";
+import { verifyVerificationReport } from "@/lib/verification/report";
+import { generateApiKey } from "@/lib/api/keys";
 import { didDocumentHash, didKeyFromMultibase, resolveDidKey } from "@/lib/identity/did";
 import { assertActiveSigningKey, createHolderIdentity, createIssuerIdentity } from "@/lib/identity/keys";
 import { assertPermission, permissionMap } from "@/lib/identity/roles";
 import { AUDIT_GENESIS, verifyAuditSequence } from "@/lib/audit/chain";
 import { ensureDemoSeed } from "./seed";
-import { audit, getLedger, getPlatformVerifier, getStorage, readDocumentBytes, runtimeAdapterStatus } from "./runtime";
+import { audit, getLedger, getStorage, readDocumentBytes, runtimeAdapterStatus } from "./runtime";
 import { DEMO, newId, opaqueRef } from "./ids";
 import { openSecret, sealSecret } from "./seal";
 
@@ -55,51 +52,6 @@ function toResultView(
     opaqueRef: extra?.opaqueRef,
     reportRef: extra?.reportRef,
   };
-}
-
-async function persistVerificationReport(input: {
-  result: VerificationResult;
-  credential: Record<string, unknown>;
-  opaqueRef?: string | null;
-  credentialRowId?: string | null;
-  tenantId?: string | null;
-}): Promise<{ reportRef: string; reportHash: string }> {
-  const verifier = await getPlatformVerifier();
-  const secretKey = decodeSecretKeyHex(openSecret(verifier.secretKeyHex));
-  const reportId = `urn:uuid:${crypto.randomUUID()}`;
-  const report = signVerificationReport(
-    buildVerificationReport({
-      reportId,
-      verifierDid: verifier.did,
-      credentialId: String(input.credential.id ?? input.credentialRowId ?? reportId),
-      credentialHash: credentialHash(input.credential),
-      documentHash: input.result.documentHash,
-      result: input.result,
-    }),
-    secretKey,
-  );
-  const reportHashValue = verificationReportHash(report as unknown as Record<string, unknown>);
-  const ledger = await getLedger();
-  const anchored = await ledger.registerVerificationAnchor({
-    reportId,
-    reportHash: reportHashValue,
-    credentialHash: report.credentialHash,
-    resultStatus: report.result,
-    verifierDid: verifier.did,
-    at: report.created,
-  });
-  const reportRef = opaqueRef();
-  const sql = await getSql();
-  await sql`
-    insert into verification_requests (
-      id, opaque_ref, credential_id, result_status, result_json,
-      report_json, report_hash, opaque_report_ref, verifier_did, ledger_block_hash
-    ) values (
-      ${newId("vrf")}, ${input.opaqueRef ?? null}, ${input.credentialRowId ?? null}, ${input.result.status},
-      ${JSON.stringify(input.result)}, ${JSON.stringify(report)}, ${reportHashValue}, ${reportRef},
-      ${verifier.did}, ${anchored.blockHash}
-    )`;
-  return { reportRef, reportHash: reportHashValue };
 }
 
 export const getDemoCatalog = createServerFn({ method: "GET" }).handler(async () => {
@@ -1430,5 +1382,71 @@ export const getIssuerStatusList = createServerFn({ method: "GET" })
       signed: Boolean(row.credential_json),
       issuerDid: ws.issuerDid,
     };
+  });
+
+export const listApiKeys = createServerFn({ method: "GET" })
+  .middleware([authMiddleware])
+  .handler(async ({ context }) => {
+    const ws = await workspaceFor(context.userId);
+    assertPermission(ws.role, "manageApiKeys");
+    const sql = await getSql();
+    const keys = await sql<{
+      id: string;
+      name: string;
+      prefix: string;
+      status: string;
+      last_used_at: string | null;
+      created_at: string;
+    }>`
+      select id, name, prefix, status, last_used_at::text as last_used_at, created_at::text as created_at
+      from verifier_api_keys
+      where tenant_id = ${ws.tenantId}
+      order by created_at desc`;
+    return { keys, role: ws.role };
+  });
+
+export const createApiKey = createServerFn({ method: "POST" })
+  .middleware([authMiddleware])
+  .validator((raw: unknown) => z.object({ name: z.string().min(2).max(80) }).parse(raw))
+  .handler(async ({ context, data }) => {
+    const ws = await workspaceFor(context.userId);
+    assertPermission(ws.role, "manageApiKeys");
+    const generated = generateApiKey();
+    const sql = await getSql();
+    const id = newId("key");
+    await sql`
+      insert into verifier_api_keys (id, tenant_id, created_by_user_id, name, prefix, secret_hash, status)
+      values (${id}, ${ws.tenantId}, ${context.userId}, ${data.name}, ${generated.prefix}, ${generated.secretHash}, ${"ACTIVE"})`;
+    await audit({
+      tenantId: ws.tenantId,
+      actorUserId: context.userId,
+      action: "api_key.created",
+      resourceType: "api_key",
+      resourceId: id,
+      metadata: { prefix: generated.prefix, name: data.name },
+    });
+    return { id, prefix: generated.prefix, secret: generated.secret, name: data.name };
+  });
+
+export const revokeApiKey = createServerFn({ method: "POST" })
+  .middleware([authMiddleware])
+  .validator((raw: unknown) => z.object({ id: z.string().min(8) }).parse(raw))
+  .handler(async ({ context, data }) => {
+    const ws = await workspaceFor(context.userId);
+    assertPermission(ws.role, "manageApiKeys");
+    const sql = await getSql();
+    const now = new Date().toISOString();
+    await sql`
+      update verifier_api_keys
+      set status = ${"REVOKED"}, revoked_at = ${now}
+      where id = ${data.id} and tenant_id = ${ws.tenantId} and status = ${"ACTIVE"}`;
+    await audit({
+      tenantId: ws.tenantId,
+      actorUserId: context.userId,
+      action: "api_key.revoked",
+      resourceType: "api_key",
+      resourceId: data.id,
+    });
+    return { ok: true };
   });
 

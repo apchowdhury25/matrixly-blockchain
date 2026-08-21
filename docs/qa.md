@@ -22,6 +22,7 @@ Quick index (full procedures in STEPS.md):
 | 5 Status | Status + revoke | Signed bitstring list, not a DB flag |
 | 6 Audit | Report link + Audit | Signed report, no PII; hash-chained events |
 | 7 Adapters | Ledger page + `npm run test:trust` | Hash-chain in preview; Fabric/S3/KMS refuse if unconfigured |
+| 8 Verifier API | Developers + API keys | 401 without key; VALID only with a live key |
 
 ## Out of scope
 

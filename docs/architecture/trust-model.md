@@ -14,6 +14,7 @@ Verifier determination of authenticity:
 10. If a presentation is supplied: holder DID resolves, holder `authentication` proof verifies, then the inner credential is verified independently
 11. If `credentialSubject.id` is bound, it must equal the presenting holder DID
 12. A signed VerificationReport is issued; its hash is ledger-anchored. Holder PII is not in the report.
+13. Machine verifiers use `POST /api/v1/verify` with a hashed Bearer key. Missing keys return 401, never VALID.
 
 A central `verified = true` column is never the source of truth.
 
