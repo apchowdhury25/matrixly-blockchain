@@ -26,7 +26,7 @@ function CredentialsPage() {
           <h1 className="font-display text-4xl">Credentials</h1>
           <p className="mt-2 text-ink-soft">Tenant-scoped. Other issuers cannot read these rows.</p>
         </div>
-        <Link to="/app/issue" className="inline-flex h-11 items-center rounded-sm bg-pine px-5 text-sm text-pine-fg">
+        <Link to="/app/issue" search={{ documentId: undefined }} className="inline-flex h-11 items-center rounded-sm bg-pine px-5 text-sm text-pine-fg">
           Issue
         </Link>
       </div>

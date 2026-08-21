@@ -5,11 +5,13 @@ export type Role = (typeof ROLES)[number];
 
 export const PERMISSIONS = {
   issue: ["TENANT_ADMIN", "ISSUER"],
+  ingest: ["TENANT_ADMIN", "ISSUER"],
   revoke: ["TENANT_ADMIN", "ISSUER"],
   rotateKeys: ["TENANT_ADMIN"],
   suspendIssuer: ["TENANT_ADMIN"],
   readAudit: ["TENANT_ADMIN", "ISSUER", "AUDITOR"],
   readKeys: ["TENANT_ADMIN", "ISSUER", "AUDITOR"],
+  readDocuments: ["TENANT_ADMIN", "ISSUER", "AUDITOR"],
 } as const;
 
 export type Permission = keyof typeof PERMISSIONS;
@@ -32,10 +34,12 @@ export function assertPermission(role: string, permission: Permission): void {
 export function permissionMap(role: string) {
   return {
     issue: hasPermission(role, "issue"),
+    ingest: hasPermission(role, "ingest"),
     revoke: hasPermission(role, "revoke"),
     rotateKeys: hasPermission(role, "rotateKeys"),
     suspendIssuer: hasPermission(role, "suspendIssuer"),
     readAudit: hasPermission(role, "readAudit"),
     readKeys: hasPermission(role, "readKeys"),
+    readDocuments: hasPermission(role, "readDocuments"),
   };
 }

@@ -16,6 +16,7 @@ import { Route as TrustRouteImport } from './routes/trust'
 import { Route as AppIndexRouteImport } from './routes/app/index'
 import { Route as AppAuditRouteImport } from './routes/app/audit'
 import { Route as AppCredentialsRouteImport } from './routes/app/credentials'
+import { Route as AppDocumentsRouteImport } from './routes/app/documents'
 import { Route as AppIssueRouteImport } from './routes/app/issue'
 import { Route as AppKeysRouteImport } from './routes/app/keys'
 import { Route as AppLedgerRouteImport } from './routes/app/ledger'
@@ -57,6 +58,11 @@ const AppAuditRoute = AppAuditRouteImport.update({
 const AppCredentialsRoute = AppCredentialsRouteImport.update({
   id: '/credentials',
   path: '/credentials',
+  getParentRoute: () => AppRouteRoute,
+} as any)
+const AppDocumentsRoute = AppDocumentsRouteImport.update({
+  id: '/documents',
+  path: '/documents',
   getParentRoute: () => AppRouteRoute,
 } as any)
 const AppIssueRoute = AppIssueRouteImport.update({
@@ -102,6 +108,7 @@ export interface FileRoutesByFullPath {
   '/trust': typeof TrustRoute
   '/app/audit': typeof AppAuditRoute
   '/app/credentials': typeof AppCredentialsRoute
+  '/app/documents': typeof AppDocumentsRoute
   '/app/issue': typeof AppIssueRoute
   '/app/keys': typeof AppKeysRoute
   '/app/ledger': typeof AppLedgerRoute
@@ -117,6 +124,7 @@ export interface FileRoutesByTo {
   '/trust': typeof TrustRoute
   '/app/audit': typeof AppAuditRoute
   '/app/credentials': typeof AppCredentialsRoute
+  '/app/documents': typeof AppDocumentsRoute
   '/app/issue': typeof AppIssueRoute
   '/app/keys': typeof AppKeysRoute
   '/app/ledger': typeof AppLedgerRoute
@@ -134,6 +142,7 @@ export interface FileRoutesById {
   '/trust': typeof TrustRoute
   '/app/audit': typeof AppAuditRoute
   '/app/credentials': typeof AppCredentialsRoute
+  '/app/documents': typeof AppDocumentsRoute
   '/app/issue': typeof AppIssueRoute
   '/app/keys': typeof AppKeysRoute
   '/app/ledger': typeof AppLedgerRoute
@@ -152,6 +161,7 @@ export interface FileRouteTypes {
     | '/trust'
     | '/app/audit'
     | '/app/credentials'
+    | '/app/documents'
     | '/app/issue'
     | '/app/keys'
     | '/app/ledger'
@@ -167,6 +177,7 @@ export interface FileRouteTypes {
     | '/trust'
     | '/app/audit'
     | '/app/credentials'
+    | '/app/documents'
     | '/app/issue'
     | '/app/keys'
     | '/app/ledger'
@@ -183,6 +194,7 @@ export interface FileRouteTypes {
     | '/trust'
     | '/app/audit'
     | '/app/credentials'
+    | '/app/documents'
     | '/app/issue'
     | '/app/keys'
     | '/app/ledger'
@@ -255,6 +267,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppCredentialsRouteImport
       parentRoute: typeof AppRouteRoute
     }
+    '/app/documents': {
+      id: '/app/documents'
+      path: '/documents'
+      fullPath: '/app/documents'
+      preLoaderRoute: typeof AppDocumentsRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
     '/app/issue': {
       id: '/app/issue'
       path: '/issue'
@@ -310,6 +329,7 @@ declare module '@tanstack/react-router' {
 interface AppRouteRouteChildren {
   AppAuditRoute: typeof AppAuditRoute
   AppCredentialsRoute: typeof AppCredentialsRoute
+  AppDocumentsRoute: typeof AppDocumentsRoute
   AppIssueRoute: typeof AppIssueRoute
   AppKeysRoute: typeof AppKeysRoute
   AppLedgerRoute: typeof AppLedgerRoute
@@ -319,6 +339,7 @@ interface AppRouteRouteChildren {
 const AppRouteRouteChildren: AppRouteRouteChildren = {
   AppAuditRoute: AppAuditRoute,
   AppCredentialsRoute: AppCredentialsRoute,
+  AppDocumentsRoute: AppDocumentsRoute,
   AppIssueRoute: AppIssueRoute,
   AppKeysRoute: AppKeysRoute,
   AppLedgerRoute: AppLedgerRoute,

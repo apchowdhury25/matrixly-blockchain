@@ -11,6 +11,7 @@ import { issueCredential, credentialHash } from "@/lib/credentials/issue";
 import { emptyStatusList, encodeStatusList, setBit } from "@/lib/credentials/status-list";
 import { renderDiplomaPdf, tamperOneByte } from "@/lib/documents/diploma";
 import { didDocumentHash } from "@/lib/identity/did";
+import { buildEvidence } from "@/lib/documents/evidence";
 import { getLedger, audit } from "./runtime";
 import { DEMO } from "./ids";
 import { sealSecret } from "./seal";
@@ -175,19 +176,23 @@ async function seedDemo(): Promise<void> {
     revokedAt?: string;
   }) {
     const docId = `doc_${input.ref.replaceAll("-", "_")}`;
+    const evidence = buildEvidence(input.pdf, "GENERATED").evidence;
     await sql`
-      insert into documents (id, tenant_id, issuer_id, object_name, mime, byte_length, hash_algorithm, hash, status, content_b64)
+      insert into documents (id, tenant_id, issuer_id, object_name, mime, byte_length, hash_algorithm, hash, status, content_b64, origin, inspected_kind, evidence_json)
       values (
         ${docId},
         ${DEMO.tenantId},
         ${DEMO.issuerId},
-        ${`${input.ref}.pdf`},
-        ${"application/pdf"},
+        ${evidence.objectName},
+        ${evidence.mime},
         ${input.pdf.byteLength},
         ${"sha256"},
         ${input.hash},
         ${"ISSUED"},
-        ${Buffer.from(input.pdf).toString("base64")}
+        ${Buffer.from(input.pdf).toString("base64")},
+        ${"GENERATED"},
+        ${evidence.kind},
+        ${JSON.stringify(evidence)}
       )`;
     await sql`
       insert into credentials (
@@ -275,19 +280,23 @@ async function seedDemo(): Promise<void> {
     index: 2,
   });
 
+  const tamperedEvidence = buildEvidence(tampered, "GENERATED").evidence;
   await sql`
-    insert into documents (id, tenant_id, issuer_id, object_name, mime, byte_length, hash_algorithm, hash, status, content_b64)
+    insert into documents (id, tenant_id, issuer_id, object_name, mime, byte_length, hash_algorithm, hash, status, content_b64, origin, inspected_kind, evidence_json)
     values (
       ${DEMO.tamperedDocId},
       ${DEMO.tenantId},
       ${DEMO.issuerId},
-      ${"demo-tampered.pdf"},
-      ${"application/pdf"},
+      ${tamperedEvidence.objectName},
+      ${tamperedEvidence.mime},
       ${tampered.byteLength},
       ${"sha256"},
       ${sha256Bytes(tampered).prefixed},
       ${"HASHED"},
-      ${Buffer.from(tampered).toString("base64")}
+      ${Buffer.from(tampered).toString("base64")},
+      ${"GENERATED"},
+      ${tamperedEvidence.kind},
+      ${JSON.stringify(tamperedEvidence)}
     )`;
 
   await sql`

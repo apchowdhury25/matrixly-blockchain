@@ -50,6 +50,8 @@ test("DID document hash is deterministic and changes when the key changes", () =
 test("RBAC: auditor cannot issue or rotate; admin can", () => {
   assert.equal(isRole("TENANT_ADMIN"), true);
   assert.equal(hasPermission("AUDITOR", "issue"), false);
+  assert.equal(hasPermission("AUDITOR", "ingest"), false);
+  assert.equal(hasPermission("AUDITOR", "readDocuments"), true);
   assert.equal(hasPermission("AUDITOR", "rotateKeys"), false);
   assert.equal(hasPermission("ISSUER", "issue"), true);
   assert.equal(hasPermission("ISSUER", "rotateKeys"), false);

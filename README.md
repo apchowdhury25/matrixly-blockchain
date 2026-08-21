@@ -95,7 +95,8 @@ Preview serves the built output (default Vite preview port **8081**).
 | `/verify/demo-valid-bcs` | Valid Global University BCS diploma |
 | `/login` | Issuer sign-in / sign-up |
 | `/app` | Issuer workspace |
-| `/app/issue` | Issue a new diploma (PDF → hash → VC → ledger) |
+| `/app/documents` | Ingest and inspect documents (hash only goes on-chain) |
+| `/app/issue` | Issue a new diploma or bind an ingested file |
 | `/app/credentials` | Issued credentials |
 | `/app/ledger` | Hash-chain inspector |
 | `/app/keys` | Public keys / DID (private keys never leave the server). Admins can rotate. |
@@ -132,7 +133,7 @@ src/
   lib/credentials/     VC 2.0 issuance and Bitstring Status List
   lib/verification/    Independent verification pipeline
   lib/ledger/          Hash-chain adapter + Fabric adapter (refuse-to-fake)
-  lib/documents/       Diploma PDF generation (pdf-lib)
+  lib/documents/       Diploma PDF generation, ingest, evidence packages
   lib/trust/           Runtime, seed, server functions, key sealing
   routes/              Public verifier, issuer console, auth
 chaincode/

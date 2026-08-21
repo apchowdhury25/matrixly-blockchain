@@ -26,8 +26,8 @@ function TrustModel() {
           <li>Resolve the issuer DID (did:key / Ed25519). Other methods fail closed.</li>
           <li>Confirm the issuer is registered and ACTIVE on the ledger.</li>
           <li>Verify the Data Integrity Ed25519 proof over JCS canonical JSON.</li>
-          <li>Hash supplied document bytes and compare to the bound SHA-256.</li>
-          <li>Retrieve the ledger anchor and recompute the hash chain.</li>
+          <li>Hash supplied document bytes and compare to the bound SHA-256. Filename is ignored.</li>
+          <li>Retrieve the ledger anchor and recompute the hash chain. Original bytes are not on the ledger.</li>
           <li>Check Bitstring Status List revocation bits and validity dates.</li>
         </ol>
         <h2 className="mt-10 font-display text-2xl">Identity</h2>

@@ -19,6 +19,7 @@ function Overview() {
 
   const cards = [
     { k: "Issued", v: data.stats.issued },
+    { k: "Documents", v: data.stats.documents },
     { k: "Revoked", v: data.stats.revoked },
     { k: "Verifications", v: data.stats.verifications },
   ];
@@ -31,7 +32,7 @@ function Overview() {
         Issuer DID is provisioned automatically. Issue a diploma, then open the public verifier with
         the opaque QR link.
       </p>
-      <div className="mt-8 grid gap-4 sm:grid-cols-3">
+      <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {cards.map((c) => (
           <div key={c.k} className="rounded-xl border border-rule bg-paper-raised p-5">
             <p className="text-sm text-stone">{c.k}</p>
@@ -42,6 +43,7 @@ function Overview() {
       <div className="mt-8 flex flex-wrap gap-3">
         <Link
           to="/app/issue"
+          search={{ documentId: undefined }}
           className="inline-flex h-11 items-center rounded-sm bg-pine px-5 text-sm font-medium text-pine-fg"
         >
           Issue a credential

@@ -6,6 +6,8 @@ export type InspectedFile = {
   byteLength: number;
 };
 
+const ZIP = [0x50, 0x4b, 0x03, 0x04]; // PK
+const EXE = [0x4d, 0x5a]; // MZ
 const PDF = [0x25, 0x50, 0x44, 0x46]; // %PDF
 const PNG = [0x89, 0x50, 0x4e, 0x47];
 const JPEG = [0xff, 0xd8, 0xff];
@@ -23,6 +25,9 @@ export function inspectBytes(bytes: Uint8Array): InspectedFile {
   if (bytes.byteLength === 0) throw new Error("Empty file");
   if (bytes.byteLength > MAX_UPLOAD_BYTES) {
     throw new Error(`File exceeds ${MAX_UPLOAD_BYTES} byte limit`);
+  }
+  if (startsWith(bytes, ZIP) || startsWith(bytes, EXE)) {
+    throw new Error("Archive and executable content is not allowed");
   }
   if (startsWith(bytes, PDF)) {
     return { mime: "application/pdf", kind: "pdf", byteLength: bytes.byteLength };

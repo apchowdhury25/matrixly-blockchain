@@ -130,6 +130,52 @@ func (s *DocumentRegistry) GetIssuer(ctx contractapi.TransactionContextInterface
 	return &rec, nil
 }
 
+type DocumentAnchor struct {
+	DocumentHash string `json:"documentHash"`
+	CredentialID string `json:"credentialId,omitempty"`
+	IssuerDID    string `json:"issuerDid"`
+}
+
+func (s *DocumentRegistry) RegisterDocumentAnchor(ctx contractapi.TransactionContextInterface, payload string) error {
+	var rec DocumentAnchor
+	if err := json.Unmarshal([]byte(payload), &rec); err != nil {
+		return fmt.Errorf("invalid payload: %w", err)
+	}
+	if rec.DocumentHash == "" || rec.IssuerDID == "" {
+		return fmt.Errorf("documentHash and issuerDid are required")
+	}
+	existing, err := ctx.GetStub().GetState("DOCUMENT:" + rec.DocumentHash)
+	if err != nil {
+		return err
+	}
+	if existing != nil {
+		return fmt.Errorf("document hash already anchored")
+	}
+	bytes, err := json.Marshal(rec)
+	if err != nil {
+		return err
+	}
+	if err := ctx.GetStub().PutState("DOCUMENT:"+rec.DocumentHash, bytes); err != nil {
+		return err
+	}
+	return ctx.GetStub().SetEvent("document.anchored", bytes)
+}
+
+func (s *DocumentRegistry) GetDocumentAnchor(ctx contractapi.TransactionContextInterface, documentHash string) (*DocumentAnchor, error) {
+	bytes, err := ctx.GetStub().GetState("DOCUMENT:" + documentHash)
+	if err != nil {
+		return nil, err
+	}
+	if bytes == nil {
+		return nil, fmt.Errorf("not found")
+	}
+	var rec DocumentAnchor
+	if err := json.Unmarshal(bytes, &rec); err != nil {
+		return nil, err
+	}
+	return &rec, nil
+}
+
 func (s *DocumentRegistry) RegisterCredential(ctx contractapi.TransactionContextInterface, payload string) error {
 	var rec CredentialRecord
 	if err := json.Unmarshal([]byte(payload), &rec); err != nil {

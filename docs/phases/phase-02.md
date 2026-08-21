@@ -48,4 +48,4 @@ Rotation test: a credential signed by DID₁ remains `VALID` after DID₂ become
 - A live Hyperledger Fabric network
 - Phase 3 (document ingestion / evidence packages)
 
-Phase 3 starts only after explicit approval.
+Phase 3 (document ingestion) was approved and implemented separately.

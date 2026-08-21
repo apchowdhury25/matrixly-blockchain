@@ -137,6 +137,18 @@ export class HashChainLedgerAdapter implements DistributedLedgerAdapter {
   }
 
   async registerDocumentAnchor(record: DocumentAnchorRecord): Promise<LedgerSubmitResult> {
+    const existing = await this.getDocumentAnchor(record.documentHash);
+    if (existing) {
+      const latest = await this.getLatestBlock();
+      if (!latest) throw new Error("Document anchor exists without ledger head");
+      return {
+        blockHash: latest.blockHash,
+        seq: latest.seq,
+        previousHash: latest.blockHash,
+        payloadHash: latest.blockHash,
+        timestamp: new Date().toISOString(),
+      };
+    }
     return this.commit("DOCUMENT_ANCHOR", record as unknown as Record<string, unknown>);
   }
 

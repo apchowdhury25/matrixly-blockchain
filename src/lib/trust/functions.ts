@@ -3,11 +3,11 @@ import { z } from "zod";
 import { getSql } from "@/lib/db";
 import { authMiddleware } from "@/lib/auth/middleware";
 import { inspectBytes } from "@/lib/crypto/inspect";
-import { sha256Bytes } from "@/lib/crypto/hash";
 import { decodeSecretKeyHex } from "@/lib/crypto/ed25519";
 import { credentialHash, issueCredential } from "@/lib/credentials/issue";
 import { decodeStatusList, emptyStatusList, encodeStatusList, setBit } from "@/lib/credentials/status-list";
 import { renderDiplomaPdf } from "@/lib/documents/diploma";
+import { buildEvidence, parseEvidence, type DocumentEvidence } from "@/lib/documents/evidence";
 import { verifyCredential, type VerificationResult } from "@/lib/verification/pipeline";
 import { didDocumentHash, didKeyFromMultibase, resolveDidKey } from "@/lib/identity/did";
 import { assertActiveSigningKey, createIssuerIdentity } from "@/lib/identity/keys";
@@ -375,11 +375,13 @@ export const getWorkspace = createServerFn({ method: "GET" })
       issued: number;
       revoked: number;
       verifications: number;
+      documents: number;
     }>`
       select
         (select count(*) from credentials where tenant_id = ${ws.tenantId}) as issued,
         (select count(*) from credentials where tenant_id = ${ws.tenantId} and status = 'REVOKED') as revoked,
-        (select count(*) from verification_requests) as verifications
+        (select count(*) from verification_requests) as verifications,
+        (select count(*) from documents where tenant_id = ${ws.tenantId}) as documents
     `;
     const dids = await sql<{ did: string; public_key_multibase: string; created_at: string; status: string }>`
       select did, public_key_multibase, created_at::text as created_at, coalesce(status, 'ACTIVE') as status
@@ -392,6 +394,7 @@ export const getWorkspace = createServerFn({ method: "GET" })
         issued: Number(stats[0]?.issued ?? 0),
         revoked: Number(stats[0]?.revoked ?? 0),
         verifications: Number(stats[0]?.verifications ?? 0),
+        documents: Number(stats[0]?.documents ?? 0),
       },
       dids,
     };
@@ -417,6 +420,129 @@ export const listIssuerCredentials = createServerFn({ method: "GET" })
       order by issued_at desc`;
   });
 
+type PersistedDocument = {
+  id: string;
+  hash: string;
+  evidence: DocumentEvidence;
+  deduped: boolean;
+  status: string;
+};
+
+async function persistDocument(input: {
+  tenantId: string;
+  issuerId: string;
+  userId: string;
+  bytes: Uint8Array;
+  origin: DocumentEvidence["origin"];
+  originalName?: string;
+}): Promise<PersistedDocument> {
+  const built = buildEvidence(input.bytes, input.origin);
+  const sql = await getSql();
+  const existing = await sql<{ id: string; status: string; evidence_json: string | null }>`
+    select id, status, evidence_json from documents
+    where tenant_id = ${input.tenantId} and hash = ${built.evidence.hash}
+    limit 1`;
+  if (existing[0]) {
+    return {
+      id: existing[0].id,
+      hash: built.evidence.hash,
+      evidence: parseEvidence(existing[0].evidence_json) ?? built.evidence,
+      deduped: true,
+      status: existing[0].status,
+    };
+  }
+  const id = newId("doc");
+  await sql`
+    insert into documents (
+      id, tenant_id, issuer_id, object_name, mime, byte_length, hash_algorithm, hash, status,
+      content_b64, origin, inspected_kind, evidence_json, original_name
+    ) values (
+      ${id}, ${input.tenantId}, ${input.issuerId}, ${built.evidence.objectName}, ${built.evidence.mime},
+      ${built.evidence.byteLength}, ${"sha256"}, ${built.evidence.hash}, ${"HASHED"},
+      ${Buffer.from(input.bytes).toString("base64")}, ${built.evidence.origin}, ${built.evidence.kind},
+      ${JSON.stringify(built.evidence)}, ${input.originalName ?? null}
+    )`;
+  await audit({
+    tenantId: input.tenantId,
+    actorUserId: input.userId,
+    action: "document.ingested",
+    resourceType: "document",
+    resourceId: id,
+    metadata: { hash: built.evidence.hash, origin: built.evidence.origin, mime: built.evidence.mime },
+  });
+  return { id, hash: built.evidence.hash, evidence: built.evidence, deduped: false, status: "HASHED" };
+}
+
+export const ingestDocument = createServerFn({ method: "POST" })
+  .middleware([authMiddleware])
+  .validator((raw: unknown) =>
+    z
+      .object({
+        uploadB64: z.string().min(8).max(8_000_000),
+        originalName: z.string().max(200).optional(),
+      })
+      .parse(raw),
+  )
+  .handler(async ({ context, data }) => {
+    const ws = await workspaceFor(context.userId);
+    assertPermission(ws.role, "ingest");
+    const bytes = Uint8Array.from(Buffer.from(data.uploadB64, "base64"));
+    const persisted = await persistDocument({
+      tenantId: ws.tenantId,
+      issuerId: ws.issuerId,
+      userId: context.userId,
+      bytes,
+      origin: "UPLOADED",
+      originalName: data.originalName,
+    });
+    return {
+      id: persisted.id,
+      hash: persisted.hash,
+      evidence: persisted.evidence,
+      deduped: persisted.deduped,
+      status: persisted.status,
+    };
+  });
+
+export const listDocuments = createServerFn({ method: "GET" })
+  .middleware([authMiddleware])
+  .handler(async ({ context }) => {
+    const ws = await workspaceFor(context.userId);
+    assertPermission(ws.role, "readDocuments");
+    const sql = await getSql();
+    return sql<{
+      id: string;
+      hash: string;
+      mime: string;
+      byte_length: number;
+      status: string;
+      origin: string;
+      inspected_kind: string | null;
+      original_name: string | null;
+      created_at: string;
+    }>`
+      select id, hash, mime, byte_length, status, coalesce(origin, 'GENERATED') as origin,
+             inspected_kind, original_name, created_at::text as created_at
+      from documents
+      where tenant_id = ${ws.tenantId}
+      order by created_at desc`;
+  });
+
+export const downloadIssuerDocument = createServerFn({ method: "POST" })
+  .middleware([authMiddleware])
+  .validator((raw: unknown) => z.object({ id: z.string().min(8) }).parse(raw))
+  .handler(async ({ context, data }) => {
+    const ws = await workspaceFor(context.userId);
+    assertPermission(ws.role, "readDocuments");
+    const sql = await getSql();
+    const rows = await sql<{ content_b64: string; mime: string; object_name: string }>`
+      select content_b64, mime, object_name from documents
+      where id = ${data.id} and tenant_id = ${ws.tenantId}`;
+    const doc = rows[0];
+    if (!doc) throw new Error("Document not found");
+    return doc;
+  });
+
 export const issueDegree = createServerFn({ method: "POST" })
   .middleware([authMiddleware])
   .validator((raw: unknown) =>
@@ -425,6 +551,9 @@ export const issueDegree = createServerFn({ method: "POST" })
         holderName: z.string().min(2).max(80),
         degreeName: z.string().min(2).max(120),
         idempotencyKey: z.string().min(8).max(80),
+        documentId: z.string().min(8).max(80).optional(),
+        uploadB64: z.string().max(8_000_000).optional(),
+        originalName: z.string().max(200).optional(),
       })
       .parse(raw),
   )
@@ -452,19 +581,62 @@ export const issueDegree = createServerFn({ method: "POST" })
     const index = Number(list.next_index);
     const credId = `urn:uuid:${crypto.randomUUID()}`;
     const issuedAt = new Date().toISOString();
-    const pdf = await renderDiplomaPdf({
-      university: ws.orgName,
-      holder: data.holderName,
-      degree: data.degreeName,
-      issued: new Date(issuedAt).toLocaleDateString("en-US", {
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-      }),
-      credentialId: credId,
-    });
-    inspectBytes(pdf);
-    const documentHash = sha256Bytes(pdf).prefixed;
+
+    let persisted: PersistedDocument;
+    if (data.documentId) {
+      const rows = await sql<{ id: string; hash: string; status: string; evidence_json: string | null }>`
+        select id, hash, status, evidence_json from documents
+        where id = ${data.documentId} and tenant_id = ${ws.tenantId}`;
+      const row = rows[0];
+      if (!row) throw new Error("Document not found in this tenant");
+      if (row.status === "ISSUED") throw new Error("Document is already bound to a credential");
+      persisted = {
+        id: row.id,
+        hash: row.hash,
+        evidence: parseEvidence(row.evidence_json) ?? {
+          algorithm: "sha256",
+          hash: row.hash,
+          mime: "application/pdf",
+          kind: "pdf",
+          byteLength: 0,
+          objectName: row.id,
+          origin: "UPLOADED",
+        },
+        deduped: true,
+        status: row.status,
+      };
+    } else if (data.uploadB64) {
+      const bytes = Uint8Array.from(Buffer.from(data.uploadB64, "base64"));
+      persisted = await persistDocument({
+        tenantId: ws.tenantId,
+        issuerId: ws.issuerId,
+        userId: context.userId,
+        bytes,
+        origin: "UPLOADED",
+        originalName: data.originalName,
+      });
+      if (persisted.status === "ISSUED") throw new Error("Document is already bound to a credential");
+    } else {
+      const pdf = await renderDiplomaPdf({
+        university: ws.orgName,
+        holder: data.holderName,
+        degree: data.degreeName,
+        issued: new Date(issuedAt).toLocaleDateString("en-US", {
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+        }),
+        credentialId: credId,
+      });
+      persisted = await persistDocument({
+        tenantId: ws.tenantId,
+        issuerId: ws.issuerId,
+        userId: context.userId,
+        bytes: pdf,
+        origin: "GENERATED",
+      });
+    }
+    const documentHash = persisted.hash;
     const credential = issueCredential({
       credentialId: credId,
       issuerDid: ws.issuerDid,
@@ -477,14 +649,11 @@ export const issueDegree = createServerFn({ method: "POST" })
       statusListIndex: index,
       secretKey,
     });
-    const docId = newId("doc");
+    const docId = persisted.id;
     const ref = opaqueRef();
     await sql`
-      insert into documents (id, tenant_id, issuer_id, object_name, mime, byte_length, hash_algorithm, hash, status, content_b64)
-      values (
-        ${docId}, ${ws.tenantId}, ${ws.issuerId}, ${`${ref}.pdf`}, ${"application/pdf"},
-        ${pdf.byteLength}, ${"sha256"}, ${documentHash}, ${"ISSUED"}, ${Buffer.from(pdf).toString("base64")}
-      )`;
+      update documents set status = 'ISSUED', issuer_id = ${ws.issuerId}
+      where id = ${docId} and tenant_id = ${ws.tenantId}`;
     await sql`
       insert into credentials (
         id, tenant_id, issuer_id, document_id, opaque_ref, holder_name, degree_name,
