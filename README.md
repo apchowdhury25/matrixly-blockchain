@@ -26,6 +26,20 @@ Issuer → Identity → Document → SHA-256 → VC 2.0 → Ed25519
       → DLT anchor → Holder → Verification → Status → Audit
 ```
 
+## Phases
+
+| Phase | Status | Notes |
+|---|---|---|
+| 1 Foundation | Shipped | VC 2.0, Ed25519, hash-chain, verify pipeline |
+| 2 Identity | Shipped | `did:key`, RBAC, rotation |
+| 3 Documents | Shipped | Magic-byte ingest, SHA-256 evidence, off-chain bytes |
+| 4 Holder | Shipped | Wallet, claim, VP |
+| 5 Status | Shipped | Signed Bitstring Status List + verifier policy |
+| 6 Audit | Shipped | Signed verification reports, hash-chained audit |
+| 7 Production adapters | **Specified** | Fabric Gateway, object storage, KMS — [docs/phases/phase-07.md](docs/phases/phase-07.md) |
+
+Phase 7 is **not implemented**. Until a Fabric Gateway and object bucket are attached, this product uses the hash-chain ledger and stores document bytes in the application database. The Fabric adapter still **refuses to fake** a transaction.
+
 ## Prerequisites
 
 - **Node.js 22** (LTS)

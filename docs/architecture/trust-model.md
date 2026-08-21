@@ -16,3 +16,5 @@ Verifier determination of authenticity:
 12. A signed VerificationReport is issued; its hash is ledger-anchored. Holder PII is not in the report.
 
 A central `verified = true` column is never the source of truth.
+
+Production cutover (Fabric Gateway, object storage, KMS) is specified in [Phase 7](../phases/phase-07.md) and is **not implemented**. This runtime’s ledger is the hash-chain adapter.

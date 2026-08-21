@@ -21,4 +21,4 @@ Completed 21 August 2026.
 
 - Third-party verifier organizations with their own keys
 - Tamper-evident export to SIEM
-- Phase 7 (production Fabric network, object storage)
+- Phase 7 (production Fabric network, object storage) — specified in [phase-07.md](phase-07.md); not implemented

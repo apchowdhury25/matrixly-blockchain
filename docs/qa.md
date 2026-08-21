@@ -70,6 +70,17 @@ Also confirm:
 - [ ] Tamper the playground; a new report is `INVALID` and still signed
 - [ ] Issuer **Audit**: chain intact, event hashes present
 
+## Phase 7 — Production adapters (specified only)
+
+Not implemented. Do not QA Fabric or S3 until the phase is built.
+
+When it is built:
+
+- [ ] `LEDGER_ADAPTER=fabric` with no Gateway fails closed (no `VALID` from a fake submit)
+- [ ] Ledger page names **FabricLedgerAdapter** or **HashChainLedgerAdapter** accurately
+- [ ] Bound-file verify still fails on a one-byte mutation after bytes move to object storage
+- [ ] World state contains hashes only — no PDF bytes
+
 ## Out of scope until a later phase
 
 - S3 / IPFS object storage
