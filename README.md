@@ -111,6 +111,20 @@ The playground covers four independent failure modes. Each check can fail on its
 - **Revoked** — Bitstring Status List bit is set
 - **Expired** — `validUntil` is in the past
 
+## QA
+
+Full checklist: [docs/qa.md](docs/qa.md).
+
+**Documents (Phase 3)** — sign in, open `/app/documents`:
+
+1. Upload a real PDF → status `HASHED`, SHA-256 of the bytes is shown
+2. Upload the same file again → one row, same hash (dedup)
+3. Rename a PDF to `.exe` and upload → **accepted** (magic bytes, not the name)
+4. Rename an `.exe` or ZIP to `.pdf` and upload → **rejected**
+5. Issue from the hashed document → public verifier `VALID` with the bound file; a one-byte-different file is `INVALID`
+
+Do not use “upload a `.exe` renamed to `.pdf`” as a positive test. That file is an executable and must fail closed.
+
 ## Scripts
 
 | Command | Purpose |

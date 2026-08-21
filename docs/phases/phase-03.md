@@ -23,6 +23,15 @@ Completed 21 August 2026.
 - Tampered bytes fail verification
 - Document anchor idempotency
 
+## QA
+
+See [docs/qa.md](../qa.md) for the full checklist. Phase 3 in short:
+
+- Filename is **not** evidence. A PDF renamed `.exe` must ingest. An executable renamed `.pdf` must be rejected.
+- Same bytes in the same tenant must dedupe to one hash.
+- Bound original → `VALID`. One-byte change → `INVALID`.
+- Ledger payloads contain the hash, never the file.
+
 ## Not in this phase
 
 - S3 / IPFS object storage adapter
