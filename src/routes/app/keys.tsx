@@ -50,7 +50,23 @@ function KeysPage() {
       <p className="mt-2 max-w-2xl text-ink-soft">
         Public keys only. Secret keys are sealed by {data?.kms ?? "the configured KMS"} and never returned by the API. A did:key
         rotation issues a new identifier; historical credentials still verify against the prior DID.
+        Institutions also publish a <span className="font-mono text-sm">did:web</span> document at{" "}
+        <span className="font-mono text-sm">/issuers/{"{slug}"}/did.json</span>. Resolution is HTTPS
+        and fail-closed — other methods stay refused.
       </p>
+      {data?.webDid ? (
+        <div className="mt-6 rounded-xl border border-rule bg-paper-raised p-5">
+          <p className="font-mono text-xs tracking-[0.16em] text-stone uppercase">did:web</p>
+          <p className="mt-2 break-all font-mono text-xs">{data.webDid}</p>
+          {data.webDocumentPath ? (
+            <p className="mt-3 text-sm">
+              <a href={data.webDocumentPath} className="underline underline-offset-4">
+                Public DID document
+              </a>
+            </p>
+          ) : null}
+        </div>
+      ) : null}
       {error ? <p className="mt-4 text-invalid">{error}</p> : null}
       {notice ? <p className="mt-4 text-valid">{notice}</p> : null}
       {data?.permissions.rotateKeys ? (

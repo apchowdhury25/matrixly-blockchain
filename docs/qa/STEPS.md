@@ -487,6 +487,34 @@ Phase 1 four outcomes and Phase 8 401-never-VALID still hold.
 
 ---
 
+## Phase 10 — did:web
+
+### 10.1 Public DID document
+
+Open `/did-web/global-university` (or `/api/v1/did-web/global-university`).
+
+**PASS if** JSON `id` is `did:web:matrixly.example.test:issuers:global-university`, `verificationMethod[0].type` is `Multikey`, and `alsoKnownAs` contains a `did:key:`.
+
+### 10.2 Playground — did:web issuer
+
+Home → **did:web issuer**.
+
+**PASS if** status is `VALID`, issuer DID starts with `did:web:`, signature PASS.
+
+### 10.3 API
+
+`POST /api/v1/verify` with demo key and `{ "ref": "demo-valid-didweb" }` → `VALID`, `issuerDid` is did:web.
+
+### 10.4 Fail closed
+
+Automated: private hosts refused; document id mismatch refused; HTTPS 404 is not VALID.
+
+### 10.5 Regression
+
+Original / tamper / revoked / expired still hold. `did:key` credentials still VALID.
+
+---
+
 ## Traps (do not mis-score)
 
 | Action | Wrong reading | Correct |
@@ -500,4 +528,5 @@ Phase 1 four outcomes and Phase 8 401-never-VALID still hold.
 | Verify API 401 | “API is broken” | No key must never return VALID |
 | Compliance page | “We are SOC 2 certified” | Matrix is engineering controls; REG-01 is not-claimed |
 | Webhook FAILED | “Phase 9 is broken” | Unreachable HTTPS is FAILED; the signature must still exist |
+| did:web 404 | “Skip the DID check” | Fetch failure is INVALID, never VALID |
 

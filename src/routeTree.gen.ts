@@ -26,6 +26,7 @@ import { Route as AppKeysRouteImport } from './routes/app/keys'
 import { Route as AppLedgerRouteImport } from './routes/app/ledger'
 import { Route as AppStatusRouteImport } from './routes/app/status'
 import { Route as AppWebhooksRouteImport } from './routes/app/webhooks'
+import { Route as DidWebSlugRouteImport } from './routes/did-web.$slug'
 import { Route as DidMultibaseRouteImport } from './routes/did.$multibase'
 import { Route as EvidenceRefRouteImport } from './routes/evidence.$ref'
 import { Route as PresentRefRouteImport } from './routes/present.$ref'
@@ -38,6 +39,7 @@ import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as ApiV1OpenapiDotjsonRouteImport } from './routes/api/v1/openapi[.]json'
 import { Route as ApiV1VerifyRouteImport } from './routes/api/v1/verify'
 import { Route as WalletClaimTokenRouteImport } from './routes/wallet/claim.$token'
+import { Route as ApiV1DidWebSlugRouteImport } from './routes/api/v1/did-web.$slug'
 import { Route as ApiV1EvidenceRefRouteImport } from './routes/api/v1/evidence.$ref'
 import { Route as ApiV1ReportsRefRouteImport } from './routes/api/v1/reports.$ref'
 
@@ -126,6 +128,11 @@ const AppWebhooksRoute = AppWebhooksRouteImport.update({
   path: '/webhooks',
   getParentRoute: () => AppRouteRoute,
 } as any)
+const DidWebSlugRoute = DidWebSlugRouteImport.update({
+  id: '/did-web/$slug',
+  path: '/did-web/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DidMultibaseRoute = DidMultibaseRouteImport.update({
   id: '/did/$multibase',
   path: '/did/$multibase',
@@ -186,6 +193,11 @@ const WalletClaimTokenRoute = WalletClaimTokenRouteImport.update({
   path: '/claim/$token',
   getParentRoute: () => WalletRouteRoute,
 } as any)
+const ApiV1DidWebSlugRoute = ApiV1DidWebSlugRouteImport.update({
+  id: '/api/v1/did-web/$slug',
+  path: '/api/v1/did-web/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiV1EvidenceRefRoute = ApiV1EvidenceRefRouteImport.update({
   id: '/api/v1/evidence/$ref',
   path: '/api/v1/evidence/$ref',
@@ -214,6 +226,7 @@ export interface FileRoutesByFullPath {
   '/app/ledger': typeof AppLedgerRoute
   '/app/status': typeof AppStatusRoute
   '/app/webhooks': typeof AppWebhooksRoute
+  '/did-web/$slug': typeof DidWebSlugRoute
   '/did/$multibase': typeof DidMultibaseRoute
   '/evidence/$ref': typeof EvidenceRefRoute
   '/present/$ref': typeof PresentRefRoute
@@ -227,6 +240,7 @@ export interface FileRoutesByFullPath {
   '/api/v1/openapi.json': typeof ApiV1OpenapiDotjsonRoute
   '/api/v1/verify': typeof ApiV1VerifyRoute
   '/wallet/claim/$token': typeof WalletClaimTokenRoute
+  '/api/v1/did-web/$slug': typeof ApiV1DidWebSlugRoute
   '/api/v1/evidence/$ref': typeof ApiV1EvidenceRefRoute
   '/api/v1/reports/$ref': typeof ApiV1ReportsRefRoute
 }
@@ -245,6 +259,7 @@ export interface FileRoutesByTo {
   '/app/ledger': typeof AppLedgerRoute
   '/app/status': typeof AppStatusRoute
   '/app/webhooks': typeof AppWebhooksRoute
+  '/did-web/$slug': typeof DidWebSlugRoute
   '/did/$multibase': typeof DidMultibaseRoute
   '/evidence/$ref': typeof EvidenceRefRoute
   '/present/$ref': typeof PresentRefRoute
@@ -258,6 +273,7 @@ export interface FileRoutesByTo {
   '/api/v1/openapi.json': typeof ApiV1OpenapiDotjsonRoute
   '/api/v1/verify': typeof ApiV1VerifyRoute
   '/wallet/claim/$token': typeof WalletClaimTokenRoute
+  '/api/v1/did-web/$slug': typeof ApiV1DidWebSlugRoute
   '/api/v1/evidence/$ref': typeof ApiV1EvidenceRefRoute
   '/api/v1/reports/$ref': typeof ApiV1ReportsRefRoute
 }
@@ -279,6 +295,7 @@ export interface FileRoutesById {
   '/app/ledger': typeof AppLedgerRoute
   '/app/status': typeof AppStatusRoute
   '/app/webhooks': typeof AppWebhooksRoute
+  '/did-web/$slug': typeof DidWebSlugRoute
   '/did/$multibase': typeof DidMultibaseRoute
   '/evidence/$ref': typeof EvidenceRefRoute
   '/present/$ref': typeof PresentRefRoute
@@ -292,6 +309,7 @@ export interface FileRoutesById {
   '/api/v1/openapi.json': typeof ApiV1OpenapiDotjsonRoute
   '/api/v1/verify': typeof ApiV1VerifyRoute
   '/wallet/claim/$token': typeof WalletClaimTokenRoute
+  '/api/v1/did-web/$slug': typeof ApiV1DidWebSlugRoute
   '/api/v1/evidence/$ref': typeof ApiV1EvidenceRefRoute
   '/api/v1/reports/$ref': typeof ApiV1ReportsRefRoute
 }
@@ -314,6 +332,7 @@ export interface FileRouteTypes {
     | '/app/ledger'
     | '/app/status'
     | '/app/webhooks'
+    | '/did-web/$slug'
     | '/did/$multibase'
     | '/evidence/$ref'
     | '/present/$ref'
@@ -327,6 +346,7 @@ export interface FileRouteTypes {
     | '/api/v1/openapi.json'
     | '/api/v1/verify'
     | '/wallet/claim/$token'
+    | '/api/v1/did-web/$slug'
     | '/api/v1/evidence/$ref'
     | '/api/v1/reports/$ref'
   fileRoutesByTo: FileRoutesByTo
@@ -345,6 +365,7 @@ export interface FileRouteTypes {
     | '/app/ledger'
     | '/app/status'
     | '/app/webhooks'
+    | '/did-web/$slug'
     | '/did/$multibase'
     | '/evidence/$ref'
     | '/present/$ref'
@@ -358,6 +379,7 @@ export interface FileRouteTypes {
     | '/api/v1/openapi.json'
     | '/api/v1/verify'
     | '/wallet/claim/$token'
+    | '/api/v1/did-web/$slug'
     | '/api/v1/evidence/$ref'
     | '/api/v1/reports/$ref'
   id:
@@ -378,6 +400,7 @@ export interface FileRouteTypes {
     | '/app/ledger'
     | '/app/status'
     | '/app/webhooks'
+    | '/did-web/$slug'
     | '/did/$multibase'
     | '/evidence/$ref'
     | '/present/$ref'
@@ -391,6 +414,7 @@ export interface FileRouteTypes {
     | '/api/v1/openapi.json'
     | '/api/v1/verify'
     | '/wallet/claim/$token'
+    | '/api/v1/did-web/$slug'
     | '/api/v1/evidence/$ref'
     | '/api/v1/reports/$ref'
   fileRoutesById: FileRoutesById
@@ -403,6 +427,7 @@ export interface RootRouteChildren {
   DevelopersRoute: typeof DevelopersRoute
   LoginRoute: typeof LoginRoute
   TrustRoute: typeof TrustRoute
+  DidWebSlugRoute: typeof DidWebSlugRoute
   DidMultibaseRoute: typeof DidMultibaseRoute
   EvidenceRefRoute: typeof EvidenceRefRoute
   PresentRefRoute: typeof PresentRefRoute
@@ -413,6 +438,7 @@ export interface RootRouteChildren {
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ApiV1OpenapiDotjsonRoute: typeof ApiV1OpenapiDotjsonRoute
   ApiV1VerifyRoute: typeof ApiV1VerifyRoute
+  ApiV1DidWebSlugRoute: typeof ApiV1DidWebSlugRoute
   ApiV1EvidenceRefRoute: typeof ApiV1EvidenceRefRoute
   ApiV1ReportsRefRoute: typeof ApiV1ReportsRefRoute
 }
@@ -538,6 +564,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppWebhooksRouteImport
       parentRoute: typeof AppRouteRoute
     }
+    '/did-web/$slug': {
+      id: '/did-web/$slug'
+      path: '/did-web/$slug'
+      fullPath: '/did-web/$slug'
+      preLoaderRoute: typeof DidWebSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/did/$multibase': {
       id: '/did/$multibase'
       path: '/did/$multibase'
@@ -622,6 +655,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WalletClaimTokenRouteImport
       parentRoute: typeof WalletRouteRoute
     }
+    '/api/v1/did-web/$slug': {
+      id: '/api/v1/did-web/$slug'
+      path: '/api/v1/did-web/$slug'
+      fullPath: '/api/v1/did-web/$slug'
+      preLoaderRoute: typeof ApiV1DidWebSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/v1/evidence/$ref': {
       id: '/api/v1/evidence/$ref'
       path: '/api/v1/evidence/$ref'
@@ -691,6 +731,7 @@ const rootRouteChildren: RootRouteChildren = {
   DevelopersRoute: DevelopersRoute,
   LoginRoute: LoginRoute,
   TrustRoute: TrustRoute,
+  DidWebSlugRoute: DidWebSlugRoute,
   DidMultibaseRoute: DidMultibaseRoute,
   EvidenceRefRoute: EvidenceRefRoute,
   PresentRefRoute: PresentRefRoute,
@@ -701,6 +742,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiV1OpenapiDotjsonRoute: ApiV1OpenapiDotjsonRoute,
   ApiV1VerifyRoute: ApiV1VerifyRoute,
+  ApiV1DidWebSlugRoute: ApiV1DidWebSlugRoute,
   ApiV1EvidenceRefRoute: ApiV1EvidenceRefRoute,
   ApiV1ReportsRefRoute: ApiV1ReportsRefRoute,
 }

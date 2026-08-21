@@ -3,7 +3,7 @@ import { hashesEqual, sha256Bytes } from "../crypto/hash";
 import { validateCredentialStructure } from "../credentials/issue";
 import { decodeStatusList, getBit } from "../credentials/status-list";
 import { verifyStatusListCredential } from "../credentials/status-list-credential";
-import { resolveDidKey } from "../identity/did";
+import { resolveDid, type ResolveDidOptions } from "../identity/resolve";
 import type { DistributedLedgerAdapter } from "../ledger/adapter";
 import { applyPolicyReasons, DEFAULT_POLICY, type VerifierPolicy } from "./policy";
 
@@ -15,6 +15,7 @@ export type VerificationInput = {
   encodedStatusList?: string;
   statusListCredential?: Record<string, unknown>;
   policy?: VerifierPolicy;
+  resolve?: ResolveDidOptions;
 };
 
 export type VerificationResult = {
@@ -102,7 +103,7 @@ export async function verifyCredential(
     return result;
   }
 
-  const resolved = resolveDidKey(issuerDid);
+  const resolved = await resolveDid(issuerDid, input.resolve);
   if (!resolved.ok) {
     reasons.push(`Issuer DID could not be resolved (${issuerDid}): ${resolved.reason}`);
     return result;
@@ -182,7 +183,11 @@ export async function verifyCredential(
   let revoked = ledgerCred.status === "REVOKED";
   if (statusEntry) {
     if (input.statusListCredential) {
-      const slc = verifyStatusListCredential(input.statusListCredential, issuerDid);
+      const slc = await verifyStatusListCredential(
+        input.statusListCredential,
+        issuerDid,
+        input.resolve,
+      );
       result.statusListValid = slc.ok;
       if (!slc.ok) {
         reasons.push(slc.reason ?? "Status list credential failed verification");

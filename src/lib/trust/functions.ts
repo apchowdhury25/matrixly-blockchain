@@ -19,6 +19,8 @@ import { generateWebhookSecret, assertWebhookUrl } from "@/lib/webhooks/hmac";
 import { buildEvidencePack, assertEvidencePackMinimized } from "@/lib/evidence/pack";
 import { COMPLIANCE_MATRIX } from "@/lib/compliance/matrix";
 import { didDocumentHash, didKeyFromMultibase, resolveDidKey } from "@/lib/identity/did";
+import { didWebForTenant } from "@/lib/identity/did-web";
+import { resolveDid } from "@/lib/identity/resolve";
 import { assertActiveSigningKey, createHolderIdentity, createIssuerIdentity } from "@/lib/identity/keys";
 import { assertPermission, permissionMap } from "@/lib/identity/roles";
 import { AUDIT_GENESIS, verifyAuditSequence } from "@/lib/audit/chain";
@@ -63,6 +65,7 @@ export const getDemoCatalog = createServerFn({ method: "GET" }).handler(async ()
     valid: DEMO.validRef,
     revoked: DEMO.revokedRef,
     expired: DEMO.expiredRef,
+    didWeb: DEMO.webRef,
     cases: [
       {
         ref: DEMO.validRef,
@@ -81,6 +84,12 @@ export const getDemoCatalog = createServerFn({ method: "GET" }).handler(async ()
         label: "Expired diploma",
         holder: "Sam Okonkwo",
         expected: "EXPIRED",
+      },
+      {
+        ref: DEMO.webRef,
+        label: "did:web issuer",
+        holder: "Alex Rivera",
+        expected: "VALID",
       },
     ],
   };
@@ -938,9 +947,14 @@ export const listKeys = createServerFn({ method: "GET" })
       left join key_secrets k on k.did = d.did and k.tenant_id = d.tenant_id
       where d.tenant_id = ${ws.tenantId}
       order by d.created_at desc`;
+    const tenant = await sql<{ slug: string }>`select slug from tenants where id = ${ws.tenantId} limit 1`;
+    const slug = tenant[0]?.slug ?? ws.tenantId;
+    const webDid = didWebForTenant(slug);
     return {
       role: ws.role,
       issuerDid: ws.issuerDid,
+      webDid,
+      webDocumentPath: `/did-web/${slug}`,
       permissions: permissionMap(ws.role),
       kms: runtimeAdapterStatus().kmsName,
       keys,
@@ -1023,7 +1037,7 @@ export const resolveDidDocument = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) => {
     const did = data.did ?? (data.multibase ? didKeyFromMultibase(data.multibase) : "");
-    const resolved = resolveDidKey(did);
+    const resolved = await resolveDid(did);
     if (!resolved.ok) {
       return { ok: false as const, reason: resolved.reason, did };
     }
@@ -1034,7 +1048,7 @@ export const resolveDidDocument = createServerFn({ method: "POST" })
       public_key_multibase: string;
     }>`
       select coalesce(status, 'ACTIVE') as status, document_hash, public_key_multibase
-      from dids where did = ${resolved.did} limit 1`;
+      from dids where did = ${resolved.did} or public_key_multibase = ${resolved.publicKeyMultibase} limit 1`;
     const registered = rows[0];
     return {
       ok: true as const,
@@ -1577,4 +1591,15 @@ export const getComplianceMatrix = createServerFn({ method: "GET" }).handler(asy
     "This is an engineering control matrix, not a SOC 2, ISO 27001, eIDAS, or GDPR certification.",
   controls: COMPLIANCE_MATRIX,
 }));
+
+export const getDidWebDocument = createServerFn({ method: "GET" })
+  .validator((raw: unknown) => z.object({ slug: z.string().min(2).max(80) }).parse(raw ?? { slug: "global-university" }))
+  .handler(async ({ data }) => {
+    await ensureDemoSeed();
+    const did = didWebForTenant(data.slug);
+    const resolved = await resolveDid(did);
+    if (!resolved.ok) throw new Error(resolved.reason);
+    const slug = data.slug;
+    return { did, slug, method: resolved.method, document: resolved.document };
+  });
 

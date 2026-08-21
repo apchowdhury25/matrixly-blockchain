@@ -94,6 +94,13 @@ export function DemoPlayground({
           >
             Expired
           </Button>
+          <Button
+            size="sm"
+            variant={active.ref === catalog?.didWeb ? "primary" : "secondary"}
+            onClick={() => setActive({ ref: catalog?.didWeb ?? "demo-valid-didweb", mode: "bound" })}
+          >
+            did:web issuer
+          </Button>
         </div>
         {error ? <p className="text-sm text-invalid">{error}</p> : null}
         {pending && !result ? (

@@ -1,5 +1,5 @@
 import { signDocument, verificationMethodId, verifyDocumentProof } from "../crypto/ed25519";
-import { resolveDidKey } from "../identity/did";
+import { resolveDid } from "../identity/resolve";
 import type { DistributedLedgerAdapter } from "../ledger/adapter";
 import { VC_CONTEXT_V2, type IssuedCredential } from "./types";
 import { verifyCredential, type VerificationResult } from "../verification/pipeline";
@@ -106,7 +106,7 @@ export async function verifyPresentation(
   }
   base.holderDid = holderDid;
 
-  const resolved = resolveDidKey(holderDid);
+  const resolved = await resolveDid(holderDid);
   if (!resolved.ok) {
     reasons.push(`Holder DID could not be resolved: ${resolved.reason}`);
     return base;

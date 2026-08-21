@@ -20,4 +20,8 @@ export const DEMO = {
   apiKeyId: "key_demo_verifier",
   tamperedDocId: "doc_tampered_demo",
   statusListId: "https://trust.matrixly.ai/credentials/status/demo",
+  webHost: "matrixly.example.test",
+  webSlug: "global-university",
+  webDid: "did:web:matrixly.example.test:issuers:global-university",
+  webRef: "demo-valid-didweb",
 } as const;

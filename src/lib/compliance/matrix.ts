@@ -32,6 +32,20 @@ export const COMPLIANCE_MATRIX: ComplianceControl[] = [
     evidence: "Keys page; rotated DID remains verifiable",
   },
   {
+    id: "ID-03",
+    area: "Identity",
+    control: "did:web documents are fetched over HTTPS; private/link-local hosts fail closed",
+    status: "implemented",
+    evidence: "/issuers/{slug}/did.json ; did:ion and others remain unsupported",
+  },
+  {
+    id: "ID-04",
+    area: "Identity",
+    control: "Universal DID resolver / did:ion / did:pkh",
+    status: "not-claimed",
+    evidence: "Unsupported methods return a resolution error, never VALID",
+  },
+  {
     id: "ID-02",
     area: "Identity",
     control: "Signing secrets sealed (AES-256-GCM / KMS port); APIs never return them",

@@ -9,23 +9,39 @@ import { sha256Utf8 } from "../crypto/hash";
 import { canonicalize } from "../crypto/jcs";
 
 export const DID_KEY_METHOD = "key" as const;
+export type DidMethod = "key" | "web";
 
-export type DidDocument = ReturnType<typeof didDocument>;
+export type DidJson = {
+  "@context": string[];
+  id: string;
+  controller: string;
+  alsoKnownAs?: string[];
+  verificationMethod: Array<{
+    id: string;
+    type: string;
+    controller: string;
+    publicKeyMultibase: string;
+  }>;
+  authentication: string[];
+  assertionMethod: string[];
+};
+
+export type DidDocument = DidJson;
 
 export type DidResolution =
   | {
       ok: true;
-      method: typeof DID_KEY_METHOD;
+      method: DidMethod;
       did: string;
       publicKey: Uint8Array;
       publicKeyMultibase: string;
       verificationMethod: string;
-      document: DidDocument;
+      document: DidJson;
     }
   | { ok: false; reason: string };
 
 /** SHA-256 of the JCS-canonical DID document. Anchored on the ledger; document itself stays off-chain. */
-export function didDocumentHash(document: DidDocument): string {
+export function didDocumentHash(document: Record<string, unknown>): string {
   return sha256Utf8(canonicalize(document)).prefixed;
 }
 

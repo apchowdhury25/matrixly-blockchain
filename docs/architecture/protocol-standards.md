@@ -32,8 +32,9 @@ way webhooks do today. That would still not make a diploma a Matrix event.
 | [Data Integrity EdDSA Cryptosuites](https://www.w3.org/TR/vc-di-eddsa/) (`eddsa-jcs-2022`) | Recommendation | Implemented |
 | [RFC 8785 JCS](https://www.rfc-editor.org/rfc/rfc8785) | IETF | Implemented (canonicalization before sign/verify) |
 | [Bitstring Status List 1.0](https://www.w3.org/TR/vc-bitstring-status-list/) | Recommendation (15 May 2025) | Implemented as a **signed VC**, not a DB flag |
-| [DID Core 1.0](https://www.w3.org/TR/did-core/) | Recommendation (19 Jul 2022) | Partial: `did:key` only |
+| [DID Core 1.0](https://www.w3.org/TR/did-core/) | Recommendation (19 Jul 2022) | Partial: `did:key` + `did:web` |
 | [did:key](https://w3c-ccg.github.io/did-key-spec/) | CCG draft, **not** a W3C REC | Implemented (Ed25519). Long-lived use wants HSM |
+| [did:web](https://w3c-ccg.github.io/did-method-web/) | CCG draft, **not** a W3C REC | Implemented (HTTPS documents; private hosts fail closed) |
 | SHA-256 of exact bytes | FIPS 180-4 / industry | Implemented; filename is not evidence |
 | HMAC-SHA256 webhooks | IETF HMAC | Implemented (`matrixly-signature`) |
 | Hyperledger Fabric | Linux Foundation | Adapter **refuses** without a real Gateway |
@@ -54,7 +55,7 @@ These are the ones banks, EUDI wallets, and governments actually ask for next.
 | IETF SD-JWT VC | IETF (draft) | Selective disclosure JWT credentials | We sign the whole JSON VC; no SD |
 | ISO/IEC 18013-5 mdoc / mDL | ISO | CBOR + COSE mobile documents | Different encoding entirely |
 | [DID Core 1.1](https://www.w3.org/TR/did-1.1/) | W3C CR (Mar 2026) | Successor to DID 1.0 | Pin 1.0 until 1.1 is REC |
-| [did:web](https://w3c-ccg.github.io/did-method-web/) | CCG | DID hosted at `https://{domain}/.well-known/did.json` | Explicitly deferred (ADR-002) |
+| [did:web](https://w3c-ccg.github.io/did-method-web/) | CCG | DID hosted at `https://{domain}/.well-known/did.json` | **Implemented** (Phase 10). Still not a W3C REC |
 | DID Resolution 1.0 | W3C WD | Universal resolver | We only expand `did:key` |
 | DIDComm / Aries RFC 0809 | DIF / Hyperledger | Wallet-to-wallet messaging of VCs | Out of scope |
 | eIDAS 2 / EUDI ARF | EU | Legal + technical wallet framework | Uses OID4VP + SD-JWT/mdoc; we do not claim it |

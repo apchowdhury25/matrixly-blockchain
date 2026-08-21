@@ -23,7 +23,7 @@ function TrustModel() {
         <h2 className="mt-10 font-display text-2xl">Verification pipeline</h2>
         <ol className="mt-4 list-decimal space-y-2 pl-5 text-ink-soft">
           <li>Parse and validate W3C VC 2.0 structure.</li>
-          <li>Resolve the issuer DID (did:key / Ed25519). Other methods fail closed.</li>
+          <li>Resolve the issuer DID (`did:key` locally, `did:web` over HTTPS). Other methods fail closed.</li>
           <li>Confirm the issuer is registered and ACTIVE on the ledger.</li>
           <li>Verify the Data Integrity Ed25519 proof over JCS canonical JSON.</li>
           <li>Hash supplied document bytes and compare to the bound SHA-256. Filename is ignored.</li>

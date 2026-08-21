@@ -13,6 +13,11 @@ import { emptyStatusList, encodeStatusList, setBit } from "@/lib/credentials/sta
 import { issueStatusListCredential } from "@/lib/credentials/status-list-credential";
 import { renderDiplomaPdf, tamperOneByte } from "@/lib/documents/diploma";
 import { didDocumentHash } from "@/lib/identity/did";
+import {
+  buildDidWebDocument,
+  didWebForTenant,
+  verificationMethodForDid,
+} from "@/lib/identity/did-web";
 import { buildEvidence } from "@/lib/documents/evidence";
 import { getLedger, audit } from "./runtime";
 import { DEMO } from "./ids";
@@ -29,6 +34,7 @@ export async function ensureDemoSeed(): Promise<void> {
       await ensureDemoDelivery();
       await ensureDemoStatusList();
       await ensureDemoApiKey();
+      await ensureDemoDidWeb();
       return;
     }
     const tenant = await sql<{ id: string }>`select id from tenants where id = ${DEMO.tenantId}`;
@@ -51,6 +57,7 @@ export async function ensureDemoSeed(): Promise<void> {
     }
     await seedDemo();
     await ensureDemoApiKey();
+    await ensureDemoDidWeb();
   })().catch((err) => {
     globalSeed.__matrixlySeed__ = undefined;
     throw err;
@@ -389,4 +396,85 @@ async function ensureDemoApiKey(): Promise<void> {
       ${"ACTIVE"}
     )`;
 }
+
+async function ensureDemoDidWeb(): Promise<void> {
+  const sql = await getSql();
+  const existing = await sql<{ id: string }>`select id from credentials where opaque_ref = ${DEMO.webRef}`;
+  if (existing[0]) return;
+  const secrets = await sql<{ secret_key_hex: string; did: string; public_key_multibase: string }>`
+    select secret_key_hex, did, public_key_multibase from key_secrets
+    where tenant_id = ${DEMO.tenantId} and status = ${"ACTIVE"} limit 1`;
+  const secret = secrets[0];
+  if (!secret) return;
+  const docs = await sql<{ id: string; hash: string; content_b64: string }>`
+    select d.id, d.hash, d.content_b64 from documents d
+    join credentials c on c.document_id = d.id
+    where c.opaque_ref = ${DEMO.validRef} limit 1`;
+  const doc = docs[0];
+  if (!doc) return;
+  const webDid = didWebForTenant(DEMO.webSlug, DEMO.webHost);
+  const document = buildDidWebDocument({
+    did: webDid,
+    publicKeyMultibase: secret.public_key_multibase,
+    alsoKnownAs: [secret.did],
+  });
+  const documentHash = didDocumentHash(document);
+  const secretKey = decodeSecretKeyHex(openSecret(secret.secret_key_hex));
+  const issued = "2026-05-16T00:00:00.000Z";
+  const cred = issueCredential({
+    credentialId: "urn:uuid:demo-valid-didweb",
+    issuerDid: webDid,
+    issuerName: "Office of the Registrar, Global University",
+    subjectName: "Alex Rivera",
+    degreeName: "Bachelor of Computer Science",
+    validFrom: issued,
+    documentHash: doc.hash,
+    statusListCredentialId: DEMO.statusListId,
+    statusListIndex: 0,
+    secretKey,
+    verificationMethod: verificationMethodForDid(webDid, secret.public_key_multibase),
+  });
+  const ledger = await getLedger();
+  await ledger.registerDid({
+    did: webDid,
+    documentHash,
+    publicKeyMultibase: secret.public_key_multibase,
+    status: "ACTIVE",
+  });
+  await ledger.registerIssuer({
+    issuerId: webDid,
+    issuerDid: webDid,
+    name: "Office of the Registrar, Global University",
+    status: "ACTIVE",
+    publicKeyMultibase: secret.public_key_multibase,
+  });
+  await sql`
+    insert into credentials (
+      id, tenant_id, issuer_id, document_id, opaque_ref, holder_name, degree_name,
+      credential_json, credential_hash, document_hash, status, valid_from, valid_until,
+      status_list_index, idempotency_key, issued_at
+    ) values (
+      ${cred.id}, ${DEMO.tenantId}, ${DEMO.issuerId}, ${doc.id}, ${DEMO.webRef},
+      ${"Alex Rivera"}, ${"Bachelor of Computer Science"},
+      ${JSON.stringify(cred)}, ${credentialHash(cred)}, ${doc.hash}, ${"ACTIVE"},
+      ${issued}, ${null}, ${0}, ${`seed:${DEMO.webRef}`}, ${issued}
+    )
+    on conflict (id) do nothing`;
+  await ledger.registerDocumentAnchor({
+    documentHash: doc.hash,
+    credentialId: cred.id,
+    issuerDid: webDid,
+  });
+  await ledger.registerCredential({
+    credentialId: cred.id,
+    credentialHash: credentialHash(cred),
+    documentHash: doc.hash,
+    issuerId: webDid,
+    issuerDid: webDid,
+    status: "ACTIVE",
+    issuedAt: issued,
+    version: 1,
+  });
+}
+
 

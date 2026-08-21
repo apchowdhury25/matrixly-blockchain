@@ -168,6 +168,25 @@ matrixly-event-id: wh_…
           </Link>
           . That page is an engineering list, not a certification.
         </p>
+
+        <h2 className="mt-10 font-display text-2xl">did:web</h2>
+        <p className="mt-3 leading-relaxed text-ink-soft">
+          Issuers publish a DID document at{" "}
+          <a href="/did-web/global-university" className="underline underline-offset-4">
+            /did-web/global-university
+          </a>{" "}
+          (
+          <a href="/api/v1/did-web/global-university" className="underline underline-offset-4">
+            application/did+json
+          </a>
+          ). The identifier is{" "}
+          <span className="font-mono text-xs">did:web:matrixly.example.test:issuers:global-university</span>
+          . Fetch is HTTPS only; loopback and link-local hosts fail closed.{" "}
+          <span className="font-mono text-sm">did:ion</span> and unknown methods still return a
+          resolution error — never VALID. Verify{" "}
+          <span className="font-mono text-sm">demo-valid-didweb</span> to see a credential whose
+          issuer is the hosted DID.
+        </p>
       </article>
     </div>
   );

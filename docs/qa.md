@@ -25,6 +25,7 @@ Quick index (full procedures in STEPS.md):
 | 7 Adapters | Ledger page + `npm run test:trust` | Hash-chain in preview; Fabric/S3/KMS refuse if unconfigured |
 | 8 Verifier API | Developers + API keys | 401 without key; VALID only with a live key |
 | 9 Webhooks / evidence | Compliance + Webhooks + evidence pack | HMAC events; pack has no PII; matrix is not a certificate |
+| 10 did:web | Keys + `/did-web/global-university` + playground | Hosted DID; fetch fail-closed; `demo-valid-didweb` is VALID |
 
 ## Out of scope
 

@@ -18,6 +18,7 @@ export type IssueInput = {
   statusListCredentialId: string;
   statusListIndex: number;
   secretKey: Uint8Array;
+  verificationMethod?: string;
 };
 
 export function buildUnsecuredCredential(input: IssueInput): UnsecuredCredential {
@@ -52,10 +53,13 @@ export function buildUnsecuredCredential(input: IssueInput): UnsecuredCredential
 }
 
 export function issueCredential(input: IssueInput): IssuedCredential {
+  if (!input.verificationMethod && !input.issuerDid.startsWith("did:key:")) {
+    throw new Error("verificationMethod is required when issuer DID is not did:key");
+  }
   const unsecured = buildUnsecuredCredential(input);
   const signed = signDocument(unsecured, input.secretKey, {
     created: input.validFrom,
-    verificationMethod: verificationMethodId(input.issuerDid),
+    verificationMethod: input.verificationMethod ?? verificationMethodId(input.issuerDid),
   });
   return signed as IssuedCredential;
 }
