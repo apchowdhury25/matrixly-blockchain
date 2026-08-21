@@ -103,6 +103,8 @@ Preview serves the built output (default Vite preview port **8081**).
 | `/app/issue` | Issue a new diploma or bind an ingested file |
 | `/app/credentials` | Issued credentials |
 | `/app/ledger` | Hash-chain inspector |
+| `/app/status` | Signed Bitstring Status List credential |
+| `/status/:id` | Public status list document |
 | `/app/keys` | Public keys / DID (private keys never leave the server). Admins can rotate. |
 | `/did/:multibase` | Public DID document for a `did:key` |
 | `/app/audit` | Audit log |

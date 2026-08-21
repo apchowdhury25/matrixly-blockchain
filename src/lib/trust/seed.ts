@@ -5,16 +5,18 @@ import {
   publicKeyMultibase,
   didDocument,
   encodeSecretKeyHex,
+  decodeSecretKeyHex,
 } from "@/lib/crypto/ed25519";
 import { sha256Bytes } from "@/lib/crypto/hash";
 import { issueCredential, credentialHash } from "@/lib/credentials/issue";
 import { emptyStatusList, encodeStatusList, setBit } from "@/lib/credentials/status-list";
+import { issueStatusListCredential } from "@/lib/credentials/status-list-credential";
 import { renderDiplomaPdf, tamperOneByte } from "@/lib/documents/diploma";
 import { didDocumentHash } from "@/lib/identity/did";
 import { buildEvidence } from "@/lib/documents/evidence";
 import { getLedger, audit } from "./runtime";
 import { DEMO } from "./ids";
-import { sealSecret } from "./seal";
+import { openSecret, sealSecret } from "./seal";
 
 const globalSeed = globalThis as typeof globalThis & { __matrixlySeed__?: Promise<void> };
 
@@ -24,6 +26,7 @@ export async function ensureDemoSeed(): Promise<void> {
     const existing = await sql<{ id: string }>`select id from credentials where opaque_ref = ${DEMO.validRef}`;
     if (existing.length) {
       await ensureDemoDelivery();
+      await ensureDemoStatusList();
       return;
     }
     const tenant = await sql<{ id: string }>`select id from tenants where id = ${DEMO.tenantId}`;
@@ -309,9 +312,18 @@ async function seedDemo(): Promise<void> {
       ${JSON.stringify(tamperedEvidence)}
     )`;
 
+  const encodedBits = encodeStatusList(statusBits);
+  const slc = issueStatusListCredential({
+    credentialId: DEMO.statusListId,
+    issuerDid: did,
+    issuerName: "Office of the Registrar, Global University",
+    encodedList: encodedBits,
+    validFrom: issued,
+    secretKey: keys.secretKey,
+  });
   await sql`
-    insert into status_lists (id, tenant_id, issuer_id, encoded_list, next_index)
-    values (${DEMO.statusListId}, ${DEMO.tenantId}, ${DEMO.issuerId}, ${encodeStatusList(statusBits)}, ${3})`;
+    insert into status_lists (id, tenant_id, issuer_id, encoded_list, next_index, credential_json, credential_hash)
+    values (${DEMO.statusListId}, ${DEMO.tenantId}, ${DEMO.issuerId}, ${encodedBits}, ${3}, ${JSON.stringify(slc)}, ${credentialHash(slc)})`;
 
   await audit({
     tenantId: DEMO.tenantId,
@@ -334,4 +346,25 @@ async function ensureDemoDelivery(): Promise<void> {
     insert into credential_deliveries (id, credential_id, tenant_id, claim_token, status)
     values (${"dlv_demo_valid"}, ${creds[0].id}, ${DEMO.tenantId}, ${DEMO.claimToken}, ${"PENDING"})
     on conflict (credential_id) do nothing`;
+}
+
+async function ensureDemoStatusList(): Promise<void> {
+  const sql = await getSql();
+  const lists = await sql<{ id: string; encoded_list: string; credential_json: string | null }>`
+    select id, encoded_list, credential_json from status_lists where id = ${DEMO.statusListId}`;
+  if (!lists[0] || lists[0].credential_json) return;
+  const secrets = await sql<{ secret_key_hex: string; did: string }>`
+    select secret_key_hex, did from key_secrets where tenant_id = ${DEMO.tenantId} and status = 'ACTIVE' limit 1`;
+  if (!secrets[0]) return;
+  const slc = issueStatusListCredential({
+    credentialId: lists[0].id,
+    issuerDid: secrets[0].did,
+    issuerName: "Office of the Registrar, Global University",
+    encodedList: lists[0].encoded_list,
+    secretKey: decodeSecretKeyHex(openSecret(secrets[0].secret_key_hex)),
+  });
+  await sql`
+    update status_lists
+    set credential_json = ${JSON.stringify(slc)}, credential_hash = ${credentialHash(slc)}, updated_at = now()
+    where id = ${lists[0].id}`;
 }

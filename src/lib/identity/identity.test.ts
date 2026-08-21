@@ -7,6 +7,7 @@ import {
 } from "../crypto/ed25519";
 import { sha256Bytes } from "../crypto/hash";
 import { issueCredential, credentialHash } from "../credentials/issue";
+import { statusListForIssuer } from "../credentials/status-list-credential";
 import { HashChainLedgerAdapter, MemoryLedgerStore } from "../ledger/hash-chain";
 import { FabricLedgerAdapter } from "../ledger/fabric";
 import { verifyCredential } from "../verification/pipeline";
@@ -129,7 +130,11 @@ test("key rotation: old credential still verifies; new DID signs new credentials
     publicKeyMultibase: second.publicKeyMultibase,
   });
 
-  const oldResult = await verifyCredential({ credential: oldCred, documentBytes: original }, ledger);
+  const oldList = statusListForIssuer({ issuerDid: first.did, secretKey: first.keys.secretKey });
+  const oldResult = await verifyCredential(
+    { credential: oldCred, documentBytes: original, statusListCredential: oldList },
+    ledger,
+  );
   assert.equal(oldResult.status, "VALID");
   assert.equal(oldResult.issuerDid, first.did);
 
@@ -162,7 +167,11 @@ test("key rotation: old credential still verifies; new DID signs new credentials
     issuedAt: "2026-08-21T00:00:00.000Z",
     version: 1,
   });
-  const newResult = await verifyCredential({ credential: newCred, documentBytes: nextBytes }, ledger);
+  const newList = statusListForIssuer({ issuerDid: second.did, secretKey: second.keys.secretKey });
+  const newResult = await verifyCredential(
+    { credential: newCred, documentBytes: nextBytes, statusListCredential: newList },
+    ledger,
+  );
   assert.equal(newResult.status, "VALID");
   assert.equal(newResult.issuerDid, second.did);
 

@@ -68,7 +68,12 @@ function subjectIdOf(credential: Record<string, unknown>): string | undefined {
 export async function verifyPresentation(
   presentation: Record<string, unknown>,
   ledger: DistributedLedgerAdapter,
-  options?: { documentBytes?: Uint8Array; now?: Date; encodedStatusList?: string },
+  options?: {
+    documentBytes?: Uint8Array;
+    now?: Date;
+    encodedStatusList?: string;
+    statusListCredential?: Record<string, unknown>;
+  },
 ): Promise<PresentationResult> {
   const reasons: string[] = [];
   const base: PresentationResult = {
@@ -77,6 +82,7 @@ export async function verifyPresentation(
     signatureValid: false,
     documentIntegrityValid: null,
     ledgerProofValid: false,
+    statusListValid: null,
     credentialActive: false,
     expired: false,
     revoked: false,
@@ -134,6 +140,7 @@ export async function verifyPresentation(
       documentBytes: options?.documentBytes,
       now: options?.now,
       encodedStatusList: options?.encodedStatusList,
+      statusListCredential: options?.statusListCredential,
     },
     ledger,
   );

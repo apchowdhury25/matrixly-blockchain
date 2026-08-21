@@ -7,6 +7,7 @@ export type VerifyView = {
   signatureValid: boolean;
   documentIntegrityValid: boolean | null;
   ledgerProofValid: boolean;
+  statusListValid?: boolean | null;
   credentialActive: boolean;
   expired: boolean;
   revoked: boolean;
@@ -105,6 +106,11 @@ export function ResultCard({ result }: { result: VerifyView }) {
             skip={result.documentIntegrityValid === null}
           />
           <Flag ok={result.ledgerProofValid} label="Ledger proof" />
+          <Flag
+            ok={result.statusListValid ?? null}
+            label="Signed status list"
+            skip={result.statusListValid === undefined || result.statusListValid === null}
+          />
           <Flag ok={!result.revoked && !result.expired && result.credentialActive} label="Credential status" />
         </div>
       </div>

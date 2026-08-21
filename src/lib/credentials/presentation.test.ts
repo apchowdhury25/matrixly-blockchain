@@ -4,6 +4,7 @@ import { generateEd25519KeyPair, encodeDidKey } from "../crypto/ed25519";
 import { sha256Bytes } from "../crypto/hash";
 import { HashChainLedgerAdapter, MemoryLedgerStore } from "../ledger/hash-chain";
 import { issueCredential, credentialHash } from "./issue";
+import { statusListForIssuer } from "./status-list-credential";
 import { buildPresentation, signPresentation, verifyPresentation } from "./presentation";
 
 function setup() {
@@ -66,7 +67,9 @@ test("holder presentation of an unbound credential verifies", async () => {
     ctx.holder.secretKey,
     "2026-08-21T12:00:00.000Z",
   );
-  const result = await verifyPresentation(vp as unknown as Record<string, unknown>, ctx.ledger);
+  const result = await verifyPresentation(vp as unknown as Record<string, unknown>, ctx.ledger, {
+    statusListCredential: statusListForIssuer({ issuerDid: ctx.issuerDid, secretKey: ctx.issuer.secretKey }),
+  });
   assert.equal(result.holderProofValid, true);
   assert.equal(result.status, "VALID");
   assert.equal(result.holderMatchesSubject, null);
@@ -80,7 +83,9 @@ test("bound credentialSubject.id must match the presenting holder", async () => 
     buildPresentation({ presentationId: "urn:uuid:vp-2", holderDid: ctx.holderDid, credential }),
     ctx.holder.secretKey,
   );
-  const ok = await verifyPresentation(vp as unknown as Record<string, unknown>, ctx.ledger);
+  const ok = await verifyPresentation(vp as unknown as Record<string, unknown>, ctx.ledger, {
+    statusListCredential: statusListForIssuer({ issuerDid: ctx.issuerDid, secretKey: ctx.issuer.secretKey }),
+  });
   assert.equal(ok.status, "VALID");
   assert.equal(ok.holderMatchesSubject, true);
 
@@ -90,7 +95,9 @@ test("bound credentialSubject.id must match the presenting holder", async () => 
     buildPresentation({ presentationId: "urn:uuid:vp-stolen", holderDid: otherDid, credential }),
     other.secretKey,
   );
-  const bad = await verifyPresentation(stolen as unknown as Record<string, unknown>, ctx.ledger);
+  const bad = await verifyPresentation(stolen as unknown as Record<string, unknown>, ctx.ledger, {
+    statusListCredential: statusListForIssuer({ issuerDid: ctx.issuerDid, secretKey: ctx.issuer.secretKey }),
+  });
   assert.equal(bad.holderProofValid, true);
   assert.equal(bad.holderMatchesSubject, false);
   assert.equal(bad.status, "INVALID");
@@ -104,7 +111,9 @@ test("wrong holder key fails the presentation proof", async () => {
     buildPresentation({ presentationId: "urn:uuid:vp-3", holderDid: ctx.holderDid, credential }),
     other.secretKey,
   );
-  const result = await verifyPresentation(vp as unknown as Record<string, unknown>, ctx.ledger);
+  const result = await verifyPresentation(vp as unknown as Record<string, unknown>, ctx.ledger, {
+    statusListCredential: statusListForIssuer({ issuerDid: ctx.issuerDid, secretKey: ctx.issuer.secretKey }),
+  });
   assert.equal(result.holderProofValid, false);
   assert.equal(result.status, "INVALID");
 });
@@ -118,7 +127,9 @@ test("invalid inner credential cannot be laundered through a valid presentation"
     buildPresentation({ presentationId: "urn:uuid:vp-4", holderDid: ctx.holderDid, credential: tampered }),
     ctx.holder.secretKey,
   );
-  const result = await verifyPresentation(vp as unknown as Record<string, unknown>, ctx.ledger);
+  const result = await verifyPresentation(vp as unknown as Record<string, unknown>, ctx.ledger, {
+    statusListCredential: statusListForIssuer({ issuerDid: ctx.issuerDid, secretKey: ctx.issuer.secretKey }),
+  });
   assert.equal(result.holderProofValid, true);
   assert.equal(result.signatureValid, false);
   assert.equal(result.status, "INVALID");

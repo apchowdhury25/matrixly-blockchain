@@ -29,4 +29,4 @@ See [docs/qa.md](../qa.md).
 
 - Mobile wallet / DIDComm
 - Selective disclosure
-- Phase 5 (status lists as credentials, verifier policies)
+- Phase 5 (status lists as credentials, verifier policies) was implemented separately.

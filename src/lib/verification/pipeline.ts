@@ -2,14 +2,19 @@ import { verifyDocumentProof } from "../crypto/ed25519";
 import { hashesEqual, sha256Bytes } from "../crypto/hash";
 import { validateCredentialStructure } from "../credentials/issue";
 import { decodeStatusList, getBit } from "../credentials/status-list";
+import { verifyStatusListCredential } from "../credentials/status-list-credential";
 import { resolveDidKey } from "../identity/did";
 import type { DistributedLedgerAdapter } from "../ledger/adapter";
+import { applyPolicyReasons, DEFAULT_POLICY, type VerifierPolicy } from "./policy";
 
 export type VerificationInput = {
   credential: Record<string, unknown>;
   documentBytes?: Uint8Array;
   now?: Date;
+  /** @deprecated Pass `statusListCredential`. Raw bitstrings are not evidence. */
   encodedStatusList?: string;
+  statusListCredential?: Record<string, unknown>;
+  policy?: VerifierPolicy;
 };
 
 export type VerificationResult = {
@@ -18,6 +23,7 @@ export type VerificationResult = {
   signatureValid: boolean;
   documentIntegrityValid: boolean | null;
   ledgerProofValid: boolean;
+  statusListValid: boolean | null;
   credentialActive: boolean;
   expired: boolean;
   revoked: boolean;
@@ -32,6 +38,7 @@ export type VerificationResult = {
   issued?: string;
   documentHash?: string;
   ledgerBlockHash?: string;
+  policyId?: string;
 };
 
 function issuerDidOf(credential: Record<string, unknown>): string | undefined {
@@ -54,6 +61,7 @@ export async function verifyCredential(
   ledger: DistributedLedgerAdapter,
 ): Promise<VerificationResult> {
   const reasons: string[] = [];
+  const policy = input.policy ?? DEFAULT_POLICY;
   const now = input.now ?? new Date();
   const result: VerificationResult = {
     verified: false,
@@ -61,6 +69,7 @@ export async function verifyCredential(
     signatureValid: false,
     documentIntegrityValid: null,
     ledgerProofValid: false,
+    statusListValid: null,
     credentialActive: false,
     expired: false,
     revoked: false,
@@ -68,6 +77,7 @@ export async function verifyCredential(
     suspended: false,
     status: "INVALID",
     reasons,
+    policyId: policy.id,
   };
 
   const structural = validateCredentialStructure(input.credential);
@@ -103,12 +113,12 @@ export async function verifyCredential(
   const issuerByDid = issuerRecord ?? (await findIssuerByDid(ledger, issuerDid));
   if (!issuerByDid) {
     reasons.push("Unknown issuer: DID is not registered on the ledger");
-    return result;
+    return finalize(result, policy);
   }
   if (issuerByDid.status !== "ACTIVE") {
     reasons.push(`Issuer status is ${issuerByDid.status}`);
     result.suspended = issuerByDid.status === "SUSPENDED";
-    return finalize(result);
+    return finalize(result, policy);
   }
   result.issuerVerified = true;
   result.issuerName = issuerByDid.name || result.issuerName;
@@ -117,7 +127,7 @@ export async function verifyCredential(
   result.signatureValid = proof.valid;
   if (!proof.valid) {
     reasons.push(proof.reason ?? "Signature verification failed");
-    return finalize(result);
+    return finalize(result, policy);
   }
 
   const claimedDocHash = subjectDocumentHash(input.credential);
@@ -141,7 +151,7 @@ export async function verifyCredential(
   const ledgerCred = await ledger.getCredential(credentialId);
   if (!ledgerCred) {
     reasons.push("Credential is not registered on the ledger");
-    return finalize(result);
+    return finalize(result, policy);
   }
   const chain = await ledger.verifyChain();
   result.ledgerProofValid = chain.valid && ledgerCred.credentialId === credentialId;
@@ -166,19 +176,45 @@ export async function verifyCredential(
     reasons.push("Credential is not yet valid");
   }
 
+  const statusEntry = input.credential.credentialStatus as
+    | { statusListIndex?: string; statusListCredential?: string; type?: string }
+    | undefined;
   let revoked = ledgerCred.status === "REVOKED";
-  if (input.encodedStatusList) {
-    const status = input.credential.credentialStatus as { statusListIndex?: string } | undefined;
-    const index = Number(status?.statusListIndex ?? NaN);
-    if (Number.isInteger(index)) {
-      try {
-        const list = decodeStatusList(input.encodedStatusList);
-        if (getBit(list, index)) revoked = true;
-      } catch (err) {
-        reasons.push(`Status list could not be decoded: ${(err as Error).message}`);
+  if (statusEntry) {
+    if (input.statusListCredential) {
+      const slc = verifyStatusListCredential(input.statusListCredential, issuerDid);
+      result.statusListValid = slc.ok;
+      if (!slc.ok) {
+        reasons.push(slc.reason ?? "Status list credential failed verification");
+      } else {
+        const index = Number(statusEntry.statusListIndex ?? NaN);
+        if (Number.isInteger(index)) {
+          try {
+            const list = decodeStatusList(slc.encodedList!);
+            if (getBit(list, index)) revoked = true;
+          } catch (err) {
+            result.statusListValid = false;
+            reasons.push(`Status list could not be decoded: ${(err as Error).message}`);
+          }
+        }
       }
+    } else if (input.encodedStatusList && !policy.requireSignedStatusList) {
+      result.statusListValid = false;
+      const index = Number(statusEntry.statusListIndex ?? NaN);
+      if (Number.isInteger(index)) {
+        try {
+          const list = decodeStatusList(input.encodedStatusList);
+          if (getBit(list, index)) revoked = true;
+        } catch (err) {
+          reasons.push(`Status list could not be decoded: ${(err as Error).message}`);
+        }
+      }
+    } else {
+      result.statusListValid = false;
+      reasons.push("Signed Bitstring Status List credential was not supplied");
     }
   }
+
   result.revoked = revoked;
   result.superseded = ledgerCred.status === "SUPERSEDED";
   result.suspended = ledgerCred.status === "SUSPENDED" || result.suspended;
@@ -189,24 +225,55 @@ export async function verifyCredential(
   if (result.superseded) reasons.push("Credential has been superseded");
   if (result.suspended) reasons.push("Credential or issuer is suspended");
 
-  return finalize(result);
+  return finalize(result, policy);
 }
 
 async function findIssuerByDid(ledger: DistributedLedgerAdapter, did: string) {
   return ledger.getIssuer(did);
 }
 
-function finalize(result: VerificationResult): VerificationResult {
+function finalize(result: VerificationResult, policy: VerifierPolicy): VerificationResult {
+  const policyReasons = applyPolicyReasons(
+    {
+      issuerDid: result.issuerDid,
+      issuerVerified: result.issuerVerified,
+      ledgerProofValid: result.ledgerProofValid,
+      statusListValid: result.statusListValid,
+      revoked: result.revoked,
+      expired: result.expired,
+    },
+    policy,
+  );
+  for (const reason of policyReasons) {
+    if (!result.reasons.includes(reason)) result.reasons.push(reason);
+  }
+
   if (result.revoked) result.status = "REVOKED";
   else if (result.superseded) result.status = "SUPERSEDED";
   else if (result.suspended) result.status = "SUSPENDED";
-  else if (result.expired) result.status = "EXPIRED";
+  else if (result.expired && !policy.allowExpired) result.status = "EXPIRED";
   else if (
     result.issuerVerified &&
     result.signatureValid &&
     result.ledgerProofValid &&
     result.documentIntegrityValid !== false &&
-    result.credentialActive
+    (result.statusListValid === true || result.statusListValid === null) &&
+    result.credentialActive &&
+    policyReasons.length === 0
+  ) {
+    result.status = "VALID";
+  } else if (
+    policy.allowExpired &&
+    result.expired &&
+    result.issuerVerified &&
+    result.signatureValid &&
+    result.ledgerProofValid &&
+    result.documentIntegrityValid !== false &&
+    result.statusListValid === true &&
+    !result.revoked &&
+    !result.superseded &&
+    !result.suspended &&
+    policyReasons.length === 0
   ) {
     result.status = "VALID";
   } else {
@@ -214,5 +281,6 @@ function finalize(result: VerificationResult): VerificationResult {
   }
   result.verified = result.status === "VALID";
   if (result.verified) result.reasons = [];
+  result.policyId = policy.id;
   return result;
 }

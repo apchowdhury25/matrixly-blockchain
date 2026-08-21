@@ -56,6 +56,13 @@ Also confirm:
 - [ ] Phase 3 document ingest still hashes bytes, not filenames
 - [ ] Issuer key rotation from Phase 2 still leaves old diplomas VALID
 
+## Phase 5 — Status and policy
+
+- [ ] Home **Valid diploma** still `VALID`, and **Signed status list** is PASS
+- [ ] **Revoked** diploma is `REVOKED` (bit + signed list, not only a table flag)
+- [ ] Issuer **Status** page shows a signed list; public `/status/demo` opens the document
+- [ ] After revoking a newly issued diploma, public verify becomes `REVOKED` and the status list hash changes
+
 ## Out of scope until a later phase
 
 - S3 / IPFS object storage

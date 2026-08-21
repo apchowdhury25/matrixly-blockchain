@@ -15,7 +15,7 @@
     "typecheck": "tsc --noEmit",
     "check:auth": "node scripts/check-auth-invariant.mjs",
     "test": "node --test 'scripts/**/*.test.mjs' && npm run test:trust",
-    "test:trust": "tsx --test src/lib/crypto/hash.test.ts src/lib/credentials/engine.test.ts src/lib/ledger/hash-chain.test.ts src/lib/identity/identity.test.ts src/lib/documents/evidence.test.ts src/lib/credentials/presentation.test.ts",
+    "test:trust": "tsx --test src/lib/crypto/hash.test.ts src/lib/credentials/engine.test.ts src/lib/ledger/hash-chain.test.ts src/lib/identity/identity.test.ts src/lib/documents/evidence.test.ts src/lib/credentials/presentation.test.ts src/lib/verification/policy.test.ts",
     "lint": "eslint .",
     "format": "prettier --write ."
   },

@@ -10,7 +10,8 @@ import { sha256Bytes } from "../crypto/hash";
 import { HashChainLedgerAdapter, MemoryLedgerStore } from "../ledger/hash-chain";
 import { verifyCredential } from "../verification/pipeline";
 import { issueCredential, credentialHash } from "./issue";
-import { emptyStatusList, encodeStatusList, setBit } from "./status-list";
+import { emptyStatusList, encodeStatusList } from "./status-list";
+import { statusListForIssuer } from "./status-list-credential";
 import { tamperOneByte } from "../documents/diploma";
 
 function setupIssuer() {
@@ -18,11 +19,12 @@ function setupIssuer() {
   const did = encodeDidKey(keys.publicKey);
   const store = new MemoryLedgerStore();
   const ledger = new HashChainLedgerAdapter(store);
-  return { keys, did, ledger };
+  const statusListCredential = statusListForIssuer({ issuerDid: did, secretKey: keys.secretKey });
+  return { keys, did, ledger, statusListCredential };
 }
 
 test("TEST A: one-byte document mutation fails integrity", async () => {
-  const { keys, did, ledger } = setupIssuer();
+  const { keys, did, ledger, statusListCredential } = setupIssuer();
   await ledger.registerIssuer({
     issuerId: did,
     issuerDid: did,
@@ -55,17 +57,17 @@ test("TEST A: one-byte document mutation fails integrity", async () => {
     issuedAt: "2026-08-20T00:00:00.000Z",
     version: 1,
   });
-  const ok = await verifyCredential({ credential, documentBytes: original }, ledger);
+  const ok = await verifyCredential({ credential, documentBytes: original, statusListCredential }, ledger);
   assert.equal(ok.status, "VALID");
   const mutated = tamperOneByte(original);
-  const bad = await verifyCredential({ credential, documentBytes: mutated }, ledger);
+  const bad = await verifyCredential({ credential, documentBytes: mutated, statusListCredential }, ledger);
   assert.equal(bad.documentIntegrityValid, false);
   assert.equal(bad.verified, false);
   assert.equal(bad.status, "INVALID");
 });
 
 test("TEST B: modified claim fails signature", async () => {
-  const { keys, did, ledger } = setupIssuer();
+  const { keys, did, ledger, statusListCredential } = setupIssuer();
   await ledger.registerIssuer({
     issuerId: did,
     issuerDid: did,
@@ -101,7 +103,7 @@ test("TEST B: modified claim fails signature", async () => {
   (tampered.credentialSubject as { name: string }).name = "Attacker";
   const proof = verifyDocumentProof(tampered, keys.publicKey);
   assert.equal(proof.valid, false);
-  const result = await verifyCredential({ credential: tampered }, ledger);
+  const result = await verifyCredential({ credential: tampered, statusListCredential }, ledger);
   assert.equal(result.signatureValid, false);
   assert.equal(result.verified, false);
 });
@@ -174,15 +176,99 @@ test("TEST D: revoked credential returns REVOKED", async () => {
     reason: "Student request",
     at: "2026-08-20T12:00:00.000Z",
   });
-  const list = encodeStatusList(setBit(emptyStatusList(), 1, true));
-  const result = await verifyCredential({ credential, encodedStatusList: list }, ledger);
+  const revokedList = statusListForIssuer({
+    issuerDid: did,
+    secretKey: keys.secretKey,
+    revokedIndexes: [1],
+  });
+  const result = await verifyCredential({ credential, statusListCredential: revokedList }, ledger);
   assert.equal(result.revoked, true);
   assert.equal(result.status, "REVOKED");
   assert.equal(result.verified, false);
+  assert.equal(result.statusListValid, true);
+});
+
+test("TEST D2: signed status list bit revokes even when the ledger row is still ACTIVE", async () => {
+  const { keys, did, ledger } = setupIssuer();
+  await ledger.registerIssuer({
+    issuerId: did,
+    issuerDid: did,
+    name: "Global University",
+    status: "ACTIVE",
+    publicKeyMultibase: did.slice("did:key:".length),
+  });
+  const documentHash = sha256Bytes(new TextEncoder().encode("doc")).prefixed;
+  const credential = issueCredential({
+    credentialId: "urn:uuid:test-d2",
+    issuerDid: did,
+    issuerName: "Global University",
+    subjectName: "Alex Rivera",
+    degreeName: "Bachelor of Computer Science",
+    validFrom: "2026-08-20T00:00:00.000Z",
+    documentHash,
+    statusListCredentialId: "https://trust.matrixly.ai/status/demo",
+    statusListIndex: 4,
+    secretKey: keys.secretKey,
+  });
+  await ledger.registerDocumentAnchor({ documentHash, issuerDid: did });
+  await ledger.registerCredential({
+    credentialId: credential.id,
+    credentialHash: credentialHash(credential),
+    documentHash,
+    issuerId: did,
+    issuerDid: did,
+    status: "ACTIVE",
+    issuedAt: "2026-08-20T00:00:00.000Z",
+    version: 1,
+  });
+  const slc = statusListForIssuer({ issuerDid: did, secretKey: keys.secretKey, revokedIndexes: [4] });
+  const result = await verifyCredential({ credential, statusListCredential: slc }, ledger);
+  assert.equal(result.statusListValid, true);
+  assert.equal(result.revoked, true);
+  assert.equal(result.status, "REVOKED");
+});
+
+test("TEST D3: unsigned bitstring is not enough under the default policy", async () => {
+  const { keys, did, ledger } = setupIssuer();
+  await ledger.registerIssuer({
+    issuerId: did,
+    issuerDid: did,
+    name: "Global University",
+    status: "ACTIVE",
+    publicKeyMultibase: did.slice("did:key:".length),
+  });
+  const documentHash = sha256Bytes(new TextEncoder().encode("doc")).prefixed;
+  const credential = issueCredential({
+    credentialId: "urn:uuid:test-d3",
+    issuerDid: did,
+    issuerName: "Global University",
+    subjectName: "Alex Rivera",
+    degreeName: "Bachelor of Computer Science",
+    validFrom: "2026-08-20T00:00:00.000Z",
+    documentHash,
+    statusListCredentialId: "https://trust.matrixly.ai/status/demo",
+    statusListIndex: 0,
+    secretKey: keys.secretKey,
+  });
+  await ledger.registerDocumentAnchor({ documentHash, issuerDid: did });
+  await ledger.registerCredential({
+    credentialId: credential.id,
+    credentialHash: credentialHash(credential),
+    documentHash,
+    issuerId: did,
+    issuerDid: did,
+    status: "ACTIVE",
+    issuedAt: "2026-08-20T00:00:00.000Z",
+    version: 1,
+  });
+  const unsigned = encodeStatusList(emptyStatusList());
+  const result = await verifyCredential({ credential, encodedStatusList: unsigned }, ledger);
+  assert.equal(result.statusListValid, false);
+  assert.equal(result.status, "INVALID");
 });
 
 test("TEST E: expired credential returns EXPIRED", async () => {
-  const { keys, did, ledger } = setupIssuer();
+  const { keys, did, ledger, statusListCredential } = setupIssuer();
   await ledger.registerIssuer({
     issuerId: did,
     issuerDid: did,
@@ -217,7 +303,7 @@ test("TEST E: expired credential returns EXPIRED", async () => {
     version: 1,
   });
   const result = await verifyCredential(
-    { credential, now: new Date("2026-08-20T00:00:00.000Z") },
+    { credential, now: new Date("2026-08-20T00:00:00.000Z"), statusListCredential },
     ledger,
   );
   assert.equal(result.expired, true);

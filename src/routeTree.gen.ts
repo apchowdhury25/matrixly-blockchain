@@ -21,8 +21,10 @@ import { Route as AppDocumentsRouteImport } from './routes/app/documents'
 import { Route as AppIssueRouteImport } from './routes/app/issue'
 import { Route as AppKeysRouteImport } from './routes/app/keys'
 import { Route as AppLedgerRouteImport } from './routes/app/ledger'
+import { Route as AppStatusRouteImport } from './routes/app/status'
 import { Route as DidMultibaseRouteImport } from './routes/did.$multibase'
 import { Route as PresentRefRouteImport } from './routes/present.$ref'
+import { Route as StatusIdRouteImport } from './routes/status.$id'
 import { Route as VerifyIndexRouteImport } from './routes/verify/index'
 import { Route as VerifyRefRouteImport } from './routes/verify/$ref'
 import { Route as WalletIndexRouteImport } from './routes/wallet/index'
@@ -89,6 +91,11 @@ const AppLedgerRoute = AppLedgerRouteImport.update({
   path: '/ledger',
   getParentRoute: () => AppRouteRoute,
 } as any)
+const AppStatusRoute = AppStatusRouteImport.update({
+  id: '/status',
+  path: '/status',
+  getParentRoute: () => AppRouteRoute,
+} as any)
 const DidMultibaseRoute = DidMultibaseRouteImport.update({
   id: '/did/$multibase',
   path: '/did/$multibase',
@@ -97,6 +104,11 @@ const DidMultibaseRoute = DidMultibaseRouteImport.update({
 const PresentRefRoute = PresentRefRouteImport.update({
   id: '/present/$ref',
   path: '/present/$ref',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StatusIdRoute = StatusIdRouteImport.update({
+  id: '/status/$id',
+  path: '/status/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
 const VerifyIndexRoute = VerifyIndexRouteImport.update({
@@ -137,8 +149,10 @@ export interface FileRoutesByFullPath {
   '/app/issue': typeof AppIssueRoute
   '/app/keys': typeof AppKeysRoute
   '/app/ledger': typeof AppLedgerRoute
+  '/app/status': typeof AppStatusRoute
   '/did/$multibase': typeof DidMultibaseRoute
   '/present/$ref': typeof PresentRefRoute
+  '/status/$id': typeof StatusIdRoute
   '/verify/$ref': typeof VerifyRefRoute
   '/app/': typeof AppIndexRoute
   '/verify/': typeof VerifyIndexRoute
@@ -156,8 +170,10 @@ export interface FileRoutesByTo {
   '/app/issue': typeof AppIssueRoute
   '/app/keys': typeof AppKeysRoute
   '/app/ledger': typeof AppLedgerRoute
+  '/app/status': typeof AppStatusRoute
   '/did/$multibase': typeof DidMultibaseRoute
   '/present/$ref': typeof PresentRefRoute
+  '/status/$id': typeof StatusIdRoute
   '/verify/$ref': typeof VerifyRefRoute
   '/app': typeof AppIndexRoute
   '/verify': typeof VerifyIndexRoute
@@ -178,8 +194,10 @@ export interface FileRoutesById {
   '/app/issue': typeof AppIssueRoute
   '/app/keys': typeof AppKeysRoute
   '/app/ledger': typeof AppLedgerRoute
+  '/app/status': typeof AppStatusRoute
   '/did/$multibase': typeof DidMultibaseRoute
   '/present/$ref': typeof PresentRefRoute
+  '/status/$id': typeof StatusIdRoute
   '/verify/$ref': typeof VerifyRefRoute
   '/app/': typeof AppIndexRoute
   '/verify/': typeof VerifyIndexRoute
@@ -201,8 +219,10 @@ export interface FileRouteTypes {
     | '/app/issue'
     | '/app/keys'
     | '/app/ledger'
+    | '/app/status'
     | '/did/$multibase'
     | '/present/$ref'
+    | '/status/$id'
     | '/verify/$ref'
     | '/app/'
     | '/verify/'
@@ -220,8 +240,10 @@ export interface FileRouteTypes {
     | '/app/issue'
     | '/app/keys'
     | '/app/ledger'
+    | '/app/status'
     | '/did/$multibase'
     | '/present/$ref'
+    | '/status/$id'
     | '/verify/$ref'
     | '/app'
     | '/verify'
@@ -241,8 +263,10 @@ export interface FileRouteTypes {
     | '/app/issue'
     | '/app/keys'
     | '/app/ledger'
+    | '/app/status'
     | '/did/$multibase'
     | '/present/$ref'
+    | '/status/$id'
     | '/verify/$ref'
     | '/app/'
     | '/verify/'
@@ -259,6 +283,7 @@ export interface RootRouteChildren {
   TrustRoute: typeof TrustRoute
   DidMultibaseRoute: typeof DidMultibaseRoute
   PresentRefRoute: typeof PresentRefRoute
+  StatusIdRoute: typeof StatusIdRoute
   VerifyRefRoute: typeof VerifyRefRoute
   VerifyIndexRoute: typeof VerifyIndexRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
@@ -350,6 +375,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppLedgerRouteImport
       parentRoute: typeof AppRouteRoute
     }
+    '/app/status': {
+      id: '/app/status'
+      path: '/status'
+      fullPath: '/app/status'
+      preLoaderRoute: typeof AppStatusRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
     '/did/$multibase': {
       id: '/did/$multibase'
       path: '/did/$multibase'
@@ -362,6 +394,13 @@ declare module '@tanstack/react-router' {
       path: '/present/$ref'
       fullPath: '/present/$ref'
       preLoaderRoute: typeof PresentRefRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/status/$id': {
+      id: '/status/$id'
+      path: '/status/$id'
+      fullPath: '/status/$id'
+      preLoaderRoute: typeof StatusIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/verify/': {
@@ -409,6 +448,7 @@ interface AppRouteRouteChildren {
   AppIssueRoute: typeof AppIssueRoute
   AppKeysRoute: typeof AppKeysRoute
   AppLedgerRoute: typeof AppLedgerRoute
+  AppStatusRoute: typeof AppStatusRoute
   AppIndexRoute: typeof AppIndexRoute
 }
 
@@ -419,6 +459,7 @@ const AppRouteRouteChildren: AppRouteRouteChildren = {
   AppIssueRoute: AppIssueRoute,
   AppKeysRoute: AppKeysRoute,
   AppLedgerRoute: AppLedgerRoute,
+  AppStatusRoute: AppStatusRoute,
   AppIndexRoute: AppIndexRoute,
 }
 
@@ -448,6 +489,7 @@ const rootRouteChildren: RootRouteChildren = {
   TrustRoute: TrustRoute,
   DidMultibaseRoute: DidMultibaseRoute,
   PresentRefRoute: PresentRefRoute,
+  StatusIdRoute: StatusIdRoute,
   VerifyRefRoute: VerifyRefRoute,
   VerifyIndexRoute: VerifyIndexRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,

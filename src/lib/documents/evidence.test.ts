@@ -3,6 +3,7 @@ import { test } from "node:test";
 import { inspectBytes, MAX_UPLOAD_BYTES } from "../crypto/inspect";
 import { sha256Bytes } from "../crypto/hash";
 import { issueCredential, credentialHash } from "../credentials/issue";
+import { statusListForIssuer } from "../credentials/status-list-credential";
 import { HashChainLedgerAdapter, MemoryLedgerStore } from "../ledger/hash-chain";
 import { verifyCredential } from "../verification/pipeline";
 import { createIssuerIdentity } from "../identity/keys";
@@ -88,9 +89,13 @@ test("ledger document anchors store the hash, never the original bytes", async (
   assert.equal(serialized.includes("%PDF"), false);
   assert.equal(serialized.includes(built.evidence.hash), true);
 
-  const ok = await verifyCredential({ credential, documentBytes: bytes }, ledger);
+  const slc = statusListForIssuer({ issuerDid: identity.did, secretKey: identity.keys.secretKey });
+  const ok = await verifyCredential({ credential, documentBytes: bytes, statusListCredential: slc }, ledger);
   assert.equal(ok.status, "VALID");
-  const bad = await verifyCredential({ credential, documentBytes: tamperOneByte(bytes) }, ledger);
+  const bad = await verifyCredential(
+    { credential, documentBytes: tamperOneByte(bytes), statusListCredential: slc },
+    ledger,
+  );
   assert.equal(bad.documentIntegrityValid, false);
   assert.equal(bad.status, "INVALID");
 });

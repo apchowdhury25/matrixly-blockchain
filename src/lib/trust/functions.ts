@@ -8,6 +8,7 @@ import { credentialHash, issueCredential } from "@/lib/credentials/issue";
 import { buildPresentation, signPresentation, verifyPresentation } from "@/lib/credentials/presentation";
 import type { IssuedCredential } from "@/lib/credentials/types";
 import { decodeStatusList, emptyStatusList, encodeStatusList, setBit } from "@/lib/credentials/status-list";
+import { issueStatusListCredential } from "@/lib/credentials/status-list-credential";
 import { renderDiplomaPdf } from "@/lib/documents/diploma";
 import { buildEvidence, parseEvidence, type DocumentEvidence } from "@/lib/documents/evidence";
 import { verifyCredential, type VerificationResult } from "@/lib/verification/pipeline";
@@ -98,6 +99,7 @@ export const verifyOpaqueRef = createServerFn({ method: "POST" })
         signatureValid: false,
         documentIntegrityValid: null,
         ledgerProofValid: false,
+        statusListValid: null,
         credentialActive: false,
         expired: false,
         revoked: false,
@@ -120,14 +122,16 @@ export const verifyOpaqueRef = createServerFn({ method: "POST" })
       inspectBytes(bytes);
       documentBytes = bytes;
     }
-    const lists = await sql<{ encoded_list: string }>`
-      select encoded_list from status_lists where issuer_id = ${row.issuer_id} order by updated_at desc limit 1`;
+    const lists = await sql<{ encoded_list: string; credential_json: string | null }>`
+      select encoded_list, credential_json from status_lists where issuer_id = ${row.issuer_id} order by updated_at desc limit 1`;
     const ledger = await getLedger();
     const result = await verifyCredential(
       {
         credential,
         documentBytes,
-        encodedStatusList: lists[0]?.encoded_list,
+        statusListCredential: lists[0]?.credential_json
+          ? (JSON.parse(lists[0].credential_json) as Record<string, unknown>)
+          : undefined,
       },
       ledger,
     );
@@ -169,6 +173,7 @@ export const verifyUploaded = createServerFn({ method: "POST" })
         signatureValid: false,
         documentIntegrityValid: null,
         ledgerProofValid: false,
+        statusListValid: null,
         credentialActive: false,
         expired: false,
         revoked: false,
@@ -187,14 +192,20 @@ export const verifyUploaded = createServerFn({ method: "POST" })
     const sql = await getSql();
     const id = typeof credential.id === "string" ? credential.id : "";
     const lists = id
-      ? await sql<{ encoded_list: string }>`
-          select s.encoded_list from credentials c
+      ? await sql<{ encoded_list: string; credential_json: string | null }>`
+          select s.encoded_list, s.credential_json from credentials c
           join status_lists s on s.issuer_id = c.issuer_id
           where c.id = ${id} limit 1`
       : [];
     const ledger = await getLedger();
     const result = await verifyCredential(
-      { credential, documentBytes, encodedStatusList: lists[0]?.encoded_list },
+      {
+        credential,
+        documentBytes,
+        statusListCredential: lists[0]?.credential_json
+          ? (JSON.parse(lists[0].credential_json) as Record<string, unknown>)
+          : undefined,
+      },
       ledger,
     );
     await sql`
@@ -333,8 +344,18 @@ async function workspaceFor(userId: string): Promise<Workspace> {
   await sql`insert into key_secrets (id, tenant_id, did, secret_key_hex, status, public_key_multibase, purpose) values (
     ${newId("key")}, ${tenantId}, ${did}, ${identity.sealedSecretHex}, ${"ACTIVE"}, ${identity.publicKeyMultibase}, ${"assertionMethod"}
   )`;
-  await sql`insert into status_lists (id, tenant_id, issuer_id, encoded_list, next_index) values (
-    ${`https://trust.matrixly.ai/credentials/status/${issuerId}`}, ${tenantId}, ${issuerId}, ${encodeStatusList(emptyStatusList())}, ${0}
+  const encoded = encodeStatusList(emptyStatusList());
+  const statusListId = `https://trust.matrixly.ai/credentials/status/${issuerId}`;
+  const slc = issueStatusListCredential({
+    credentialId: statusListId,
+    issuerDid: did,
+    issuerName: "Registrar",
+    encodedList: encoded,
+    secretKey: identity.keys.secretKey,
+    validFrom: new Date().toISOString(),
+  });
+  await sql`insert into status_lists (id, tenant_id, issuer_id, encoded_list, next_index, credential_json, credential_hash) values (
+    ${statusListId}, ${tenantId}, ${issuerId}, ${encoded}, ${0}, ${JSON.stringify(slc)}, ${credentialHash(slc)}
   )`;
   const ledger = await getLedger();
   await ledger.registerDid({
@@ -739,7 +760,22 @@ export const revokeCredential = createServerFn({ method: "POST" })
       select id, encoded_list from status_lists where issuer_id = ${ws.issuerId} limit 1`;
     if (lists[0]) {
       const next = encodeStatusList(setBit(decodeStatusList(lists[0].encoded_list), Number(row.status_list_index), true));
-      await sql`update status_lists set encoded_list = ${next}, updated_at = now() where id = ${lists[0].id}`;
+      const secrets = await sql<{ secret_key_hex: string; status: string }>`
+        select secret_key_hex, status from key_secrets
+        where tenant_id = ${ws.tenantId} and did = ${ws.issuerDid} and status = 'ACTIVE'`;
+      const sealed = secrets[0]?.secret_key_hex;
+      if (!sealed) throw new Error("Signing key is not available");
+      assertActiveSigningKey(secrets[0]!.status);
+      const slc = issueStatusListCredential({
+        credentialId: lists[0].id,
+        issuerDid: ws.issuerDid,
+        issuerName: `${ws.issuerName}, ${ws.orgName}`,
+        encodedList: next,
+        secretKey: decodeSecretKeyHex(openSecret(sealed)),
+      });
+      await sql`update status_lists
+        set encoded_list = ${next}, credential_json = ${JSON.stringify(slc)}, credential_hash = ${credentialHash(slc)}, updated_at = now()
+        where id = ${lists[0].id}`;
     }
     const ledger = await getLedger();
     await ledger.setCredentialStatus({
@@ -1137,6 +1173,7 @@ export const verifyPresentationRef = createServerFn({ method: "POST" })
         signatureValid: false,
         documentIntegrityValid: null,
         ledgerProofValid: false,
+        statusListValid: null,
         credentialActive: false,
         expired: false,
         revoked: false,
@@ -1166,13 +1203,15 @@ export const verifyPresentationRef = createServerFn({ method: "POST" })
       if (docs[0]) documentBytes = Uint8Array.from(Buffer.from(docs[0].content_b64, "base64"));
     }
     const lists = cred
-      ? await sql<{ encoded_list: string }>`
-          select encoded_list from status_lists where issuer_id = ${cred.issuer_id} order by updated_at desc limit 1`
+      ? await sql<{ encoded_list: string; credential_json: string | null }>`
+          select encoded_list, credential_json from status_lists where issuer_id = ${cred.issuer_id} order by updated_at desc limit 1`
       : [];
     const ledger = await getLedger();
     const result = await verifyPresentation(presentation, ledger, {
       documentBytes,
-      encodedStatusList: lists[0]?.encoded_list,
+      statusListCredential: lists[0]?.credential_json
+        ? (JSON.parse(lists[0].credential_json) as Record<string, unknown>)
+        : undefined,
     });
     await sql`
       insert into verification_requests (id, opaque_ref, credential_id, result_status, result_json)
@@ -1183,5 +1222,62 @@ export const verifyPresentationRef = createServerFn({ method: "POST" })
       { ...result, reasons: result.reasons },
       cred ? { holderName: cred.holder_name, degreeName: cred.degree_name, opaqueRef: data.ref } : { opaqueRef: data.ref },
     );
+  });
+
+export const getPublicStatusList = createServerFn({ method: "POST" })
+  .validator((raw: unknown) => z.object({ id: z.string().min(2).max(200) }).parse(raw))
+  .handler(async ({ data }) => {
+    await ensureDemoSeed();
+    const sql = await getSql();
+    const needle = data.id.startsWith("http") ? data.id : `%${data.id}`;
+    const rows = await sql<{
+      id: string;
+      encoded_list: string;
+      credential_json: string | null;
+      credential_hash: string | null;
+      next_index: number;
+      updated_at: string;
+    }>`
+      select id, encoded_list, credential_json, credential_hash, next_index, updated_at::text as updated_at
+      from status_lists
+      where id = ${data.id} or id like ${needle}
+      order by updated_at desc
+      limit 1`;
+    const row = rows[0];
+    if (!row) throw new Error("Status list not found");
+    return {
+      id: row.id,
+      credentialJson: row.credential_json,
+      credentialHash: row.credential_hash,
+      nextIndex: Number(row.next_index),
+      updatedAt: row.updated_at,
+      signed: Boolean(row.credential_json),
+    };
+  });
+
+export const getIssuerStatusList = createServerFn({ method: "GET" })
+  .middleware([authMiddleware])
+  .handler(async ({ context }) => {
+    const ws = await workspaceFor(context.userId);
+    const sql = await getSql();
+    const rows = await sql<{
+      id: string;
+      next_index: number;
+      credential_hash: string | null;
+      updated_at: string;
+      credential_json: string | null;
+    }>`
+      select id, next_index, credential_hash, updated_at::text as updated_at, credential_json
+      from status_lists where issuer_id = ${ws.issuerId} limit 1`;
+    const row = rows[0];
+    if (!row) throw new Error("Status list missing");
+    return {
+      id: row.id,
+      nextIndex: Number(row.next_index),
+      credentialHash: row.credential_hash,
+      updatedAt: row.updated_at,
+      signed: Boolean(row.credential_json),
+      issuerDid: ws.issuerDid,
+    };
   });
 

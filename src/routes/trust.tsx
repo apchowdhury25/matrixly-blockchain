@@ -28,7 +28,8 @@ function TrustModel() {
           <li>Verify the Data Integrity Ed25519 proof over JCS canonical JSON.</li>
           <li>Hash supplied document bytes and compare to the bound SHA-256. Filename is ignored.</li>
           <li>Retrieve the ledger anchor and recompute the hash chain. Original bytes are not on the ledger.</li>
-          <li>Check Bitstring Status List revocation bits and validity dates.</li>
+          <li>Check the signed Bitstring Status List credential, then the revocation bit. A database REVOKED flag is not enough.</li>
+          <li>Apply the verifier policy (default: signed status list, issuer on ledger, ledger anchor, unrevoked).</li>
           <li>If a presentation is supplied, verify the holder proof first. A valid envelope cannot launder an invalid credential.</li>
         </ol>
         <h2 className="mt-10 font-display text-2xl">Identity</h2>
