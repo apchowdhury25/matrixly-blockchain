@@ -36,9 +36,9 @@ Issuer → Identity → Document → SHA-256 → VC 2.0 → Ed25519
 | 4 Holder | Shipped | Wallet, claim, VP |
 | 5 Status | Shipped | Signed Bitstring Status List + verifier policy |
 | 6 Audit | Shipped | Signed verification reports, hash-chained audit |
-| 7 Production adapters | **Specified** | Fabric Gateway, object storage, KMS — [docs/phases/phase-07.md](docs/phases/phase-07.md) |
+| 7 Production adapters | Shipped (preview + fail-closed) | Factory + Gateway mapping + storage/KMS ports. Live Fabric/S3 still require operator infra. |
 
-Phase 7 is **not implemented**. Until a Fabric Gateway and object bucket are attached, this product uses the hash-chain ledger and stores document bytes in the application database. The Fabric adapter still **refuses to fake** a transaction.
+Phase write-ups: [docs/phases/](docs/phases/). Architecture: [docs/architecture/trust-model.md](docs/architecture/trust-model.md). Fabric Gateway mapping: [docs/architecture/fabric-gateway.md](docs/architecture/fabric-gateway.md).
 
 ## Prerequisites
 
@@ -80,7 +80,27 @@ npm run dev
 
 `npm run build` also runs migrations so a production deploy has schema before traffic.
 
-### 3. Sign in (issuer console)
+### 4. Adapters (Phase 7)
+
+Default preview (no extra env):
+
+| Adapter | Implementation |
+|---|---|
+| Ledger | `HashChainLedgerAdapter` |
+| Storage | `DatabaseObjectStore` (`content_b64` / `object_blobs`) |
+| KMS | `LocalAesGcmKms` |
+
+Production selection — **fail closed**. Mixed config does not silently fall back.
+
+```bash
+export LEDGER_ADAPTER=fabric   # requires full FABRIC_* env or the process refuses
+export STORAGE_BACKEND=s3      # requires S3_BUCKET or refuses
+export KMS_BACKEND=aws         # requires KMS_KEY_ID or refuses
+```
+
+`LEDGER_ADAPTER=fabric` without a Gateway **never** returns a successful submit. Details: [docs/architecture/fabric-gateway.md](docs/architecture/fabric-gateway.md) and [docs/phases/phase-07.md](docs/phases/phase-07.md).
+
+### 5. Sign in (issuer console)
 
 Public verification does **not** require an account.
 
@@ -92,7 +112,7 @@ To issue credentials:
 
 Email/password is enabled in `src/lib/auth/email-password.ts`.
 
-### 4. Production build
+### 6. Production build
 
 ```bash
 npm run build
@@ -134,7 +154,9 @@ The playground covers four independent failure modes. Each check can fail on its
 
 ## QA
 
-Full checklist: [docs/qa.md](docs/qa.md).
+Step-by-step module (all phases): [docs/qa.md](docs/qa.md).
+
+Latest automated results: [docs/qa/RESULTS.md](docs/qa/RESULTS.md).
 
 **Documents (Phase 3)** — sign in, open `/app/documents`:
 
@@ -163,18 +185,20 @@ Do not use “upload a `.exe` renamed to `.pdf`” as a positive test. That file
 
 ```
 src/
-  lib/crypto/          SHA-256, RFC 8785 JCS, Ed25519, did:key
+  lib/crypto/          SHA-256, RFC 8785 JCS, Ed25519, did:key, KMS wrap
   lib/identity/        DID resolution, RBAC, key lifecycle
   lib/credentials/     VC 2.0 issuance and Bitstring Status List
-  lib/verification/    Independent verification pipeline
-  lib/ledger/          Hash-chain adapter + Fabric adapter (refuse-to-fake)
+  lib/verification/    Pipeline, policy, signed verification reports
+  lib/ledger/          Hash-chain + Fabric Gateway adapter (refuse-to-fake)
+  lib/storage/         Object storage port (db / fs / s3-refuse)
   lib/documents/       Diploma PDF generation, ingest, evidence packages
-  lib/trust/           Runtime, seed, server functions, key sealing
-  routes/              Public verifier, issuer console, auth
+  lib/audit/           Tenant audit hash chain
+  lib/trust/           Runtime, seed, server functions
+  routes/              Public verifier, issuer console, wallet, auth
 chaincode/
   document-registry/   Hyperledger Fabric chaincode (hashes and status only)
-migrations/            Postgres schema (tenants, credentials, ledger_blocks, …)
-docs/                  Architecture, trust model, ADRs
+migrations/            Postgres schema
+docs/                  Architecture, phases, ADRs, QA module
 ```
 
 ## Ledger adapters

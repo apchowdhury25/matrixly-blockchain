@@ -1,89 +1,116 @@
-# QA
+# QA module
 
-Manual checks after each shipped phase. Automated proof is `npm run test:trust`.
+Step-by-step tests after every shipped phase. Automated proof: `npm run test:trust`, `npm run typecheck`.
 
 Public verification does **not** require an account. Issuer and holder steps do.
 
+How to record a result: **PASS** / **FAIL** / **BLOCKED**. A phase is not done if any required row is FAIL.
+
+---
+
 ## Phase 1 — Foundation
 
-- [ ] Home playground **Valid diploma** → `VALID` (signature, hash, issuer, ledger, status)
-- [ ] **Tampered** → `INVALID` (document hash mismatch)
-- [ ] **Revoked** → `REVOKED`
-- [ ] **Expired** → `EXPIRED`
-- [ ] Opaque verify link has no holder name or email in the URL
-- [ ] `/trust` describes cryptographic evidence, not a database `VALID` flag
+| # | Step | Expected | Result |
+|---|---|---|---|
+| 1.1 | Open home. Run **Valid diploma** | Status `VALID`. Flags: issuer, signature, document SHA-256, ledger, signed status list | |
+| 1.2 | Run **Tampered** | `INVALID`. Document SHA-256 FAIL. Other flags may still pass | |
+| 1.3 | Run **Revoked** | `REVOKED` | |
+| 1.4 | Run **Expired** | `EXPIRED` | |
+| 1.5 | Copy an opaque verify URL | No holder name or email in the path | |
+| 1.6 | Open `/trust` | Pipeline describes cryptographic evidence, not a database `VALID` flag | |
+
+---
 
 ## Phase 2 — Identity
 
 Sign in, then:
 
-- [ ] `/app/keys` shows a `did:key` and `publicKeyMultibase` only — no secret key material
-- [ ] Open the public DID document from that page (`/did/{multibase}`)
-- [ ] Tenant admin can **Rotate signing key**. New DID is current; previous DID stays listed as `ROTATED`
-- [ ] A diploma issued **before** rotation still verifies as `VALID`
-- [ ] `/app/audit` records the rotation
+| # | Step | Expected | Result |
+|---|---|---|---|
+| 2.1 | Open `/app/keys` | `did:key` + `publicKeyMultibase` only. No secret key material | |
+| 2.2 | Open the public DID document | JSON `@context` / verification method matches the DID | |
+| 2.3 | **Rotate signing key** | New DID is current; previous listed `ROTATED` | |
+| 2.4 | Verify a diploma issued **before** rotation | Still `VALID` against the old DID | |
+| 2.5 | Audit log | Rotation event present | |
+
+---
 
 ## Phase 3 — Documents
 
-Sign in, then **Documents**:
+Sign in → **Documents**:
 
-| Action | Expected |
-|---|---|
-| Upload a real PDF | Status `HASHED`. SHA-256 of the **bytes** is shown. Filename is metadata only. |
-| Upload the same PDF again | Deduped. Same hash, one row. |
-| Rename a PDF to `.exe` and upload | **Accepted as PDF.** Inspection uses magic bytes, not the name. |
-| Rename an `.exe` / ZIP to `.pdf` and upload | **Rejected.** MZ and PK signatures fail closed. |
-| Issue from a `HASHED` row | Credential created. Document becomes `ISSUED`. Public verifier → `VALID` with the bound file. |
-| Issue the same document again | Rejected (“already bound”). |
-| Supply a one-byte-different file at verify | `INVALID` (hash mismatch). |
-| Issue with no upload (generate diploma) | Still works. New PDF is hashed and anchored. |
+| # | Step | Expected | Result |
+|---|---|---|---|
+| 3.1 | Upload a real PDF | `HASHED`. SHA-256 of the **bytes** shown | |
+| 3.2 | Upload the same PDF again | One row, same hash | |
+| 3.3 | Rename a PDF to `.exe` and upload | **Accepted** (magic bytes) | |
+| 3.4 | Rename an `.exe` / ZIP to `.pdf` and upload | **Rejected** | |
+| 3.5 | Issue from a `HASHED` row | Document `ISSUED`. Public verify `VALID` with bound file | |
+| 3.6 | Issue the same document again | Rejected | |
+| 3.7 | Verify with a one-byte-different file | `INVALID` | |
+| 3.8 | Issue with generated diploma (no upload) | Still `VALID` | |
+
+---
 
 ## Phase 4 — Holder
 
-Sign in, then:
+| # | Step | Expected | Result |
+|---|---|---|---|
+| 4.1 | Open `/wallet` | Holder `did:key` exists | |
+| 4.2 | Open `/wallet/claim/demo-claim-valid-bcs` | Offer for Alex Rivera / BCS | |
+| 4.3 | Claim | Wallet shows the credential. Issuer signature unchanged | |
+| 4.4 | **Present** | `/present/{ref}` holder proof PASS, inner VC VALID | |
+| 4.5 | Claim URL | No holder name in the path | |
 
-| Action | Expected |
-|---|---|
-| Open `/wallet` | Holder `did:key` is created. Empty wallet is OK. |
-| From issuer **Credentials**, copy claim link | Opaque path `/wallet/claim/…` — no holder name in the URL |
-| Open `/wallet/claim/demo-claim-valid-bcs` | Offer shows Alex Rivera / BCS |
-| Claim | Credential appears in the wallet. Signature is unchanged. |
-| **Present** | Public `/present/{ref}` shows holder proof PASS and inner VC VALID |
+Regression: Phase 1 playground still has four independent failure modes.
 
-Also confirm:
-
-- [ ] Phase 1 playground still has four independent failure modes
-- [ ] Phase 3 document ingest still hashes bytes, not filenames
-- [ ] Issuer key rotation from Phase 2 still leaves old diplomas VALID
+---
 
 ## Phase 5 — Status and policy
 
-- [ ] Home **Valid diploma** still `VALID`, and **Signed status list** is PASS
-- [ ] **Revoked** diploma is `REVOKED` (bit + signed list, not only a table flag)
-- [ ] Issuer **Status** page shows a signed list; public `/status/demo` opens the document
-- [ ] After revoking a newly issued diploma, public verify becomes `REVOKED` and the status list hash changes
+| # | Step | Expected | Result |
+|---|---|---|---|
+| 5.1 | Valid diploma | `VALID` and **Signed status list** PASS | |
+| 5.2 | Revoked diploma | `REVOKED` (bit + signed list) | |
+| 5.3 | Open `/status/demo` | Signed BitstringStatusListCredential, no holder PII | |
+| 5.4 | Issue then revoke a new diploma | Verify becomes `REVOKED`; status-list hash changes | |
+
+---
 
 ## Phase 6 — Audit
 
-- [ ] Verify the valid diploma; open **Signed verification report**
-- [ ] Report page: signature PASS, ledger anchor PASS, no holder name on the page
-- [ ] Tamper the playground; a new report is `INVALID` and still signed
-- [ ] Issuer **Audit**: chain intact, event hashes present
+| # | Step | Expected | Result |
+|---|---|---|---|
+| 6.1 | Verify valid diploma | Link **Signed verification report** | |
+| 6.2 | Open the report | Signature PASS, ledger anchor PASS, **no holder name** | |
+| 6.3 | Tampered playground | New report is `INVALID` and still signed | |
+| 6.4 | Issuer **Audit** | Chain intact, event hashes listed | |
 
-## Phase 7 — Production adapters (specified only)
+---
 
-Not implemented. Do not QA Fabric or S3 until the phase is built.
+## Phase 7 — Production adapters
 
-When it is built:
+Preview (no extra env) must keep working. Fail-closed adapters must not fake success.
 
-- [ ] `LEDGER_ADAPTER=fabric` with no Gateway fails closed (no `VALID` from a fake submit)
-- [ ] Ledger page names **FabricLedgerAdapter** or **HashChainLedgerAdapter** accurately
-- [ ] Bound-file verify still fails on a one-byte mutation after bytes move to object storage
-- [ ] World state contains hashes only — no PDF bytes
+| # | Step | Expected | Result |
+|---|---|---|---|
+| 7.1 | Home playground (default adapters) | Same Phase 1 results | |
+| 7.2 | Issuer **Ledger** | Names `HashChainLedgerAdapter` and integrity `hash-chain` | |
+| 7.3 | Issuer **Documents** | Storage column present (`DatabaseObjectStore` or `db`) | |
+| 7.4 | Issuer **Keys** | Mentions the KMS name (`LocalAesGcmKms`) | |
+| 7.5 | Automated: Fabric without Gateway | Throws; never a successful `LedgerSubmitResult` | |
+| 7.6 | Automated: mock Gateway submit | `previousHash` is `fabric:unavailable`; world state has hashes, not PDF bytes | |
+| 7.7 | Automated: `STORAGE_BACKEND=s3` without bucket | Throws | |
+| 7.8 | Automated: filesystem put/get | SHA-256 of get() equals put() | |
+| 7.9 | Automated: `KMS_BACKEND=aws` without key id | Throws | |
+| 7.10 | `LEDGER_ADAPTER=fabric` in preview without peer | Must **not** serve new anchors as VALID | |
 
-## Out of scope until a later phase
+A live Fabric network and S3 bucket are **out of band**. Do not mark 7.10 PASS by pointing at the hash-chain.
 
-- S3 / IPFS object storage
-- `did:web` and a universal resolver
+---
+
+## Out of scope
+
+- `did:web` / universal resolver
 - Mobile wallet / DIDComm / selective disclosure
-- A live Hyperledger Fabric network
+- Operating a production Fabric consortium from this app

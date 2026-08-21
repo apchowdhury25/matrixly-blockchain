@@ -23,7 +23,7 @@ import { assertActiveSigningKey, createHolderIdentity, createIssuerIdentity } fr
 import { assertPermission, permissionMap } from "@/lib/identity/roles";
 import { AUDIT_GENESIS, verifyAuditSequence } from "@/lib/audit/chain";
 import { ensureDemoSeed } from "./seed";
-import { audit, getLedger, getPlatformVerifier } from "./runtime";
+import { audit, getLedger, getPlatformVerifier, getStorage, readDocumentBytes, runtimeAdapterStatus } from "./runtime";
 import { DEMO, newId, opaqueRef } from "./ids";
 import { openSecret, sealSecret } from "./seal";
 
@@ -168,11 +168,13 @@ export const verifyOpaqueRef = createServerFn({ method: "POST" })
     const credential = JSON.parse(row.credential_json) as Record<string, unknown>;
     let documentBytes: Uint8Array | undefined;
     if (data.mode === "bound" && row.document_id) {
-      const docs = await sql<{ content_b64: string }>`select content_b64 from documents where id = ${row.document_id}`;
-      if (docs[0]) documentBytes = Uint8Array.from(Buffer.from(docs[0].content_b64, "base64"));
+      const docs = await sql<{ content_b64: string | null; object_name: string }>`
+        select content_b64, object_name from documents where id = ${row.document_id}`;
+      if (docs[0]) documentBytes = await readDocumentBytes(docs[0].object_name, docs[0].content_b64);
     } else if (data.mode === "tampered") {
-      const docs = await sql<{ content_b64: string }>`select content_b64 from documents where id = ${DEMO.tamperedDocId}`;
-      if (docs[0]) documentBytes = Uint8Array.from(Buffer.from(docs[0].content_b64, "base64"));
+      const docs = await sql<{ content_b64: string | null; object_name: string }>`
+        select content_b64, object_name from documents where id = ${DEMO.tamperedDocId}`;
+      if (docs[0]) documentBytes = await readDocumentBytes(docs[0].object_name, docs[0].content_b64);
     } else if (data.uploadB64) {
       const bytes = Uint8Array.from(Buffer.from(data.uploadB64, "base64"));
       inspectBytes(bytes);
@@ -298,20 +300,22 @@ export const downloadDocument = createServerFn({ method: "POST" })
             ? DEMO.expiredRef
             : null;
     if (data.kind === "tampered") {
-      const docs = await sql<{ content_b64: string; mime: string; object_name: string }>`
+      const docs = await sql<{ content_b64: string | null; mime: string; object_name: string }>`
         select content_b64, mime, object_name from documents where id = ${DEMO.tamperedDocId}`;
       const doc = docs[0];
       if (!doc) throw new Error("Demo document missing");
-      return doc;
+      const bytes = await readDocumentBytes(doc.object_name, doc.content_b64);
+      return { content_b64: Buffer.from(bytes).toString("base64"), mime: doc.mime, object_name: doc.object_name };
     }
     const rows = await sql<{ document_id: string | null }>`select document_id from credentials where opaque_ref = ${ref}`;
     const docId = rows[0]?.document_id;
     if (!docId) throw new Error("Demo document missing");
-    const docs = await sql<{ content_b64: string; mime: string; object_name: string }>`
+    const docs = await sql<{ content_b64: string | null; mime: string; object_name: string }>`
       select content_b64, mime, object_name from documents where id = ${docId}`;
     const doc = docs[0];
     if (!doc) throw new Error("Demo document missing");
-    return doc;
+    const bytes = await readDocumentBytes(doc.object_name, doc.content_b64);
+    return { content_b64: Buffer.from(bytes).toString("base64"), mime: doc.mime, object_name: doc.object_name };
   });
 
 export const getPublicCredential = createServerFn({ method: "POST" })
@@ -348,8 +352,12 @@ export const getLedgerSummary = createServerFn({ method: "GET" }).handler(async 
   const chain = await ledger.verifyChain();
   const latest = await ledger.getLatestBlock();
   const blocks = await ledger.listBlocks();
+  const adapters = runtimeAdapterStatus();
   return {
     adapter: ledger.name,
+    integrityModel: chain.model,
+    storage: adapters.storage,
+    kms: adapters.kmsName,
     chain,
     latest,
     blocks: blocks.slice(-12).reverse().map((b) => ({
@@ -543,15 +551,18 @@ async function persistDocument(input: {
     };
   }
   const id = newId("doc");
+  const storage = await getStorage();
+  await storage.put(built.evidence.objectName, input.bytes, built.evidence.mime);
+  const contentB64 = storage.keepsBytesInDb ? Buffer.from(input.bytes).toString("base64") : null;
   await sql`
     insert into documents (
       id, tenant_id, issuer_id, object_name, mime, byte_length, hash_algorithm, hash, status,
-      content_b64, origin, inspected_kind, evidence_json, original_name
+      content_b64, origin, inspected_kind, evidence_json, original_name, storage_backend
     ) values (
       ${id}, ${input.tenantId}, ${input.issuerId}, ${built.evidence.objectName}, ${built.evidence.mime},
       ${built.evidence.byteLength}, ${"sha256"}, ${built.evidence.hash}, ${"HASHED"},
-      ${Buffer.from(input.bytes).toString("base64")}, ${built.evidence.origin}, ${built.evidence.kind},
-      ${JSON.stringify(built.evidence)}, ${input.originalName ?? null}
+      ${contentB64}, ${built.evidence.origin}, ${built.evidence.kind},
+      ${JSON.stringify(built.evidence)}, ${input.originalName ?? null}, ${storage.name}
     )`;
   await audit({
     tenantId: input.tenantId,
@@ -611,9 +622,11 @@ export const listDocuments = createServerFn({ method: "GET" })
       inspected_kind: string | null;
       original_name: string | null;
       created_at: string;
+      storage_backend: string;
     }>`
       select id, hash, mime, byte_length, status, coalesce(origin, 'GENERATED') as origin,
-             inspected_kind, original_name, created_at::text as created_at
+             inspected_kind, original_name, created_at::text as created_at,
+             coalesce(storage_backend, 'db') as storage_backend
       from documents
       where tenant_id = ${ws.tenantId}
       order by created_at desc`;
@@ -626,12 +639,13 @@ export const downloadIssuerDocument = createServerFn({ method: "POST" })
     const ws = await workspaceFor(context.userId);
     assertPermission(ws.role, "readDocuments");
     const sql = await getSql();
-    const rows = await sql<{ content_b64: string; mime: string; object_name: string }>`
+    const rows = await sql<{ content_b64: string | null; mime: string; object_name: string }>`
       select content_b64, mime, object_name from documents
       where id = ${data.id} and tenant_id = ${ws.tenantId}`;
     const doc = rows[0];
     if (!doc) throw new Error("Document not found");
-    return doc;
+    const bytes = await readDocumentBytes(doc.object_name, doc.content_b64);
+    return { content_b64: Buffer.from(bytes).toString("base64"), mime: doc.mime, object_name: doc.object_name };
   });
 
 export const issueDegree = createServerFn({ method: "POST" })
@@ -973,6 +987,7 @@ export const listKeys = createServerFn({ method: "GET" })
       role: ws.role,
       issuerDid: ws.issuerDid,
       permissions: permissionMap(ws.role),
+      kms: runtimeAdapterStatus().kmsName,
       keys,
     };
   });
@@ -1328,9 +1343,9 @@ export const verifyPresentationRef = createServerFn({ method: "POST" })
       inspectBytes(bytes);
       documentBytes = bytes;
     } else if (data.mode === "bound" && cred?.document_id) {
-      const docs = await sql<{ content_b64: string }>`
-        select content_b64 from documents where id = ${cred.document_id}`;
-      if (docs[0]) documentBytes = Uint8Array.from(Buffer.from(docs[0].content_b64, "base64"));
+      const docs = await sql<{ content_b64: string | null; object_name: string }>`
+        select content_b64, object_name from documents where id = ${cred.document_id}`;
+      if (docs[0]) documentBytes = await readDocumentBytes(docs[0].object_name, docs[0].content_b64);
     }
     const lists = cred
       ? await sql<{ encoded_list: string; credential_json: string | null }>`

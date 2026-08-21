@@ -72,7 +72,7 @@ function DocumentsPage() {
       <h1 className="mt-2 font-display text-4xl">Documents</h1>
       <p className="mt-2 max-w-2xl text-ink-soft">
         Inspection uses magic bytes, not the filename. SHA-256 of the exact bytes is the evidence.
-        Original files never go on the ledger.
+        Original files never go on the ledger. Storage adapter is named on each row.
       </p>
       <label className="mt-6 inline-flex h-11 cursor-pointer items-center rounded-sm bg-pine px-5 text-sm font-medium text-pine-fg">
         {busy ? "Inspecting…" : "Upload a document"}
@@ -98,13 +98,14 @@ function DocumentsPage() {
               <th className="px-4 py-3 font-medium">Type</th>
               <th className="px-4 py-3 font-medium">Origin</th>
               <th className="px-4 py-3 font-medium">Status</th>
+              <th className="px-4 py-3 font-medium">Storage</th>
               <th className="px-4 py-3 font-medium" />
             </tr>
           </thead>
           <tbody>
             {rows.length === 0 ? (
               <tr>
-                <td className="px-4 py-8 text-stone" colSpan={5}>
+                <td className="px-4 py-8 text-stone" colSpan={6}>
                   No documents ingested in this workspace yet.
                 </td>
               </tr>
@@ -122,6 +123,7 @@ function DocumentsPage() {
                   <td className="px-4 py-3 font-mono text-xs">{r.inspected_kind ?? r.mime}</td>
                   <td className="px-4 py-3 font-mono text-xs">{r.origin}</td>
                   <td className="px-4 py-3 font-mono text-xs">{r.status}</td>
+                  <td className="px-4 py-3 font-mono text-xs">{r.storage_backend}</td>
                   <td className="px-4 py-3 text-right">
                     <div className="flex justify-end gap-2">
                       <Button size="sm" variant="secondary" onClick={() => onDownload(r.id, r.original_name ?? "")}>

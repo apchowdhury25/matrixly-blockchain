@@ -1,10 +1,31 @@
 # Phase 7 — Production adapters
 
-**Status: specified, not implemented.**
+**Status: implemented on the preview path (fail-closed).** Completed 21 August 2026.
 
-Phases 1–6 prove the cryptographic chain on a real hash-linked ledger, with original bytes off-chain in the application database. Phase 7 is the cutover to **production infrastructure** without changing verification semantics.
+Live Fabric peers, S3 buckets, and AWS KMS are **operator infrastructure**. This phase ships the ports, factory, chaincode gaps, and tests that prove refuse-to-fake. Default runtime remains hash-chain + database bytes + local AES.
 
-This phase does **not** start until you approve implementation. This document is the implementation contract.
+## What was implemented
+
+- `LEDGER_ADAPTER=hashchain|fabric` factory (`src/lib/ledger/factory.ts`)
+- Fabric adapter: Gateway `submitAsync` / `evaluate` mapping, honest `previousHash = fabric:unavailable`
+- Injected `GatewayContract` test double (not a ledger)
+- Unconfigured Fabric **throws**
+- Chaincode: `SetCredentialStatus`, `GetCredentialStatus`, `RegisterVerificationAnchor`, `GetVerificationAnchor`
+- Object storage port: db / filesystem / S3-refuse
+- KMS port: local AES-GCM / AWS-refuse
+- Ledger / Documents / Keys pages name the real adapters
+- Schema `0008_storage.sql`
+
+## Tests
+
+See `src/lib/ledger/fabric.test.ts`, `factory.test.ts`, `src/lib/storage/storage.test.ts`, `src/lib/crypto/kms.test.ts`.
+
+## Not in this phase
+
+- A running Fabric network in this environment
+- Real AWS S3 / KMS SDK sessions
+- Replay job from hash-chain onto Fabric (cutover runbook remains in this document below)
+
 
 ---
 

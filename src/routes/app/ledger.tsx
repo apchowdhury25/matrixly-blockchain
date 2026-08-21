@@ -21,8 +21,9 @@ function LedgerPage() {
     <div>
       <h1 className="font-display text-4xl">Ledger</h1>
       <p className="mt-2 text-ink-soft">
-        Adapter: {data.adapter}. Chain {data.chain.valid ? "intact" : "BROKEN"} · {data.chain.length}{" "}
-        blocks. Fabric is available as an adapter and will not fake confirmations.
+        Adapter: {data.adapter} · integrity {data.integrityModel}. Storage: {data.storage}. KMS: {data.kms}.
+        Chain {data.chain.valid ? "intact" : "BROKEN"} · {data.chain.length} blocks.
+        Fabric is a separate adapter and will not fake confirmations.
       </p>
       <div className="mt-8 overflow-x-auto rounded-xl border border-rule bg-paper-raised">
         <table className="w-full min-w-[720px] text-left text-sm">

@@ -222,6 +222,115 @@ func (s *DocumentRegistry) GetCredential(ctx contractapi.TransactionContextInter
 	return &rec, nil
 }
 
+type CredentialStatusRecord struct {
+	CredentialID string `json:"credentialId"`
+	Status       string `json:"status"`
+	Reason       string `json:"reason,omitempty"`
+	At           string `json:"at"`
+}
+
+func (s *DocumentRegistry) SetCredentialStatus(ctx contractapi.TransactionContextInterface, payload string) error {
+	var rec CredentialStatusRecord
+	if err := json.Unmarshal([]byte(payload), &rec); err != nil {
+		return fmt.Errorf("invalid payload: %w", err)
+	}
+	if rec.CredentialID == "" || rec.Status == "" {
+		return fmt.Errorf("credentialId and status are required")
+	}
+	existing, err := ctx.GetStub().GetState("CREDENTIAL:" + rec.CredentialID)
+	if err != nil {
+		return err
+	}
+	if existing == nil {
+		return fmt.Errorf("unknown credential")
+	}
+	var cred CredentialRecord
+	if err := json.Unmarshal(existing, &cred); err != nil {
+		return err
+	}
+	cred.Status = rec.Status
+	updated, err := json.Marshal(cred)
+	if err != nil {
+		return err
+	}
+	if err := ctx.GetStub().PutState("CREDENTIAL:"+rec.CredentialID, updated); err != nil {
+		return err
+	}
+	statusBytes, err := json.Marshal(rec)
+	if err != nil {
+		return err
+	}
+	if err := ctx.GetStub().PutState("STATUS:"+rec.CredentialID, statusBytes); err != nil {
+		return err
+	}
+	return ctx.GetStub().SetEvent("credential.status", statusBytes)
+}
+
+func (s *DocumentRegistry) GetCredentialStatus(ctx contractapi.TransactionContextInterface, credentialID string) (*CredentialStatusRecord, error) {
+	bytes, err := ctx.GetStub().GetState("STATUS:" + credentialID)
+	if err != nil {
+		return nil, err
+	}
+	if bytes == nil {
+		return nil, fmt.Errorf("not found")
+	}
+	var rec CredentialStatusRecord
+	if err := json.Unmarshal(bytes, &rec); err != nil {
+		return nil, err
+	}
+	return &rec, nil
+}
+
+type VerificationAnchor struct {
+	ReportID       string `json:"reportId"`
+	ReportHash     string `json:"reportHash"`
+	CredentialHash string `json:"credentialHash"`
+	ResultStatus   string `json:"resultStatus"`
+	VerifierDID    string `json:"verifierDid"`
+	At             string `json:"at"`
+}
+
+func (s *DocumentRegistry) RegisterVerificationAnchor(ctx contractapi.TransactionContextInterface, payload string) error {
+	var rec VerificationAnchor
+	if err := json.Unmarshal([]byte(payload), &rec); err != nil {
+		return fmt.Errorf("invalid payload: %w", err)
+	}
+	if rec.ReportHash == "" || rec.CredentialHash == "" || rec.VerifierDID == "" {
+		return fmt.Errorf("reportHash, credentialHash, and verifierDid are required")
+	}
+	key := "VREPORT:" + rec.ReportHash
+	existing, err := ctx.GetStub().GetState(key)
+	if err != nil {
+		return err
+	}
+	if existing != nil {
+		return fmt.Errorf("verification report already anchored")
+	}
+	bytes, err := json.Marshal(rec)
+	if err != nil {
+		return err
+	}
+	if err := ctx.GetStub().PutState(key, bytes); err != nil {
+		return err
+	}
+	return ctx.GetStub().SetEvent("verification.anchored", bytes)
+}
+
+func (s *DocumentRegistry) GetVerificationAnchor(ctx contractapi.TransactionContextInterface, reportHash string) (*VerificationAnchor, error) {
+	bytes, err := ctx.GetStub().GetState("VREPORT:" + reportHash)
+	if err != nil {
+		return nil, err
+	}
+	if bytes == nil {
+		return nil, fmt.Errorf("not found")
+	}
+	var rec VerificationAnchor
+	if err := json.Unmarshal(bytes, &rec); err != nil {
+		return nil, err
+	}
+	return &rec, nil
+}
+
 func main() {
 	chaincode, err := contractapi.NewChaincode(&DocumentRegistry{})
 	if err != nil {

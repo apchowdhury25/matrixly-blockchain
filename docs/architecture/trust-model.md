@@ -17,4 +17,4 @@ Verifier determination of authenticity:
 
 A central `verified = true` column is never the source of truth.
 
-Production cutover (Fabric Gateway, object storage, KMS) is specified in [Phase 7](../phases/phase-07.md) and is **not implemented**. This runtime’s ledger is the hash-chain adapter.
+Production cutover (Fabric Gateway, object storage, KMS) is specified in [Phase 7](../phases/phase-07.md). This preview uses `HashChainLedgerAdapter` unless `LEDGER_ADAPTER=fabric` is set, in which case a missing Gateway **refuses** — it does not fake a block.

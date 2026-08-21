@@ -48,7 +48,7 @@ function KeysPage() {
       <p className="font-mono text-xs tracking-[0.18em] text-stone uppercase">Identity</p>
       <h1 className="mt-2 font-display text-4xl">Verification methods</h1>
       <p className="mt-2 max-w-2xl text-ink-soft">
-        Public keys only. Secret keys are AES-256-GCM sealed and never returned by the API. A did:key
+        Public keys only. Secret keys are sealed by {data?.kms ?? "the configured KMS"} and never returned by the API. A did:key
         rotation issues a new identifier; historical credentials still verify against the prior DID.
       </p>
       {error ? <p className="mt-4 text-invalid">{error}</p> : null}

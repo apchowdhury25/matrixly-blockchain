@@ -1,52 +1,43 @@
-import { getSql, type Sql } from "@/lib/db";
-import {
-  HashChainLedgerAdapter,
-  type LedgerBlock,
-  type LedgerStore,
-} from "@/lib/ledger/hash-chain";
-import type { DistributedLedgerAdapter } from "@/lib/ledger/adapter";
+import { getSql } from "@/lib/db";
 import { AUDIT_GENESIS, auditEventHash } from "@/lib/audit/chain";
 import { createDidKeyIdentity } from "@/lib/identity/keys";
+import { createLedger, type RuntimeLedger } from "@/lib/ledger/factory";
+import { getStorage } from "@/lib/storage/factory";
+import { getKms } from "@/lib/crypto/kms";
 import { sealSecret } from "./seal";
 
-class PostgresLedgerStore implements LedgerStore {
-  constructor(private sql: Sql) {}
-  async append(block: LedgerBlock): Promise<void> {
-    await this.sql`
-      insert into ledger_blocks (seq, previous_hash, payload_json, payload_hash, block_hash, timestamp_iso)
-      values (
-        ${block.seq},
-        ${block.previousHash},
-        ${JSON.stringify(block.payload)},
-        ${block.payloadHash},
-        ${block.blockHash},
-        ${block.timestamp}
-      )`;
-  }
-  async all(): Promise<LedgerBlock[]> {
-    const rows = await this.sql<{
-      seq: number;
-      previous_hash: string;
-      payload_json: string;
-      payload_hash: string;
-      block_hash: string;
-      timestamp_iso: string;
-    }>`select seq, previous_hash, payload_json, payload_hash, block_hash, timestamp_iso
-       from ledger_blocks order by seq asc`;
-    return rows.map((r) => ({
-      seq: Number(r.seq),
-      previousHash: r.previous_hash,
-      payload: JSON.parse(r.payload_json) as LedgerBlock["payload"],
-      payloadHash: r.payload_hash,
-      blockHash: r.block_hash,
-      timestamp: r.timestamp_iso,
-    }));
+export async function getLedger(): Promise<RuntimeLedger> {
+  return createLedger();
+}
+
+export { getStorage } from "@/lib/storage/factory";
+
+export async function readDocumentBytes(
+  objectName: string,
+  fallbackB64?: string | null,
+): Promise<Uint8Array> {
+  const storage = await getStorage();
+  try {
+    return await storage.get(objectName);
+  } catch {
+    if (fallbackB64) return Uint8Array.from(Buffer.from(fallbackB64, "base64"));
+    throw new Error(`Document object ${objectName} was not found in storage`);
   }
 }
 
-export async function getLedger(): Promise<DistributedLedgerAdapter & { listBlocks(): Promise<LedgerBlock[]> }> {
-  const sql = await getSql();
-  return new HashChainLedgerAdapter(new PostgresLedgerStore(sql));
+export function runtimeAdapterStatus() {
+  const ledger =
+    (typeof process !== "undefined" ? process.env.LEDGER_ADAPTER : undefined)?.trim().toLowerCase() === "fabric"
+      ? "fabric"
+      : "hashchain";
+  const storage = (typeof process !== "undefined" ? process.env.STORAGE_BACKEND : undefined)?.trim().toLowerCase() || "db";
+  const kms = (typeof process !== "undefined" ? process.env.KMS_BACKEND : undefined)?.trim().toLowerCase() || "local";
+  return {
+    ledger,
+    storage,
+    kms,
+    kmsName: getKms().name,
+  };
 }
 
 export async function getPlatformVerifier(): Promise<{

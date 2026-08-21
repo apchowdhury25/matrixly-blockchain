@@ -67,6 +67,13 @@ export type VerificationAnchorRecord = {
   at: string;
 };
 
+export type ChainIntegrity = {
+  valid: boolean;
+  length: number;
+  reason?: string;
+  model: "hash-chain" | "fabric-endorsement";
+};
+
 export type LedgerSubmitResult = {
   blockHash: string;
   seq: number;
@@ -90,5 +97,5 @@ export interface DistributedLedgerAdapter {
   getVerificationAnchor(reportHash: string): Promise<VerificationAnchorRecord | null>;
   getCredentialStatus(credentialId: string): Promise<CredentialStatusRecord | null>;
   getLatestBlock(): Promise<{ seq: number; blockHash: string } | null>;
-  verifyChain(): Promise<{ valid: boolean; length: number; reason?: string }>;
+  verifyChain(): Promise<ChainIntegrity>;
 }

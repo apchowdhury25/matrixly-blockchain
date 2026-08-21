@@ -65,14 +65,19 @@ export function verifyBlock(block: LedgerBlock, expectedPrevious: string): { val
   return { valid: true };
 }
 
-export function verifyBlockSequence(blocks: LedgerBlock[]): { valid: boolean; length: number; reason?: string } {
+export function verifyBlockSequence(blocks: LedgerBlock[]): {
+  valid: boolean;
+  length: number;
+  reason?: string;
+  model: "hash-chain";
+} {
   let prev = GENESIS_PREV;
   for (const block of blocks) {
     const r = verifyBlock(block, prev);
-    if (!r.valid) return { valid: false, length: blocks.length, reason: r.reason };
+    if (!r.valid) return { valid: false, length: blocks.length, reason: r.reason, model: "hash-chain" };
     prev = block.blockHash;
   }
-  return { valid: true, length: blocks.length };
+  return { valid: true, length: blocks.length, model: "hash-chain" };
 }
 
 export type LedgerStore = {
@@ -93,6 +98,7 @@ export class MemoryLedgerStore implements LedgerStore {
 
 export class HashChainLedgerAdapter implements DistributedLedgerAdapter {
   readonly name = "HashChainLedgerAdapter";
+  readonly integrityModel = "hash-chain" as const;
   private readonly store: LedgerStore;
 
   constructor(store: LedgerStore) {
@@ -212,7 +218,7 @@ export class HashChainLedgerAdapter implements DistributedLedgerAdapter {
     return last ? { seq: last.seq, blockHash: last.blockHash } : null;
   }
 
-  async verifyChain(): Promise<{ valid: boolean; length: number; reason?: string }> {
+  async verifyChain() {
     return verifyBlockSequence(await this.store.all());
   }
 
