@@ -1,7 +1,8 @@
 # Protocol standards investigation
 
 This is an engineering map, **not a certification**. Matrixly Trust does not become
-eIDAS-, EUDI-, or OpenID-certified by listing these documents.
+eIDAS-, EUDI-, or OpenID-certified by listing these documents. The control list is
+[docs/compliance/matrix.md](../compliance/matrix.md).
 
 There are two different “Matrix” protocols in circulation. This note covers both.
 

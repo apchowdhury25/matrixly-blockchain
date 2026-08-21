@@ -3,6 +3,7 @@
 - **Click-by-click procedures:** [STEPS.md](STEPS.md)
 - **Latest automated results:** [RESULTS.md](RESULTS.md)
 - **API examples:** [api-examples.md](../api-examples.md)
+- **Compliance matrix:** [compliance/matrix.md](../compliance/matrix.md)
 
 Score each step **PASS** / **FAIL** / **BLOCKED**. A phase is not done if any required row is FAIL.
 

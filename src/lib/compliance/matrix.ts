@@ -36,7 +36,7 @@ export const COMPLIANCE_MATRIX: ComplianceControl[] = [
     area: "Identity",
     control: "did:web documents are fetched over HTTPS; private/link-local hosts fail closed",
     status: "implemented",
-    evidence: "/issuers/{slug}/did.json ; did:ion and others remain unsupported",
+    evidence: "/did-web/{slug} and GET /api/v1/did-web/{slug}; did:ion remains unsupported",
   },
   {
     id: "ID-04",

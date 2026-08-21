@@ -3,7 +3,7 @@
 Verifier determination of authenticity:
 
 1. W3C VC 2.0 structure
-2. Issuer DID resolution (`did:key` Ed25519; unsupported methods fail closed)
+2. Issuer DID resolution (`did:key` locally, `did:web` over HTTPS; unsupported methods fail closed)
 3. Issuer ACTIVE on the ledger (registry status is independent of DID method math)
 4. Data Integrity proof (`eddsa-jcs-2022` over RFC 8785 JCS)
 5. SHA-256 of supplied document bytes equals bound `documentHash` (filename is not evidence)
@@ -17,5 +17,7 @@ Verifier determination of authenticity:
 13. Machine verifiers use `POST /api/v1/verify` with a hashed Bearer key. Missing keys return 401, never VALID.
 
 A central `verified = true` column is never the source of truth.
+
+Engineering controls (not a certification): [compliance matrix](../compliance/matrix.md).
 
 Production cutover (Fabric Gateway, object storage, KMS) is specified in [Phase 7](../phases/phase-07.md). This preview uses `HashChainLedgerAdapter` unless `LEDGER_ADAPTER=fabric` is set, in which case a missing Gateway **refuses** — it does not fake a block.
