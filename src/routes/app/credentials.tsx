@@ -39,13 +39,14 @@ function CredentialsPage() {
               <th className="px-4 py-3 font-medium">Credential</th>
               <th className="px-4 py-3 font-medium">Status</th>
               <th className="px-4 py-3 font-medium">Verify</th>
+              <th className="px-4 py-3 font-medium">Claim</th>
               <th className="px-4 py-3 font-medium" />
             </tr>
           </thead>
           <tbody>
             {rows.length === 0 ? (
               <tr>
-                <td className="px-4 py-8 text-stone" colSpan={5}>
+                <td className="px-4 py-8 text-stone" colSpan={6}>
                   No credentials issued in this workspace yet.
                 </td>
               </tr>
@@ -59,6 +60,22 @@ function CredentialsPage() {
                     <Link to="/verify/$ref" params={{ ref: r.opaque_ref }} className="underline-offset-4 hover:underline">
                       {r.opaque_ref}
                     </Link>
+                  </td>
+                  <td className="px-4 py-3">
+                    {r.claim_token ? (
+                      <button
+                        type="button"
+                        className="font-mono text-xs underline-offset-4 hover:underline"
+                        onClick={() => {
+                          const url = `${window.location.origin}/wallet/claim/${r.claim_token}`;
+                          void navigator.clipboard.writeText(url);
+                        }}
+                      >
+                        {r.delivery_status === "CLAIMED" ? "Claimed" : "Copy claim link"}
+                      </button>
+                    ) : (
+                      <span className="text-stone">—</span>
+                    )}
                   </td>
                   <td className="px-4 py-3 text-right">
                     {r.status === "ACTIVE" ? (

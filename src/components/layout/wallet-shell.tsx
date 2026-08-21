@@ -4,16 +4,10 @@ import { Wordmark } from "@/components/brand/logo";
 import { cn } from "@/lib/utils";
 
 const links = [
-  { to: "/app", label: "Overview" },
-  { to: "/app/documents", label: "Documents" },
-  { to: "/app/credentials", label: "Credentials" },
-  { to: "/app/issue", label: "Issue" },
-  { to: "/app/ledger", label: "Ledger" },
-  { to: "/app/keys", label: "Keys" },
-  { to: "/app/audit", label: "Audit" },
+  { to: "/wallet", label: "Wallet" },
 ] as const;
 
-export function AppShell({ children }: { children: React.ReactNode }) {
+export function WalletShell({ children }: { children: React.ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   return (
     <div className="min-h-screen bg-paper">
@@ -21,8 +15,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
           <Wordmark compact />
           <div className="flex items-center gap-3">
-            <Link to="/wallet" className="hidden text-sm text-ink-soft hover:text-ink sm:inline">
-              Wallet
+            <Link to="/app" className="hidden text-sm text-ink-soft hover:text-ink sm:inline">
+              Issuer console
             </Link>
             <Link to="/verify" className="hidden text-sm text-ink-soft hover:text-ink sm:inline">
               Public verifier

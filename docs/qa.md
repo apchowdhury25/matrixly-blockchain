@@ -1,8 +1,8 @@
 # QA
 
-Manual checks after each shipped phase. Automated proof is `npm run test:trust` (28 tests as of Phase 3).
+Manual checks after each shipped phase. Automated proof is `npm run test:trust`.
 
-Public verification does **not** require an account. Issuer steps do.
+Public verification does **not** require an account. Issuer and holder steps do.
 
 ## Phase 1 — Foundation
 
@@ -38,15 +38,27 @@ Sign in, then **Documents**:
 | Supply a one-byte-different file at verify | `INVALID` (hash mismatch). |
 | Issue with no upload (generate diploma) | Still works. New PDF is hashed and anchored. |
 
+## Phase 4 — Holder
+
+Sign in, then:
+
+| Action | Expected |
+|---|---|
+| Open `/wallet` | Holder `did:key` is created. Empty wallet is OK. |
+| From issuer **Credentials**, copy claim link | Opaque path `/wallet/claim/…` — no holder name in the URL |
+| Open `/wallet/claim/demo-claim-valid-bcs` | Offer shows Alex Rivera / BCS |
+| Claim | Credential appears in the wallet. Signature is unchanged. |
+| **Present** | Public `/present/{ref}` shows holder proof PASS and inner VC VALID |
+
 Also confirm:
 
-- [ ] Ledger inspector shows document hashes, not PDF bytes or holder names
-- [ ] Demo diplomas from Phase 1 still pass the four failure modes
-- [ ] `/app/keys` and DID rotation from Phase 2 still work
+- [ ] Phase 1 playground still has four independent failure modes
+- [ ] Phase 3 document ingest still hashes bytes, not filenames
+- [ ] Issuer key rotation from Phase 2 still leaves old diplomas VALID
 
 ## Out of scope until a later phase
 
 - S3 / IPFS object storage
 - `did:web` and a universal resolver
-- Holder wallet / credential delivery
+- Mobile wallet / DIDComm / selective disclosure
 - A live Hyperledger Fabric network

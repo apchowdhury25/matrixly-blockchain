@@ -24,6 +24,9 @@ export type VerifyView = {
   holderName?: string;
   degreeName?: string;
   opaqueRef?: string;
+  holderProofValid?: boolean;
+  holderDid?: string;
+  holderMatchesSubject?: boolean | null;
 };
 
 const tone: Record<VerifyView["status"], string> = {
@@ -92,6 +95,9 @@ export function ResultCard({ result }: { result: VerifyView }) {
         </dl>
         <div>
           <Flag ok={result.issuerVerified} label="Issuer registered" />
+          {result.holderProofValid !== undefined ? (
+            <Flag ok={result.holderProofValid} label="Holder presentation proof" />
+          ) : null}
           <Flag ok={result.signatureValid} label="Ed25519 signature" />
           <Flag
             ok={result.documentIntegrityValid}
@@ -117,6 +123,7 @@ export function ResultCard({ result }: { result: VerifyView }) {
           {result.documentHash ? <p>doc {result.documentHash}</p> : null}
           {result.ledgerBlockHash ? <p>ledger {result.ledgerBlockHash}</p> : null}
           {result.issuerDid ? <p>did {result.issuerDid}</p> : null}
+          {result.holderDid ? <p>holder {result.holderDid}</p> : null}
         </div>
       ) : null}
     </section>

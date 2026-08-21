@@ -66,12 +66,14 @@ export function didDocument(did: string, publicKey: Uint8Array) {
   };
 }
 
+export type ProofPurpose = "assertionMethod" | "authentication";
+
 export type DataIntegrityProof = {
   type: typeof DATA_INTEGRITY_PROOF;
   cryptosuite: typeof ED25519_SUITE;
   created: string;
   verificationMethod: string;
-  proofPurpose: "assertionMethod";
+  proofPurpose: ProofPurpose;
   proofValue: string;
 };
 
@@ -80,13 +82,14 @@ export type SignedDocument = Record<string, unknown> & { proof: DataIntegrityPro
 function proofConfig(input: {
   created: string;
   verificationMethod: string;
+  proofPurpose?: ProofPurpose;
 }): Record<string, unknown> {
   return {
     type: DATA_INTEGRITY_PROOF,
     cryptosuite: ED25519_SUITE,
     created: input.created,
     verificationMethod: input.verificationMethod,
-    proofPurpose: "assertionMethod",
+    proofPurpose: input.proofPurpose ?? "assertionMethod",
   };
 }
 
@@ -105,10 +108,13 @@ export function hashDataForProof(
 export function signDocument(
   unsecuredDocument: Record<string, unknown>,
   secretKey: Uint8Array,
-  options: { created?: string; verificationMethod: string },
+  options: { created?: string; verificationMethod: string; proofPurpose?: ProofPurpose },
 ): SignedDocument {
-  const created = options.created ?? new Date().toISOString();
-  const config = proofConfig({ created, verificationMethod: options.verificationMethod });
+  const config = proofConfig({
+    created: options.created ?? new Date().toISOString(),
+    verificationMethod: options.verificationMethod,
+    proofPurpose: options.proofPurpose,
+  });
   const data = hashDataForProof(unsecuredDocument, config);
   const signature = ed.sign(data, secretKey);
   const proof: DataIntegrityProof = {
@@ -144,6 +150,7 @@ export function verifyDocumentProof(
   const config = proofConfig({
     created: proof.created,
     verificationMethod: proof.verificationMethod,
+    proofPurpose: proof.proofPurpose === "authentication" ? "authentication" : "assertionMethod",
   });
   let signature: Uint8Array;
   try {

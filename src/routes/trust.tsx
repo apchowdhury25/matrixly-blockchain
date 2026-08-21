@@ -29,6 +29,7 @@ function TrustModel() {
           <li>Hash supplied document bytes and compare to the bound SHA-256. Filename is ignored.</li>
           <li>Retrieve the ledger anchor and recompute the hash chain. Original bytes are not on the ledger.</li>
           <li>Check Bitstring Status List revocation bits and validity dates.</li>
+          <li>If a presentation is supplied, verify the holder proof first. A valid envelope cannot launder an invalid credential.</li>
         </ol>
         <h2 className="mt-10 font-display text-2xl">Identity</h2>
         <p className="mt-3 leading-relaxed text-ink-soft">
@@ -36,6 +37,15 @@ function TrustModel() {
           the identifier. Rotating a signing key creates a new DID; previously issued credentials keep
           verifying against the old DID. Secret keys are AES-256-GCM sealed and never leave the server.
           Tenant roles (admin, issuer, auditor) are enforced on the server, not only in the UI.
+        </p>
+        <h2 className="mt-10 font-display text-2xl">Holder</h2>
+        <p className="mt-3 leading-relaxed text-ink-soft">
+          Holders have their own <span className="font-mono text-sm">did:key</span>. Issuers send an
+          opaque claim token. Claiming copies the signed credential into the wallet — it does not
+          re-sign it. A Verifiable Presentation is signed by the holder with proof purpose{" "}
+          <span className="font-mono text-sm">authentication</span>. If{" "}
+          <span className="font-mono text-sm">credentialSubject.id</span> is bound, only that holder
+          can present it.
         </p>
         <h2 className="mt-10 font-display text-2xl">What this preview is not</h2>
         <p className="mt-3 leading-relaxed text-ink-soft">

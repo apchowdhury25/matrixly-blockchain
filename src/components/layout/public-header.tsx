@@ -13,6 +13,9 @@ export function PublicHeader() {
           <Link to="/verify" className="hidden rounded-sm px-3 py-2 text-ink-soft hover:text-ink sm:inline">
             Verify
           </Link>
+          <Link to="/wallet" className="hidden rounded-sm px-3 py-2 text-ink-soft hover:text-ink sm:inline">
+            Wallet
+          </Link>
           <Link to="/trust" className="hidden rounded-sm px-3 py-2 text-ink-soft hover:text-ink sm:inline">
             Trust model
           </Link>
@@ -28,9 +31,10 @@ export function PublicHeader() {
           ) : (
             <Link
               to="/login"
+              search={{ next: undefined }}
               className="rounded-sm bg-pine px-4 py-2 text-sm font-medium text-pine-fg hover:bg-pine-deep"
             >
-              Issuer sign in
+              Sign in
             </Link>
           )}
         </nav>

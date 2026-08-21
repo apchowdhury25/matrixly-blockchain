@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppRouteRouteImport } from './routes/app/route'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as TrustRouteImport } from './routes/trust'
+import { Route as WalletRouteRouteImport } from './routes/wallet/route'
 import { Route as AppIndexRouteImport } from './routes/app/index'
 import { Route as AppAuditRouteImport } from './routes/app/audit'
 import { Route as AppCredentialsRouteImport } from './routes/app/credentials'
@@ -21,9 +22,12 @@ import { Route as AppIssueRouteImport } from './routes/app/issue'
 import { Route as AppKeysRouteImport } from './routes/app/keys'
 import { Route as AppLedgerRouteImport } from './routes/app/ledger'
 import { Route as DidMultibaseRouteImport } from './routes/did.$multibase'
+import { Route as PresentRefRouteImport } from './routes/present.$ref'
 import { Route as VerifyIndexRouteImport } from './routes/verify/index'
 import { Route as VerifyRefRouteImport } from './routes/verify/$ref'
+import { Route as WalletIndexRouteImport } from './routes/wallet/index'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
+import { Route as WalletClaimTokenRouteImport } from './routes/wallet/claim.$token'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -43,6 +47,11 @@ const LoginRoute = LoginRouteImport.update({
 const TrustRoute = TrustRouteImport.update({
   id: '/trust',
   path: '/trust',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WalletRouteRoute = WalletRouteRouteImport.update({
+  id: '/wallet',
+  path: '/wallet',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AppIndexRoute = AppIndexRouteImport.update({
@@ -85,6 +94,11 @@ const DidMultibaseRoute = DidMultibaseRouteImport.update({
   path: '/did/$multibase',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PresentRefRoute = PresentRefRouteImport.update({
+  id: '/present/$ref',
+  path: '/present/$ref',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const VerifyIndexRoute = VerifyIndexRouteImport.update({
   id: '/verify/',
   path: '/verify/',
@@ -95,15 +109,26 @@ const VerifyRefRoute = VerifyRefRouteImport.update({
   path: '/verify/$ref',
   getParentRoute: () => rootRouteImport,
 } as any)
+const WalletIndexRoute = WalletIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => WalletRouteRoute,
+} as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const WalletClaimTokenRoute = WalletClaimTokenRouteImport.update({
+  id: '/claim/$token',
+  path: '/claim/$token',
+  getParentRoute: () => WalletRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/app': typeof AppRouteRouteWithChildren
+  '/wallet': typeof WalletRouteRouteWithChildren
   '/login': typeof LoginRoute
   '/trust': typeof TrustRoute
   '/app/audit': typeof AppAuditRoute
@@ -113,10 +138,13 @@ export interface FileRoutesByFullPath {
   '/app/keys': typeof AppKeysRoute
   '/app/ledger': typeof AppLedgerRoute
   '/did/$multibase': typeof DidMultibaseRoute
+  '/present/$ref': typeof PresentRefRoute
   '/verify/$ref': typeof VerifyRefRoute
   '/app/': typeof AppIndexRoute
   '/verify/': typeof VerifyIndexRoute
+  '/wallet/': typeof WalletIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/wallet/claim/$token': typeof WalletClaimTokenRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -129,15 +157,19 @@ export interface FileRoutesByTo {
   '/app/keys': typeof AppKeysRoute
   '/app/ledger': typeof AppLedgerRoute
   '/did/$multibase': typeof DidMultibaseRoute
+  '/present/$ref': typeof PresentRefRoute
   '/verify/$ref': typeof VerifyRefRoute
   '/app': typeof AppIndexRoute
   '/verify': typeof VerifyIndexRoute
+  '/wallet': typeof WalletIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/wallet/claim/$token': typeof WalletClaimTokenRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/app': typeof AppRouteRouteWithChildren
+  '/wallet': typeof WalletRouteRouteWithChildren
   '/login': typeof LoginRoute
   '/trust': typeof TrustRoute
   '/app/audit': typeof AppAuditRoute
@@ -147,16 +179,20 @@ export interface FileRoutesById {
   '/app/keys': typeof AppKeysRoute
   '/app/ledger': typeof AppLedgerRoute
   '/did/$multibase': typeof DidMultibaseRoute
+  '/present/$ref': typeof PresentRefRoute
   '/verify/$ref': typeof VerifyRefRoute
   '/app/': typeof AppIndexRoute
   '/verify/': typeof VerifyIndexRoute
+  '/wallet/': typeof WalletIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/wallet/claim/$token': typeof WalletClaimTokenRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/app'
+    | '/wallet'
     | '/login'
     | '/trust'
     | '/app/audit'
@@ -166,10 +202,13 @@ export interface FileRouteTypes {
     | '/app/keys'
     | '/app/ledger'
     | '/did/$multibase'
+    | '/present/$ref'
     | '/verify/$ref'
     | '/app/'
     | '/verify/'
+    | '/wallet/'
     | '/api/auth/$'
+    | '/wallet/claim/$token'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -182,14 +221,18 @@ export interface FileRouteTypes {
     | '/app/keys'
     | '/app/ledger'
     | '/did/$multibase'
+    | '/present/$ref'
     | '/verify/$ref'
     | '/app'
     | '/verify'
+    | '/wallet'
     | '/api/auth/$'
+    | '/wallet/claim/$token'
   id:
     | '__root__'
     | '/'
     | '/app'
+    | '/wallet'
     | '/login'
     | '/trust'
     | '/app/audit'
@@ -199,18 +242,23 @@ export interface FileRouteTypes {
     | '/app/keys'
     | '/app/ledger'
     | '/did/$multibase'
+    | '/present/$ref'
     | '/verify/$ref'
     | '/app/'
     | '/verify/'
+    | '/wallet/'
     | '/api/auth/$'
+    | '/wallet/claim/$token'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRouteRoute: typeof AppRouteRouteWithChildren
+  WalletRouteRoute: typeof WalletRouteRouteWithChildren
   LoginRoute: typeof LoginRoute
   TrustRoute: typeof TrustRoute
   DidMultibaseRoute: typeof DidMultibaseRoute
+  PresentRefRoute: typeof PresentRefRoute
   VerifyRefRoute: typeof VerifyRefRoute
   VerifyIndexRoute: typeof VerifyIndexRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
@@ -244,6 +292,13 @@ declare module '@tanstack/react-router' {
       path: '/trust'
       fullPath: '/trust'
       preLoaderRoute: typeof TrustRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/wallet': {
+      id: '/wallet'
+      path: '/wallet'
+      fullPath: '/wallet'
+      preLoaderRoute: typeof WalletRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/app/': {
@@ -302,6 +357,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DidMultibaseRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/present/$ref': {
+      id: '/present/$ref'
+      path: '/present/$ref'
+      fullPath: '/present/$ref'
+      preLoaderRoute: typeof PresentRefRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/verify/': {
       id: '/verify/'
       path: '/verify'
@@ -316,12 +378,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof VerifyRefRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/wallet/': {
+      id: '/wallet/'
+      path: '/'
+      fullPath: '/wallet/'
+      preLoaderRoute: typeof WalletIndexRouteImport
+      parentRoute: typeof WalletRouteRoute
+    }
     '/api/auth/$': {
       id: '/api/auth/$'
       path: '/api/auth/$'
       fullPath: '/api/auth/$'
       preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/wallet/claim/$token': {
+      id: '/wallet/claim/$token'
+      path: '/claim/$token'
+      fullPath: '/wallet/claim/$token'
+      preLoaderRoute: typeof WalletClaimTokenRouteImport
+      parentRoute: typeof WalletRouteRoute
     }
   }
 }
@@ -350,12 +426,28 @@ const AppRouteRouteWithChildren = AppRouteRoute._addFileChildren(
   AppRouteRouteChildren,
 )
 
+interface WalletRouteRouteChildren {
+  WalletIndexRoute: typeof WalletIndexRoute
+  WalletClaimTokenRoute: typeof WalletClaimTokenRoute
+}
+
+const WalletRouteRouteChildren: WalletRouteRouteChildren = {
+  WalletIndexRoute: WalletIndexRoute,
+  WalletClaimTokenRoute: WalletClaimTokenRoute,
+}
+
+const WalletRouteRouteWithChildren = WalletRouteRoute._addFileChildren(
+  WalletRouteRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRouteRoute: AppRouteRouteWithChildren,
+  WalletRouteRoute: WalletRouteRouteWithChildren,
   LoginRoute: LoginRoute,
   TrustRoute: TrustRoute,
   DidMultibaseRoute: DidMultibaseRoute,
+  PresentRefRoute: PresentRefRoute,
   VerifyRefRoute: VerifyRefRoute,
   VerifyIndexRoute: VerifyIndexRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,

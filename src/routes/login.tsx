@@ -4,9 +4,20 @@ import { GROK_PROVIDERS, authClient, authEnabled, signIn } from "@/lib/auth/clie
 import { Button } from "@/components/ui/button";
 import { Wordmark } from "@/components/brand/logo";
 
-export const Route = createFileRoute("/login")({ component: Login });
+export const Route = createFileRoute("/login")({
+  validateSearch: (s: Record<string, unknown>) => {
+    const next = typeof s.next === "string" ? s.next : undefined;
+    if (!next || !next.startsWith("/") || next.startsWith("//") || next.startsWith("/login")) {
+      return { next: undefined as string | undefined };
+    }
+    return { next };
+  },
+  component: Login,
+});
 
 function Login() {
+  const { next } = Route.useSearch();
+  const dest = next ?? "/app";
   const [mode, setMode] = useState<"in" | "up">("in");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -26,7 +37,7 @@ function Login() {
         const res = await authClient.signIn.email({ email, password });
         if (res.error) throw new Error(res.error.message || "Sign in failed");
       }
-      window.location.assign("/app");
+      window.location.assign(dest);
     } catch (err) {
       setError((err as Error).message);
     } finally {
@@ -38,9 +49,10 @@ function Login() {
     <main className="grid min-h-screen place-items-center bg-paper px-4 py-10">
       <div className="w-full max-w-md rounded-xl border border-rule bg-paper-raised p-8 shadow-quiet">
         <Wordmark />
-        <h1 className="mt-6 font-display text-3xl">Issuer access</h1>
+        <h1 className="mt-6 font-display text-3xl">Sign in</h1>
         <p className="mt-2 text-sm text-ink-soft">
-          Sign in to issue credentials. Public verification does not require an account.
+          Issuers issue credentials. Holders claim them into a wallet. Public verification does not
+          require an account.
         </p>
         {!authEnabled ? (
           <p className="mt-6 text-sm text-stone">Sign-in is disabled.</p>
@@ -53,7 +65,7 @@ function Login() {
                   type="button"
                   variant="secondary"
                   className="w-full"
-                  onClick={() => signIn(p.providerId, { callbackURL: "/app" })}
+                  onClick={() => signIn(p.providerId, { callbackURL: dest })}
                 >
                   Continue with {p.label}
                 </Button>

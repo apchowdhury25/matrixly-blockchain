@@ -15,6 +15,7 @@ export const DEMO = {
   validRef: "demo-valid-bcs",
   revokedRef: "demo-revoked-bcs",
   expiredRef: "demo-expired-bcs",
+  claimToken: "demo-claim-valid-bcs",
   tamperedDocId: "doc_tampered_demo",
   statusListId: "https://trust.matrixly.ai/credentials/status/demo",
 } as const;

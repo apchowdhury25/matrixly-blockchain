@@ -29,6 +29,7 @@ function IssuePage() {
   const [holderName, setHolderName] = useState("Alex Rivera");
   const [degreeName, setDegreeName] = useState("Bachelor of Computer Science");
   const [file, setFile] = useState<File | null>(null);
+  const [holderDid, setHolderDid] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -46,6 +47,7 @@ function IssuePage() {
           documentId,
           uploadB64,
           originalName: file?.name,
+          holderDid: holderDid.trim() || undefined,
         },
       });
       navigate({ to: "/verify/$ref", params: { ref: res.ref } });
@@ -82,6 +84,18 @@ function IssuePage() {
             onChange={(e) => setDegreeName(e.target.value)}
             required
           />
+        </label>
+        <label className="block text-sm font-medium">
+          Holder DID (optional)
+          <input
+            className="mt-1 h-11 w-full rounded-sm border border-rule bg-paper-raised px-3 font-mono text-xs"
+            value={holderDid}
+            onChange={(e) => setHolderDid(e.target.value)}
+            placeholder="did:key:z…"
+          />
+          <span className="mt-1 block text-xs text-stone">
+            If set, credentialSubject.id is bound at issuance. Otherwise the holder claims later.
+          </span>
         </label>
         {documentId ? (
           <p className="rounded-sm border border-rule bg-paper-raised px-3 py-3 font-mono text-xs break-all">

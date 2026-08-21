@@ -15,6 +15,7 @@ This repository is the runnable Matrixly Trust platform:
 
 - Verify the Global University demo diploma: valid, one-byte tamper, revoked, expired
 - Sign in as an issuer and issue a new diploma
+- Claim a credential into a holder wallet and create a verifiable presentation
 - Inspect the ledger hash chain and public keys
 - Open an opaque QR verification link with no PII in the code
 
@@ -93,7 +94,10 @@ Preview serves the built output (default Vite preview port **8081**).
 | `/` | Public home + live verification playground |
 | `/verify` | Public verifier (paste an opaque reference or scan a QR) |
 | `/verify/demo-valid-bcs` | Valid Global University BCS diploma |
-| `/login` | Issuer sign-in / sign-up |
+| `/login` | Sign in (issuer console or holder wallet) |
+| `/wallet` | Holder wallet (claim + present) |
+| `/wallet/claim/:token` | Opaque claim delivery |
+| `/present/:ref` | Public verifiable presentation |
 | `/app` | Issuer workspace |
 | `/app/documents` | Ingest and inspect documents (hash only goes on-chain) |
 | `/app/issue` | Issue a new diploma or bind an ingested file |

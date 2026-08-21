@@ -22,9 +22,15 @@ export async function ensureDemoSeed(): Promise<void> {
   globalSeed.__matrixlySeed__ ??= (async () => {
     const sql = await getSql();
     const existing = await sql<{ id: string }>`select id from credentials where opaque_ref = ${DEMO.validRef}`;
-    if (existing.length) return;
+    if (existing.length) {
+      await ensureDemoDelivery();
+      return;
+    }
     const tenant = await sql<{ id: string }>`select id from tenants where id = ${DEMO.tenantId}`;
     if (tenant.length && !existing.length) {
+      await sql`delete from presentations where credential_id in (select id from credentials where tenant_id = ${DEMO.tenantId})`;
+      await sql`delete from wallet_items where credential_id in (select id from credentials where tenant_id = ${DEMO.tenantId})`;
+      await sql`delete from credential_deliveries where tenant_id = ${DEMO.tenantId}`;
       await sql`delete from verification_requests`;
       await sql`delete from audit_events where tenant_id = ${DEMO.tenantId}`;
       await sql`delete from ledger_blocks`;
@@ -280,6 +286,10 @@ async function seedDemo(): Promise<void> {
     index: 2,
   });
 
+  await sql`
+    insert into credential_deliveries (id, credential_id, tenant_id, claim_token, status)
+    values (${"dlv_demo_valid"}, ${validCred.id}, ${DEMO.tenantId}, ${DEMO.claimToken}, ${"PENDING"})`;
+
   const tamperedEvidence = buildEvidence(tampered, "GENERATED").evidence;
   await sql`
     insert into documents (id, tenant_id, issuer_id, object_name, mime, byte_length, hash_algorithm, hash, status, content_b64, origin, inspected_kind, evidence_json)
@@ -310,4 +320,18 @@ async function seedDemo(): Promise<void> {
     resourceId: DEMO.tenantId,
     metadata: { issuerDid: did },
   });
+}
+
+async function ensureDemoDelivery(): Promise<void> {
+  const sql = await getSql();
+  const have = await sql<{ id: string }>`
+    select id from credential_deliveries where claim_token = ${DEMO.claimToken}`;
+  if (have[0]) return;
+  const creds = await sql<{ id: string }>`
+    select id from credentials where opaque_ref = ${DEMO.validRef}`;
+  if (!creds[0]) return;
+  await sql`
+    insert into credential_deliveries (id, credential_id, tenant_id, claim_token, status)
+    values (${"dlv_demo_valid"}, ${creds[0].id}, ${DEMO.tenantId}, ${DEMO.claimToken}, ${"PENDING"})
+    on conflict (credential_id) do nothing`;
 }

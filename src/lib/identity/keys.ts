@@ -17,7 +17,7 @@ export type IssuerIdentity = {
 };
 
 /** Fresh did:key identity. Caller seals the secret before persistence. */
-export function createIssuerIdentity(seal: (plainHex: string) => string): IssuerIdentity {
+export function createDidKeyIdentity(seal: (plainHex: string) => string): IssuerIdentity {
   const keys = generateEd25519KeyPair();
   const did = encodeDidKey(keys.publicKey);
   const resolved = resolveDidKey(did);
@@ -31,6 +31,9 @@ export function createIssuerIdentity(seal: (plainHex: string) => string): Issuer
     sealedSecretHex: seal(encodeSecretKeyHex(keys.secretKey)),
   };
 }
+
+export const createIssuerIdentity = createDidKeyIdentity;
+export const createHolderIdentity = createDidKeyIdentity;
 
 export function assertActiveSigningKey(status: string): void {
   if (status !== "ACTIVE") {

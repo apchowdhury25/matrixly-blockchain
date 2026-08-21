@@ -10,5 +10,7 @@ Verifier determination of authenticity:
 6. Document hash and credential hash exist as ledger payloads (no original bytes on-chain)
 7. Hash chain recomputes from genesis
 8. Bitstring Status List bit and `validUntil`
+9. If a presentation is supplied: holder DID resolves, holder `authentication` proof verifies, then the inner credential is verified independently
+10. If `credentialSubject.id` is bound, it must equal the presenting holder DID
 
 A central `verified = true` column is never the source of truth.

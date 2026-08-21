@@ -5,12 +5,14 @@ import { authMiddleware } from "@/lib/auth/middleware";
 import { inspectBytes } from "@/lib/crypto/inspect";
 import { decodeSecretKeyHex } from "@/lib/crypto/ed25519";
 import { credentialHash, issueCredential } from "@/lib/credentials/issue";
+import { buildPresentation, signPresentation, verifyPresentation } from "@/lib/credentials/presentation";
+import type { IssuedCredential } from "@/lib/credentials/types";
 import { decodeStatusList, emptyStatusList, encodeStatusList, setBit } from "@/lib/credentials/status-list";
 import { renderDiplomaPdf } from "@/lib/documents/diploma";
 import { buildEvidence, parseEvidence, type DocumentEvidence } from "@/lib/documents/evidence";
 import { verifyCredential, type VerificationResult } from "@/lib/verification/pipeline";
 import { didDocumentHash, didKeyFromMultibase, resolveDidKey } from "@/lib/identity/did";
-import { assertActiveSigningKey, createIssuerIdentity } from "@/lib/identity/keys";
+import { assertActiveSigningKey, createHolderIdentity, createIssuerIdentity } from "@/lib/identity/keys";
 import { assertPermission, permissionMap } from "@/lib/identity/roles";
 import { ensureDemoSeed } from "./seed";
 import { audit, getLedger } from "./runtime";
@@ -413,11 +415,15 @@ export const listIssuerCredentials = createServerFn({ method: "GET" })
       status: string;
       document_hash: string;
       issued_at: string;
+      claim_token: string | null;
+      delivery_status: string | null;
     }>`
-      select id, opaque_ref, holder_name, degree_name, status, document_hash, issued_at::text as issued_at
-      from credentials
-      where tenant_id = ${ws.tenantId}
-      order by issued_at desc`;
+      select c.id, c.opaque_ref, c.holder_name, c.degree_name, c.status, c.document_hash,
+             c.issued_at::text as issued_at, d.claim_token, d.status as delivery_status
+      from credentials c
+      left join credential_deliveries d on d.credential_id = c.id
+      where c.tenant_id = ${ws.tenantId}
+      order by c.issued_at desc`;
   });
 
 type PersistedDocument = {
@@ -554,6 +560,7 @@ export const issueDegree = createServerFn({ method: "POST" })
         documentId: z.string().min(8).max(80).optional(),
         uploadB64: z.string().max(8_000_000).optional(),
         originalName: z.string().max(200).optional(),
+        holderDid: z.string().min(12).max(200).optional(),
       })
       .parse(raw),
   )
@@ -564,7 +571,16 @@ export const issueDegree = createServerFn({ method: "POST" })
     const replay = await sql<{ opaque_ref: string; id: string }>`
       select opaque_ref, id from credentials
       where tenant_id = ${ws.tenantId} and idempotency_key = ${data.idempotencyKey}`;
-    if (replay[0]) return { ref: replay[0].opaque_ref, id: replay[0].id, replayed: true };
+    if (replay[0]) {
+      const deliveries = await sql<{ claim_token: string }>`
+        select claim_token from credential_deliveries where credential_id = ${replay[0].id}`;
+      return {
+        ref: replay[0].opaque_ref,
+        id: replay[0].id,
+        claimToken: deliveries[0]?.claim_token,
+        replayed: true,
+      };
+    }
 
     const secrets = await sql<{ secret_key_hex: string; status: string }>`
       select secret_key_hex, status from key_secrets
@@ -637,11 +653,18 @@ export const issueDegree = createServerFn({ method: "POST" })
       });
     }
     const documentHash = persisted.hash;
+    let subjectId: string | undefined;
+    if (data.holderDid) {
+      const resolved = resolveDidKey(data.holderDid);
+      if (!resolved.ok) throw new Error(`Holder DID could not be resolved: ${resolved.reason}`);
+      subjectId = data.holderDid;
+    }
     const credential = issueCredential({
       credentialId: credId,
       issuerDid: ws.issuerDid,
       issuerName: `${ws.issuerName}, ${ws.orgName}`,
       subjectName: data.holderName,
+      subjectId,
       degreeName: data.degreeName,
       validFrom: issuedAt,
       documentHash,
@@ -658,11 +681,11 @@ export const issueDegree = createServerFn({ method: "POST" })
       insert into credentials (
         id, tenant_id, issuer_id, document_id, opaque_ref, holder_name, degree_name,
         credential_json, credential_hash, document_hash, status, valid_from,
-        status_list_index, idempotency_key, issued_at
+        status_list_index, idempotency_key, issued_at, holder_did
       ) values (
         ${credId}, ${ws.tenantId}, ${ws.issuerId}, ${docId}, ${ref}, ${data.holderName}, ${data.degreeName},
         ${JSON.stringify(credential)}, ${credentialHash(credential)}, ${documentHash}, ${"ACTIVE"},
-        ${issuedAt}, ${index}, ${data.idempotencyKey}, ${issuedAt}
+        ${issuedAt}, ${index}, ${data.idempotencyKey}, ${issuedAt}, ${subjectId ?? null}
       )`;
     await sql`
       update status_lists set next_index = ${index + 1}, updated_at = now()
@@ -683,6 +706,10 @@ export const issueDegree = createServerFn({ method: "POST" })
       issuedAt,
       version: 1,
     });
+    const claimToken = opaqueRef();
+    await sql`
+      insert into credential_deliveries (id, credential_id, tenant_id, claim_token, status)
+      values (${newId("dlv")}, ${credId}, ${ws.tenantId}, ${claimToken}, ${"PENDING"})`;
     await audit({
       tenantId: ws.tenantId,
       actorUserId: context.userId,
@@ -691,7 +718,7 @@ export const issueDegree = createServerFn({ method: "POST" })
       resourceId: credId,
       metadata: { ref },
     });
-    return { ref, id: credId, replayed: false };
+    return { ref, id: credId, claimToken, replayed: false };
   });
 
 export const revokeCredential = createServerFn({ method: "POST" })
@@ -899,3 +926,262 @@ export const getIssuerCredential = createServerFn({ method: "POST" })
       from credentials where id = ${data.id} and tenant_id = ${ws.tenantId}`;
     return rows[0] ?? null;
   });
+
+type HolderRow = { id: string; did: string; display_name: string | null };
+
+async function holderFor(userId: string): Promise<HolderRow> {
+  const sql = await getSql();
+  const existing = await sql<HolderRow>`
+    select id, did, display_name from holders where user_id = ${userId}`;
+  if (existing[0]) return existing[0];
+  const identity = createHolderIdentity(sealSecret);
+  const id = newId("hld");
+  await sql`
+    insert into holders (id, user_id, did) values (${id}, ${userId}, ${identity.did})`;
+  await sql`
+    insert into holder_keys (id, holder_id, did, secret_key_hex, public_key_multibase, status)
+    values (
+      ${newId("hkey")}, ${id}, ${identity.did}, ${identity.sealedSecretHex},
+      ${identity.publicKeyMultibase}, ${"ACTIVE"}
+    )`;
+  await audit({
+    actorUserId: userId,
+    action: "holder.created",
+    resourceType: "holder",
+    resourceId: id,
+    metadata: { did: identity.did },
+  });
+  return { id, did: identity.did, display_name: null };
+}
+
+export const getHolderWallet = createServerFn({ method: "GET" })
+  .middleware([authMiddleware])
+  .handler(async ({ context }) => {
+    const holder = await holderFor(context.userId);
+    const sql = await getSql();
+    const items = await sql<{
+      id: string;
+      credential_id: string;
+      holder_name: string;
+      degree_name: string;
+      issuer_did: string;
+      document_hash: string;
+      opaque_ref: string;
+      claimed_at: string;
+    }>`
+      select id, credential_id, holder_name, degree_name, issuer_did, document_hash,
+             opaque_ref, claimed_at::text as claimed_at
+      from wallet_items
+      where holder_id = ${holder.id}
+      order by claimed_at desc`;
+    const presentations = await sql<{
+      id: string;
+      opaque_ref: string;
+      credential_id: string;
+      created_at: string;
+    }>`
+      select id, opaque_ref, credential_id, created_at::text as created_at
+      from presentations
+      where holder_id = ${holder.id}
+      order by created_at desc`;
+    return { holder, items, presentations };
+  });
+
+export const getClaimOffer = createServerFn({ method: "POST" })
+  .middleware([authMiddleware])
+  .validator((raw: unknown) => z.object({ token: z.string().min(6).max(80) }).parse(raw))
+  .handler(async ({ data }) => {
+    await ensureDemoSeed();
+    const sql = await getSql();
+    const rows = await sql<{
+      claim_token: string;
+      status: string;
+      holder_name: string;
+      degree_name: string;
+      issuer_did: string | null;
+    }>`
+      select d.claim_token, d.status, c.holder_name, c.degree_name, i.did as issuer_did
+      from credential_deliveries d
+      join credentials c on c.id = d.credential_id
+      left join issuers i on i.id = c.issuer_id
+      where d.claim_token = ${data.token}`;
+    const row = rows[0];
+    if (!row) throw new Error("Claim token is not valid");
+    return row;
+  });
+
+export const claimCredential = createServerFn({ method: "POST" })
+  .middleware([authMiddleware])
+  .validator((raw: unknown) => z.object({ token: z.string().min(6).max(80) }).parse(raw))
+  .handler(async ({ context, data }) => {
+    await ensureDemoSeed();
+    const holder = await holderFor(context.userId);
+    const sql = await getSql();
+    const rows = await sql<{
+      id: string;
+      credential_id: string;
+      status: string;
+      holder_id: string | null;
+      credential_json: string;
+      document_hash: string;
+      holder_name: string;
+      degree_name: string;
+      opaque_ref: string;
+      issuer_did: string | null;
+    }>`
+      select d.id, d.credential_id, d.status, d.holder_id, c.credential_json, c.document_hash,
+             c.holder_name, c.degree_name, c.opaque_ref, i.did as issuer_did
+      from credential_deliveries d
+      join credentials c on c.id = d.credential_id
+      left join issuers i on i.id = c.issuer_id
+      where d.claim_token = ${data.token}`;
+    const row = rows[0];
+    if (!row) throw new Error("Claim token is not valid");
+    if (row.status === "CLAIMED" && row.holder_id && row.holder_id !== holder.id) {
+      throw new Error("This credential has already been claimed");
+    }
+    const existing = await sql<{ id: string }>`
+      select id from wallet_items where holder_id = ${holder.id} and credential_id = ${row.credential_id}`;
+    if (!existing[0]) {
+      await sql`
+        insert into wallet_items (
+          id, holder_id, credential_id, credential_json, issuer_did, document_hash,
+          holder_name, degree_name, opaque_ref
+        ) values (
+          ${newId("wal")}, ${holder.id}, ${row.credential_id}, ${row.credential_json},
+          ${row.issuer_did ?? ""}, ${row.document_hash}, ${row.holder_name}, ${row.degree_name},
+          ${row.opaque_ref}
+        )`;
+    }
+    await sql`
+      update credential_deliveries
+      set status = 'CLAIMED', holder_id = ${holder.id}, holder_did = ${holder.did}, claimed_at = now()
+      where id = ${row.id}`;
+    await sql`
+      update credentials set holder_did = ${holder.did} where id = ${row.credential_id}`;
+    await audit({
+      actorUserId: context.userId,
+      action: "credential.claimed",
+      resourceType: "credential",
+      resourceId: row.credential_id,
+      metadata: { holderDid: holder.did },
+    });
+    return { credentialId: row.credential_id, holderDid: holder.did };
+  });
+
+export const createPresentation = createServerFn({ method: "POST" })
+  .middleware([authMiddleware])
+  .validator((raw: unknown) => z.object({ walletItemId: z.string().min(8) }).parse(raw))
+  .handler(async ({ context, data }) => {
+    const holder = await holderFor(context.userId);
+    const sql = await getSql();
+    const items = await sql<{ id: string; credential_id: string; credential_json: string }>`
+      select id, credential_id, credential_json from wallet_items
+      where id = ${data.walletItemId} and holder_id = ${holder.id}`;
+    const item = items[0];
+    if (!item) throw new Error("Wallet item not found");
+    const keys = await sql<{ secret_key_hex: string; status: string }>`
+      select secret_key_hex, status from holder_keys
+      where holder_id = ${holder.id} and did = ${holder.did} and status = 'ACTIVE'`;
+    const sealed = keys[0]?.secret_key_hex;
+    if (!sealed) throw new Error("Holder signing key is not available");
+    assertActiveSigningKey(keys[0]!.status);
+    const secretKey = decodeSecretKeyHex(openSecret(sealed));
+    const credential = JSON.parse(item.credential_json) as IssuedCredential;
+    const presentation = signPresentation(
+      buildPresentation({
+        presentationId: `urn:uuid:${crypto.randomUUID()}`,
+        holderDid: holder.did,
+        credential,
+      }),
+      secretKey,
+    );
+    const ref = opaqueRef();
+    await sql`
+      insert into presentations (id, holder_id, opaque_ref, presentation_json, credential_id)
+      values (${newId("vp")}, ${holder.id}, ${ref}, ${JSON.stringify(presentation)}, ${item.credential_id})`;
+    await audit({
+      actorUserId: context.userId,
+      action: "presentation.created",
+      resourceType: "presentation",
+      resourceId: ref,
+      metadata: { credentialId: item.credential_id },
+    });
+    return { ref };
+  });
+
+export const verifyPresentationRef = createServerFn({ method: "POST" })
+  .validator((raw: unknown) =>
+    z
+      .object({
+        ref: z.string().min(3).max(80),
+        mode: z.enum(["bound", "none"]).default("bound"),
+        uploadB64: z.string().max(8_000_000).optional(),
+      })
+      .parse(raw),
+  )
+  .handler(async ({ data }) => {
+    await ensureDemoSeed();
+    const sql = await getSql();
+    const rows = await sql<{
+      presentation_json: string;
+      credential_id: string;
+      opaque_ref: string;
+    }>`
+      select presentation_json, credential_id, opaque_ref from presentations where opaque_ref = ${data.ref}`;
+    const row = rows[0];
+    if (!row) {
+      return {
+        verified: false,
+        issuerVerified: false,
+        signatureValid: false,
+        documentIntegrityValid: null,
+        ledgerProofValid: false,
+        credentialActive: false,
+        expired: false,
+        revoked: false,
+        superseded: false,
+        suspended: false,
+        status: "INVALID" as const,
+        reasons: ["Presentation not found"],
+        holderProofValid: false,
+        holderMatchesSubject: null,
+      };
+    }
+    const presentation = JSON.parse(row.presentation_json) as Record<string, unknown>;
+    const creds = await sql<CredentialRow>`
+      select id, tenant_id, issuer_id, document_id, opaque_ref, holder_name, degree_name,
+             credential_json, credential_hash, document_hash, status,
+             valid_from::text as valid_from, valid_until::text as valid_until, issued_at::text as issued_at
+      from credentials where id = ${row.credential_id}`;
+    const cred = creds[0];
+    let documentBytes: Uint8Array | undefined;
+    if (data.uploadB64) {
+      const bytes = Uint8Array.from(Buffer.from(data.uploadB64, "base64"));
+      inspectBytes(bytes);
+      documentBytes = bytes;
+    } else if (data.mode === "bound" && cred?.document_id) {
+      const docs = await sql<{ content_b64: string }>`
+        select content_b64 from documents where id = ${cred.document_id}`;
+      if (docs[0]) documentBytes = Uint8Array.from(Buffer.from(docs[0].content_b64, "base64"));
+    }
+    const lists = cred
+      ? await sql<{ encoded_list: string }>`
+          select encoded_list from status_lists where issuer_id = ${cred.issuer_id} order by updated_at desc limit 1`
+      : [];
+    const ledger = await getLedger();
+    const result = await verifyPresentation(presentation, ledger, {
+      documentBytes,
+      encodedStatusList: lists[0]?.encoded_list,
+    });
+    await sql`
+      insert into verification_requests (id, opaque_ref, credential_id, result_status, result_json)
+      values (
+        ${newId("vrf")}, ${data.ref}, ${row.credential_id}, ${result.status}, ${JSON.stringify(result)}
+      )`;
+    return toResultView(
+      { ...result, reasons: result.reasons },
+      cred ? { holderName: cred.holder_name, degreeName: cred.degree_name, opaqueRef: data.ref } : { opaqueRef: data.ref },
+    );
+  });
+

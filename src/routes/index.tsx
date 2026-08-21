@@ -18,7 +18,8 @@ const chain = [
   { k: "03", t: "VC 2.0", d: "W3C credential, no proprietary format." },
   { k: "04", t: "Ed25519", d: "Data Integrity eddsa-jcs-2022." },
   { k: "05", t: "Ledger", d: "Hash-chained anchor. No PII." },
-  { k: "06", t: "Verify", d: "Every check can independently fail." },
+  { k: "06", t: "Holder", d: "Wallet claim and signed presentation." },
+  { k: "07", t: "Verify", d: "Every check can independently fail." },
 ];
 
 function Home() {
@@ -67,7 +68,7 @@ function Home() {
         </section>
 
         <section className="border-y border-rule bg-paper-raised">
-          <div className="mx-auto grid max-w-6xl gap-8 px-4 py-14 sm:px-6 md:grid-cols-6">
+          <div className="mx-auto grid max-w-6xl gap-8 px-4 py-14 sm:px-6 md:grid-cols-7">
             {chain.map((step) => (
               <div key={step.k}>
                 <p className="font-mono text-[11px] tracking-[0.18em] text-stone">{step.k}</p>
