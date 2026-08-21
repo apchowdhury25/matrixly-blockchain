@@ -168,12 +168,35 @@ Automated results: [docs/qa/RESULTS.md](docs/qa/RESULTS.md).
 
 Do not use “upload a `.exe` renamed to `.pdf`” as a positive test. That file is an executable and must fail closed.
 
-**Verifier API (Phase 8)** — public docs at `/developers`:
+**Verifier API (Phase 8)** — public docs at `/developers`, copy-paste catalog in [docs/api-examples.md](docs/api-examples.md).
 
-1. `POST /api/v1/verify` with no key → **401**, never `VALID`
-2. Sign in → **API keys** → create a key (secret shown once)
-3. `POST /api/v1/verify` with `Authorization: Bearer mtx_live_…` and `{ "ref": "demo-valid-bcs" }` → `VALID`, no holder name
-4. OpenAPI: `/api/v1/openapi.json`
+```bash
+# 401 — never VALID
+curl -sS -X POST "$BASE/api/v1/verify" \
+  -H "Content-Type: application/json" \
+  -d '{"ref":"demo-valid-bcs"}'
+
+# VALID diploma (preview demo key)
+curl -sS -X POST "$BASE/api/v1/verify" \
+  -H "Authorization: Bearer mtx_live_demo_verifier_qa_only" \
+  -H "Content-Type: application/json" \
+  -d '{"ref":"demo-valid-bcs"}'
+
+# REVOKED / EXPIRED
+curl -sS -X POST "$BASE/api/v1/verify" \
+  -H "Authorization: Bearer mtx_live_demo_verifier_qa_only" \
+  -H "Content-Type: application/json" \
+  -d '{"ref":"demo-revoked-bcs"}'
+
+# Signed report (use reportRef from the verify body)
+curl -sS "$BASE/api/v1/reports/$REPORT_REF" \
+  -H "Authorization: Bearer mtx_live_demo_verifier_qa_only"
+
+# OpenAPI (no key)
+curl -sS "$BASE/api/v1/openapi.json"
+```
+
+`$BASE` is the origin of the running site. Mint a private key at `/app/api-keys`.
 
 
 ## Scripts

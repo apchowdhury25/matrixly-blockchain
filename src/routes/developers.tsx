@@ -1,9 +1,57 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PublicHeader } from "@/components/layout/public-header";
+import { DEMO_API_KEY, examples } from "@/lib/api/examples";
 
 export const Route = createFileRoute("/developers")({ component: DevelopersPage });
 
+function Example({
+  title,
+  status,
+  request,
+  curl,
+  response,
+}: {
+  title: string;
+  status: string;
+  request: string;
+  curl: string;
+  response: string;
+}) {
+  return (
+    <section className="mt-10">
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <h2 className="font-display text-2xl">{title}</h2>
+        <p className="font-mono text-xs tracking-[0.14em] text-stone uppercase">HTTP {status}</p>
+      </div>
+      <p className="mt-3 font-mono text-[11px] tracking-[0.16em] text-stone uppercase">Request</p>
+      <pre className="mt-2 overflow-x-auto rounded-xl border border-rule bg-paper-raised p-4 font-mono text-xs leading-relaxed">
+        {request}
+      </pre>
+      <p className="mt-3 font-mono text-[11px] tracking-[0.16em] text-stone uppercase">curl</p>
+      <pre className="mt-2 overflow-x-auto rounded-xl border border-rule bg-paper-raised p-4 font-mono text-xs leading-relaxed">
+        {curl}
+      </pre>
+      <p className="mt-3 font-mono text-[11px] tracking-[0.16em] text-stone uppercase">Response</p>
+      <pre className="mt-2 overflow-x-auto rounded-xl border border-rule bg-paper-raised p-4 font-mono text-xs leading-relaxed">
+        {response}
+      </pre>
+    </section>
+  );
+}
+
 function DevelopersPage() {
+  const list = [
+    examples.missingKey,
+    examples.validRef,
+    examples.revokedRef,
+    examples.expiredRef,
+    examples.includeSubject,
+    examples.tamper,
+    examples.postedCredential,
+    examples.presentation,
+    examples.report,
+    examples.openapi,
+  ];
   return (
     <div className="min-h-screen bg-paper">
       <PublicHeader />
@@ -17,52 +65,51 @@ function DevelopersPage() {
           <span className="font-mono text-sm">401</span> — never{" "}
           <span className="font-mono text-sm">VALID</span>.
         </p>
-
-        <h2 className="mt-10 font-display text-2xl">Authenticate</h2>
-        <p className="mt-3 leading-relaxed text-ink-soft">
-          Sign in, open <span className="font-medium text-ink">API keys</span> in the issuer console,
-          and create a key. The secret is shown once. It is stored as SHA-256, never in plaintext.
-          This preview also seeds a demonstration key{" "}
-          <span className="font-mono text-sm">mtx_live_demo_verifier_qa_only</span> — same hashing
-          rules, not a bypass.
-        </p>
-        <pre className="mt-4 overflow-x-auto rounded-xl border border-rule bg-paper-raised p-4 font-mono text-xs leading-relaxed">
-          {`Authorization: Bearer mtx_live_…`}
-        </pre>
-
-        <h2 className="mt-10 font-display text-2xl">Verify by opaque link</h2>
-        <pre className="mt-4 overflow-x-auto rounded-xl border border-rule bg-paper-raised p-4 font-mono text-xs leading-relaxed">
-          {`POST /api/v1/verify
-Content-Type: application/json
-
-{ "ref": "demo-valid-bcs" }`}
-        </pre>
-        <p className="mt-3 text-sm text-ink-soft">
-          Default response has no holder name. Pass{" "}
-          <span className="font-mono">includeSubject: true</span> only if the verifier is allowed to
-          see display names.
-        </p>
-
-        <h2 className="mt-10 font-display text-2xl">Verify a posted credential</h2>
-        <pre className="mt-4 overflow-x-auto rounded-xl border border-rule bg-paper-raised p-4 font-mono text-xs leading-relaxed">
-          {`POST /api/v1/verify
-
-{ "credential": { "@context": …, "type": ["VerifiableCredential"], "proof": … } }`}
-        </pre>
-
-        <h2 className="mt-10 font-display text-2xl">OpenAPI</h2>
-        <p className="mt-3 leading-relaxed text-ink-soft">
-          Machine-readable spec at{" "}
+        <p className="mt-4 text-sm leading-relaxed text-ink-soft">
+          Replace <span className="font-mono">$BASE</span> with this site’s origin. This preview
+          accepts the demonstration key{" "}
+          <span className="font-mono text-xs">{DEMO_API_KEY}</span>
+          — hashed at rest, not a bypass. Mint your own under{" "}
+          <Link to="/app/api-keys" className="underline underline-offset-4">
+            API keys
+          </Link>
+          . Spec:{" "}
           <a href="/api/v1/openapi.json" className="underline underline-offset-4">
             /api/v1/openapi.json
           </a>
-          . Signed reports: <span className="font-mono text-sm">GET /api/v1/reports/{"{ref}"}</span>.
+          .
         </p>
-        <p className="mt-8">
-          <Link to="/app/api-keys" className="text-sm underline underline-offset-4">
-            Issue an API key
-          </Link>
-        </p>
+        <div className="mt-8 overflow-x-auto rounded-xl border border-rule bg-paper-raised">
+          <table className="w-full min-w-[520px] text-left text-sm">
+            <thead className="border-b border-rule text-stone">
+              <tr>
+                <th className="px-4 py-3 font-medium">Method</th>
+                <th className="px-4 py-3 font-medium">Path</th>
+                <th className="px-4 py-3 font-medium">Auth</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="border-b border-rule/70">
+                <td className="px-4 py-3 font-mono text-xs">POST</td>
+                <td className="px-4 py-3 font-mono text-xs">/api/v1/verify</td>
+                <td className="px-4 py-3">Bearer required</td>
+              </tr>
+              <tr className="border-b border-rule/70">
+                <td className="px-4 py-3 font-mono text-xs">GET</td>
+                <td className="px-4 py-3 font-mono text-xs">/api/v1/reports/{"{ref}"}</td>
+                <td className="px-4 py-3">Bearer required</td>
+              </tr>
+              <tr>
+                <td className="px-4 py-3 font-mono text-xs">GET</td>
+                <td className="px-4 py-3 font-mono text-xs">/api/v1/openapi.json</td>
+                <td className="px-4 py-3">Public</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        {list.map((ex) => (
+          <Example key={ex.title} {...ex} />
+        ))}
       </article>
     </div>
   );

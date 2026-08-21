@@ -40,6 +40,42 @@ export const openApiSpec = {
                   },
                 },
               },
+              examples: {
+                validRef: {
+                  summary: "Valid diploma",
+                  value: { ref: "demo-valid-bcs" },
+                },
+                revokedRef: {
+                  summary: "Revoked diploma",
+                  value: { ref: "demo-revoked-bcs" },
+                },
+                expiredRef: {
+                  summary: "Expired diploma",
+                  value: { ref: "demo-expired-bcs" },
+                },
+                includeSubject: {
+                  summary: "Include holder display name",
+                  value: { ref: "demo-valid-bcs", includeSubject: true },
+                },
+                postedCredential: {
+                  summary: "Posted VC JSON",
+                  value: {
+                    credential: {
+                      "@context": ["https://www.w3.org/ns/credentials/v2"],
+                      type: ["VerifiableCredential"],
+                    },
+                  },
+                },
+                presentation: {
+                  summary: "Posted VP JSON",
+                  value: {
+                    presentation: {
+                      type: ["VerifiablePresentation"],
+                      verifiableCredential: [],
+                    },
+                  },
+                },
+              },
             },
           },
         },
