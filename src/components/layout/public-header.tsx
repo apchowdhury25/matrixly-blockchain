@@ -19,6 +19,9 @@ export function PublicHeader() {
           <Link to="/developers" className="hidden rounded-sm px-3 py-2 text-ink-soft hover:text-ink sm:inline">
             Developers
           </Link>
+          <Link to="/compliance" className="hidden rounded-sm px-3 py-2 text-ink-soft hover:text-ink sm:inline">
+            Compliance
+          </Link>
           <Link to="/trust" className="hidden rounded-sm px-3 py-2 text-ink-soft hover:text-ink sm:inline">
             Trust model
           </Link>

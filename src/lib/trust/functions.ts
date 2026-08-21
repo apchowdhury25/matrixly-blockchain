@@ -15,6 +15,9 @@ import { verifyCredential, type VerificationResult } from "@/lib/verification/pi
 import { persistVerificationReport } from "@/lib/verification/persist";
 import { verifyVerificationReport } from "@/lib/verification/report";
 import { generateApiKey } from "@/lib/api/keys";
+import { generateWebhookSecret, assertWebhookUrl } from "@/lib/webhooks/hmac";
+import { buildEvidencePack, assertEvidencePackMinimized } from "@/lib/evidence/pack";
+import { COMPLIANCE_MATRIX } from "@/lib/compliance/matrix";
 import { didDocumentHash, didKeyFromMultibase, resolveDidKey } from "@/lib/identity/did";
 import { assertActiveSigningKey, createHolderIdentity, createIssuerIdentity } from "@/lib/identity/keys";
 import { assertPermission, permissionMap } from "@/lib/identity/roles";
@@ -1449,4 +1452,129 @@ export const revokeApiKey = createServerFn({ method: "POST" })
     });
     return { ok: true };
   });
+
+export const listWebhooks = createServerFn({ method: "GET" })
+  .middleware([authMiddleware])
+  .handler(async ({ context }) => {
+    const ws = await workspaceFor(context.userId);
+    assertPermission(ws.role, "manageWebhooks");
+    const sql = await getSql();
+    const endpoints = await sql<{
+      id: string;
+      name: string;
+      url: string;
+      prefix: string;
+      status: string;
+      created_at: string;
+    }>`
+      select id, name, url, prefix, status, created_at::text as created_at
+      from webhook_endpoints where tenant_id = ${ws.tenantId} order by created_at desc`;
+    const deliveries = await sql<{
+      id: string;
+      endpoint_id: string;
+      status: string;
+      http_status: number | null;
+      created_at: string;
+      payload_hash: string;
+    }>`
+      select id, endpoint_id, status, http_status, created_at::text as created_at, payload_hash
+      from webhook_deliveries where tenant_id = ${ws.tenantId}
+      order by created_at desc limit 20`;
+    return { endpoints, deliveries };
+  });
+
+export const createWebhook = createServerFn({ method: "POST" })
+  .middleware([authMiddleware])
+  .validator((raw: unknown) =>
+    z.object({ name: z.string().min(2).max(80), url: z.string().min(12).max(500) }).parse(raw),
+  )
+  .handler(async ({ context, data }) => {
+    const ws = await workspaceFor(context.userId);
+    assertPermission(ws.role, "manageWebhooks");
+    const url = assertWebhookUrl(data.url);
+    const generated = generateWebhookSecret();
+    const sql = await getSql();
+    const id = newId("whk");
+    await sql`
+      insert into webhook_endpoints (id, tenant_id, created_by_user_id, name, url, secret_sealed, prefix, status)
+      values (${id}, ${ws.tenantId}, ${context.userId}, ${data.name}, ${url}, ${sealSecret(generated.secret)}, ${generated.prefix}, ${"ACTIVE"})`;
+    await audit({
+      tenantId: ws.tenantId,
+      actorUserId: context.userId,
+      action: "webhook.created",
+      resourceType: "webhook",
+      resourceId: id,
+      metadata: { prefix: generated.prefix, url },
+    });
+    return { id, prefix: generated.prefix, secret: generated.secret, url, name: data.name };
+  });
+
+export const revokeWebhook = createServerFn({ method: "POST" })
+  .middleware([authMiddleware])
+  .validator((raw: unknown) => z.object({ id: z.string().min(8) }).parse(raw))
+  .handler(async ({ context, data }) => {
+    const ws = await workspaceFor(context.userId);
+    assertPermission(ws.role, "manageWebhooks");
+    const sql = await getSql();
+    const now = new Date().toISOString();
+    await sql`
+      update webhook_endpoints
+      set status = ${"REVOKED"}, revoked_at = ${now}
+      where id = ${data.id} and tenant_id = ${ws.tenantId} and status = ${"ACTIVE"}`;
+    await audit({
+      tenantId: ws.tenantId,
+      actorUserId: context.userId,
+      action: "webhook.revoked",
+      resourceType: "webhook",
+      resourceId: data.id,
+    });
+    return { ok: true };
+  });
+
+export const getEvidencePack = createServerFn({ method: "POST" })
+  .validator((raw: unknown) => z.object({ ref: z.string().min(3).max(80) }).parse(raw))
+  .handler(async ({ data }) => {
+    await ensureDemoSeed();
+    const sql = await getSql();
+    const byReport = await sql<{
+      report_json: string | null;
+      report_hash: string | null;
+      result_json: string;
+      opaque_report_ref: string | null;
+      credential_id: string | null;
+    }>`
+      select report_json, report_hash, result_json, opaque_report_ref, credential_id
+      from verification_requests
+      where opaque_report_ref = ${data.ref} or opaque_ref = ${data.ref}
+      order by created_at desc
+      limit 1`;
+    const row = byReport[0];
+    if (!row?.report_json) throw new Error("Evidence pack not found");
+    const report = JSON.parse(row.report_json) as Record<string, unknown>;
+    const result = JSON.parse(row.result_json) as Parameters<typeof buildEvidencePack>[0]["result"];
+    const proof = verifyVerificationReport(report);
+    const ledger = await getLedger();
+    const chain = await ledger.verifyChain();
+    const anchor = row.report_hash ? await ledger.getVerificationAnchor(row.report_hash) : null;
+    const pack = buildEvidencePack({
+      result,
+      credentialId: typeof report.credentialId === "string" ? report.credentialId : row.credential_id ?? undefined,
+      credentialHash: typeof report.credentialHash === "string" ? report.credentialHash : undefined,
+      reportRef: row.opaque_report_ref ?? undefined,
+      reportHash: row.report_hash ?? undefined,
+      reportJson: row.report_json,
+      reportSignatureValid: proof.ok,
+      ledgerAnchored: Boolean(anchor),
+      adapter: ledger.name,
+      integrityModel: chain.model,
+    });
+    assertEvidencePackMinimized(pack);
+    return pack;
+  });
+
+export const getComplianceMatrix = createServerFn({ method: "GET" }).handler(async () => ({
+  disclaimer:
+    "This is an engineering control matrix, not a SOC 2, ISO 27001, eIDAS, or GDPR certification.",
+  controls: COMPLIANCE_MATRIX,
+}));
 

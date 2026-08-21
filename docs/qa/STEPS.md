@@ -443,6 +443,50 @@ Phase 1 four outcomes still hold. Ledger still `HashChainLedgerAdapter`.
 
 ---
 
+## Phase 9 — Webhooks, evidence, compliance
+
+### 9.1 Compliance page is not a certificate
+
+Open **Compliance**.
+
+**PASS if** the disclaimer says this is **not** SOC 2 / ISO 27001 / eIDAS / GDPR certification.  
+**PASS if** `REG-01` is `not-claimed`.  
+**PASS if** `DLT-02` (Fabric) is `fail-closed`, not a live Fabric claim.
+
+### 9.2 Evidence pack from a valid verify
+
+1. Home → **Original PDF**.
+2. Open **Evidence pack**.
+
+**PASS if** JSON `type` is `MatrixlyEvidencePack`, report signature PASS, ledger anchor PASS, **no** holder name, **no** PDF bytes.
+
+### 9.3 Evidence API
+
+`GET /api/v1/evidence/{reportRef}` without a key → **401**.  
+With `mtx_live_demo_verifier_qa_only` → 200 pack, no `Alex`.
+
+### 9.4 Create webhook (signed in, tenant admin)
+
+**Webhooks** → name + `https://hooks.example.test/matrixly` → **Create endpoint**.
+
+**PASS if** `mtx_whsec_…` shown once. HTTP to a non-https public URL is rejected.
+
+### 9.5 Delivery after verify
+
+Verify the valid diploma (UI or API). Refresh **Webhooks** deliveries.
+
+**PASS if** a row exists with a payload hash. Status may be `FAILED` if the bank URL is unreachable — that is honest. **FAIL if** the payload JSON (if shown) contains a holder name, or if a delivery is marked DELIVERED with no signature.
+
+### 9.6 HMAC
+
+Automated: sign/verify round-trip; tampered body fails; unsigned secret refused; `https://169.254.169.254` refused.
+
+### 9.7 Regression
+
+Phase 1 four outcomes and Phase 8 401-never-VALID still hold.
+
+---
+
 ## Traps (do not mis-score)
 
 | Action | Wrong reading | Correct |
@@ -454,4 +498,6 @@ Phase 1 four outcomes still hold. Ledger still `HashChainLedgerAdapter`.
 | Audit row `credential.verified` | “That’s the proof” | Proof is the signed report + ledger hash |
 | Ledger adapter HashChain | “Phase 7 failed” | Preview default is hash-chain. Fabric refuse is the Phase 7 property |
 | Verify API 401 | “API is broken” | No key must never return VALID |
+| Compliance page | “We are SOC 2 certified” | Matrix is engineering controls; REG-01 is not-claimed |
+| Webhook FAILED | “Phase 9 is broken” | Unreachable HTTPS is FAILED; the signature must still exist |
 

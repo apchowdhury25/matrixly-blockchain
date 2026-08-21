@@ -36,7 +36,9 @@ Issuer → Identity → Document → SHA-256 → VC 2.0 → Ed25519
 | 4 Holder | Shipped | Wallet, claim, VP |
 | 5 Status | Shipped | Signed Bitstring Status List + verifier policy |
 | 6 Audit | Shipped | Signed verification reports, hash-chained audit |
+| 7 Production adapters | Shipped (preview + fail-closed) | Factory + Gateway mapping + storage/KMS ports |
 | 8 Verifier API | Shipped | Bearer keys, `POST /api/v1/verify`, OpenAPI. 401 never returns VALID. |
+| 9 Webhooks / evidence | Shipped | HMAC events, evidence packs, honest compliance matrix |
 
 Phase write-ups: [docs/phases/](docs/phases/). Architecture: [docs/architecture/trust-model.md](docs/architecture/trust-model.md). Fabric Gateway mapping: [docs/architecture/fabric-gateway.md](docs/architecture/fabric-gateway.md).
 

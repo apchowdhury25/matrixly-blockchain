@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { PublicHeader } from "@/components/layout/public-header";
 import { getPublicVerificationReport } from "@/lib/trust/functions";
 
@@ -9,6 +9,7 @@ export const Route = createFileRoute("/report/$ref")({
 
 function ReportPage() {
   const data = Route.useLoaderData();
+  const { ref } = Route.useParams();
   const report = JSON.parse(data.reportJson) as {
     result?: string;
     credentialId?: string;
@@ -54,6 +55,11 @@ function ReportPage() {
             <dd className="break-all font-mono text-xs">{data.reportHash}</dd>
           </div>
         </dl>
+        <p className="mt-6 text-sm">
+          <Link to="/evidence/$ref" params={{ ref }} className="underline underline-offset-4">
+            Download evidence pack
+          </Link>
+        </p>
       </main>
     </div>
   );

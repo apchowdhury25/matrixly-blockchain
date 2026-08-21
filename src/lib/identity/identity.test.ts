@@ -58,12 +58,15 @@ test("RBAC: auditor cannot issue or rotate; admin can", () => {
   assert.equal(hasPermission("ISSUER", "rotateKeys"), false);
   assert.equal(hasPermission("AUDITOR", "manageApiKeys"), false);
   assert.equal(hasPermission("TENANT_ADMIN", "manageApiKeys"), true);
+  assert.equal(hasPermission("AUDITOR", "manageWebhooks"), false);
+  assert.equal(hasPermission("TENANT_ADMIN", "manageWebhooks"), true);
   assert.throws(() => assertPermission("AUDITOR", "manageApiKeys"), /Not permitted/);
   assert.doesNotThrow(() => assertPermission("TENANT_ADMIN", "rotateKeys"));
   const map = permissionMap("AUDITOR");
   assert.equal(map.issue, false);
   assert.equal(map.readAudit, true);
   assert.equal(map.manageApiKeys, false);
+  assert.equal(map.manageWebhooks, false);
 });
 
 test("only ACTIVE keys may sign", () => {

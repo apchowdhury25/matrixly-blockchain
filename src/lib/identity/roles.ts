@@ -13,6 +13,7 @@ export const PERMISSIONS = {
   readKeys: ["TENANT_ADMIN", "ISSUER", "AUDITOR"],
   readDocuments: ["TENANT_ADMIN", "ISSUER", "AUDITOR"],
   manageApiKeys: ["TENANT_ADMIN"],
+  manageWebhooks: ["TENANT_ADMIN"],
 } as const;
 
 export type Permission = keyof typeof PERMISSIONS;
@@ -43,5 +44,6 @@ export function permissionMap(role: string) {
     readKeys: hasPermission(role, "readKeys"),
     readDocuments: hasPermission(role, "readDocuments"),
     manageApiKeys: hasPermission(role, "manageApiKeys"),
+    manageWebhooks: hasPermission(role, "manageWebhooks"),
   };
 }

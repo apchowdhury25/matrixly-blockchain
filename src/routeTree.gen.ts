@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppRouteRouteImport } from './routes/app/route'
+import { Route as ComplianceRouteImport } from './routes/compliance'
 import { Route as DevelopersRouteImport } from './routes/developers'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as TrustRouteImport } from './routes/trust'
@@ -24,7 +25,9 @@ import { Route as AppIssueRouteImport } from './routes/app/issue'
 import { Route as AppKeysRouteImport } from './routes/app/keys'
 import { Route as AppLedgerRouteImport } from './routes/app/ledger'
 import { Route as AppStatusRouteImport } from './routes/app/status'
+import { Route as AppWebhooksRouteImport } from './routes/app/webhooks'
 import { Route as DidMultibaseRouteImport } from './routes/did.$multibase'
+import { Route as EvidenceRefRouteImport } from './routes/evidence.$ref'
 import { Route as PresentRefRouteImport } from './routes/present.$ref'
 import { Route as ReportRefRouteImport } from './routes/report.$ref'
 import { Route as StatusIdRouteImport } from './routes/status.$id'
@@ -35,6 +38,7 @@ import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as ApiV1OpenapiDotjsonRouteImport } from './routes/api/v1/openapi[.]json'
 import { Route as ApiV1VerifyRouteImport } from './routes/api/v1/verify'
 import { Route as WalletClaimTokenRouteImport } from './routes/wallet/claim.$token'
+import { Route as ApiV1EvidenceRefRouteImport } from './routes/api/v1/evidence.$ref'
 import { Route as ApiV1ReportsRefRouteImport } from './routes/api/v1/reports.$ref'
 
 const IndexRoute = IndexRouteImport.update({
@@ -45,6 +49,11 @@ const IndexRoute = IndexRouteImport.update({
 const AppRouteRoute = AppRouteRouteImport.update({
   id: '/app',
   path: '/app',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ComplianceRoute = ComplianceRouteImport.update({
+  id: '/compliance',
+  path: '/compliance',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DevelopersRoute = DevelopersRouteImport.update({
@@ -112,9 +121,19 @@ const AppStatusRoute = AppStatusRouteImport.update({
   path: '/status',
   getParentRoute: () => AppRouteRoute,
 } as any)
+const AppWebhooksRoute = AppWebhooksRouteImport.update({
+  id: '/webhooks',
+  path: '/webhooks',
+  getParentRoute: () => AppRouteRoute,
+} as any)
 const DidMultibaseRoute = DidMultibaseRouteImport.update({
   id: '/did/$multibase',
   path: '/did/$multibase',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EvidenceRefRoute = EvidenceRefRouteImport.update({
+  id: '/evidence/$ref',
+  path: '/evidence/$ref',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PresentRefRoute = PresentRefRouteImport.update({
@@ -167,6 +186,11 @@ const WalletClaimTokenRoute = WalletClaimTokenRouteImport.update({
   path: '/claim/$token',
   getParentRoute: () => WalletRouteRoute,
 } as any)
+const ApiV1EvidenceRefRoute = ApiV1EvidenceRefRouteImport.update({
+  id: '/api/v1/evidence/$ref',
+  path: '/api/v1/evidence/$ref',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiV1ReportsRefRoute = ApiV1ReportsRefRouteImport.update({
   id: '/api/v1/reports/$ref',
   path: '/api/v1/reports/$ref',
@@ -177,6 +201,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/app': typeof AppRouteRouteWithChildren
   '/wallet': typeof WalletRouteRouteWithChildren
+  '/compliance': typeof ComplianceRoute
   '/developers': typeof DevelopersRoute
   '/login': typeof LoginRoute
   '/trust': typeof TrustRoute
@@ -188,7 +213,9 @@ export interface FileRoutesByFullPath {
   '/app/keys': typeof AppKeysRoute
   '/app/ledger': typeof AppLedgerRoute
   '/app/status': typeof AppStatusRoute
+  '/app/webhooks': typeof AppWebhooksRoute
   '/did/$multibase': typeof DidMultibaseRoute
+  '/evidence/$ref': typeof EvidenceRefRoute
   '/present/$ref': typeof PresentRefRoute
   '/report/$ref': typeof ReportRefRoute
   '/status/$id': typeof StatusIdRoute
@@ -200,10 +227,12 @@ export interface FileRoutesByFullPath {
   '/api/v1/openapi.json': typeof ApiV1OpenapiDotjsonRoute
   '/api/v1/verify': typeof ApiV1VerifyRoute
   '/wallet/claim/$token': typeof WalletClaimTokenRoute
+  '/api/v1/evidence/$ref': typeof ApiV1EvidenceRefRoute
   '/api/v1/reports/$ref': typeof ApiV1ReportsRefRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/compliance': typeof ComplianceRoute
   '/developers': typeof DevelopersRoute
   '/login': typeof LoginRoute
   '/trust': typeof TrustRoute
@@ -215,7 +244,9 @@ export interface FileRoutesByTo {
   '/app/keys': typeof AppKeysRoute
   '/app/ledger': typeof AppLedgerRoute
   '/app/status': typeof AppStatusRoute
+  '/app/webhooks': typeof AppWebhooksRoute
   '/did/$multibase': typeof DidMultibaseRoute
+  '/evidence/$ref': typeof EvidenceRefRoute
   '/present/$ref': typeof PresentRefRoute
   '/report/$ref': typeof ReportRefRoute
   '/status/$id': typeof StatusIdRoute
@@ -227,6 +258,7 @@ export interface FileRoutesByTo {
   '/api/v1/openapi.json': typeof ApiV1OpenapiDotjsonRoute
   '/api/v1/verify': typeof ApiV1VerifyRoute
   '/wallet/claim/$token': typeof WalletClaimTokenRoute
+  '/api/v1/evidence/$ref': typeof ApiV1EvidenceRefRoute
   '/api/v1/reports/$ref': typeof ApiV1ReportsRefRoute
 }
 export interface FileRoutesById {
@@ -234,6 +266,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/app': typeof AppRouteRouteWithChildren
   '/wallet': typeof WalletRouteRouteWithChildren
+  '/compliance': typeof ComplianceRoute
   '/developers': typeof DevelopersRoute
   '/login': typeof LoginRoute
   '/trust': typeof TrustRoute
@@ -245,7 +278,9 @@ export interface FileRoutesById {
   '/app/keys': typeof AppKeysRoute
   '/app/ledger': typeof AppLedgerRoute
   '/app/status': typeof AppStatusRoute
+  '/app/webhooks': typeof AppWebhooksRoute
   '/did/$multibase': typeof DidMultibaseRoute
+  '/evidence/$ref': typeof EvidenceRefRoute
   '/present/$ref': typeof PresentRefRoute
   '/report/$ref': typeof ReportRefRoute
   '/status/$id': typeof StatusIdRoute
@@ -257,6 +292,7 @@ export interface FileRoutesById {
   '/api/v1/openapi.json': typeof ApiV1OpenapiDotjsonRoute
   '/api/v1/verify': typeof ApiV1VerifyRoute
   '/wallet/claim/$token': typeof WalletClaimTokenRoute
+  '/api/v1/evidence/$ref': typeof ApiV1EvidenceRefRoute
   '/api/v1/reports/$ref': typeof ApiV1ReportsRefRoute
 }
 export interface FileRouteTypes {
@@ -265,6 +301,7 @@ export interface FileRouteTypes {
     | '/'
     | '/app'
     | '/wallet'
+    | '/compliance'
     | '/developers'
     | '/login'
     | '/trust'
@@ -276,7 +313,9 @@ export interface FileRouteTypes {
     | '/app/keys'
     | '/app/ledger'
     | '/app/status'
+    | '/app/webhooks'
     | '/did/$multibase'
+    | '/evidence/$ref'
     | '/present/$ref'
     | '/report/$ref'
     | '/status/$id'
@@ -288,10 +327,12 @@ export interface FileRouteTypes {
     | '/api/v1/openapi.json'
     | '/api/v1/verify'
     | '/wallet/claim/$token'
+    | '/api/v1/evidence/$ref'
     | '/api/v1/reports/$ref'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/compliance'
     | '/developers'
     | '/login'
     | '/trust'
@@ -303,7 +344,9 @@ export interface FileRouteTypes {
     | '/app/keys'
     | '/app/ledger'
     | '/app/status'
+    | '/app/webhooks'
     | '/did/$multibase'
+    | '/evidence/$ref'
     | '/present/$ref'
     | '/report/$ref'
     | '/status/$id'
@@ -315,12 +358,14 @@ export interface FileRouteTypes {
     | '/api/v1/openapi.json'
     | '/api/v1/verify'
     | '/wallet/claim/$token'
+    | '/api/v1/evidence/$ref'
     | '/api/v1/reports/$ref'
   id:
     | '__root__'
     | '/'
     | '/app'
     | '/wallet'
+    | '/compliance'
     | '/developers'
     | '/login'
     | '/trust'
@@ -332,7 +377,9 @@ export interface FileRouteTypes {
     | '/app/keys'
     | '/app/ledger'
     | '/app/status'
+    | '/app/webhooks'
     | '/did/$multibase'
+    | '/evidence/$ref'
     | '/present/$ref'
     | '/report/$ref'
     | '/status/$id'
@@ -344,6 +391,7 @@ export interface FileRouteTypes {
     | '/api/v1/openapi.json'
     | '/api/v1/verify'
     | '/wallet/claim/$token'
+    | '/api/v1/evidence/$ref'
     | '/api/v1/reports/$ref'
   fileRoutesById: FileRoutesById
 }
@@ -351,10 +399,12 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRouteRoute: typeof AppRouteRouteWithChildren
   WalletRouteRoute: typeof WalletRouteRouteWithChildren
+  ComplianceRoute: typeof ComplianceRoute
   DevelopersRoute: typeof DevelopersRoute
   LoginRoute: typeof LoginRoute
   TrustRoute: typeof TrustRoute
   DidMultibaseRoute: typeof DidMultibaseRoute
+  EvidenceRefRoute: typeof EvidenceRefRoute
   PresentRefRoute: typeof PresentRefRoute
   ReportRefRoute: typeof ReportRefRoute
   StatusIdRoute: typeof StatusIdRoute
@@ -363,6 +413,7 @@ export interface RootRouteChildren {
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ApiV1OpenapiDotjsonRoute: typeof ApiV1OpenapiDotjsonRoute
   ApiV1VerifyRoute: typeof ApiV1VerifyRoute
+  ApiV1EvidenceRefRoute: typeof ApiV1EvidenceRefRoute
   ApiV1ReportsRefRoute: typeof ApiV1ReportsRefRoute
 }
 
@@ -380,6 +431,13 @@ declare module '@tanstack/react-router' {
       path: '/app'
       fullPath: '/app'
       preLoaderRoute: typeof AppRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/compliance': {
+      id: '/compliance'
+      path: '/compliance'
+      fullPath: '/compliance'
+      preLoaderRoute: typeof ComplianceRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/developers': {
@@ -473,11 +531,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppStatusRouteImport
       parentRoute: typeof AppRouteRoute
     }
+    '/app/webhooks': {
+      id: '/app/webhooks'
+      path: '/webhooks'
+      fullPath: '/app/webhooks'
+      preLoaderRoute: typeof AppWebhooksRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
     '/did/$multibase': {
       id: '/did/$multibase'
       path: '/did/$multibase'
       fullPath: '/did/$multibase'
       preLoaderRoute: typeof DidMultibaseRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/evidence/$ref': {
+      id: '/evidence/$ref'
+      path: '/evidence/$ref'
+      fullPath: '/evidence/$ref'
+      preLoaderRoute: typeof EvidenceRefRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/present/$ref': {
@@ -550,6 +622,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WalletClaimTokenRouteImport
       parentRoute: typeof WalletRouteRoute
     }
+    '/api/v1/evidence/$ref': {
+      id: '/api/v1/evidence/$ref'
+      path: '/api/v1/evidence/$ref'
+      fullPath: '/api/v1/evidence/$ref'
+      preLoaderRoute: typeof ApiV1EvidenceRefRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/v1/reports/$ref': {
       id: '/api/v1/reports/$ref'
       path: '/api/v1/reports/$ref'
@@ -569,6 +648,7 @@ interface AppRouteRouteChildren {
   AppKeysRoute: typeof AppKeysRoute
   AppLedgerRoute: typeof AppLedgerRoute
   AppStatusRoute: typeof AppStatusRoute
+  AppWebhooksRoute: typeof AppWebhooksRoute
   AppIndexRoute: typeof AppIndexRoute
 }
 
@@ -581,6 +661,7 @@ const AppRouteRouteChildren: AppRouteRouteChildren = {
   AppKeysRoute: AppKeysRoute,
   AppLedgerRoute: AppLedgerRoute,
   AppStatusRoute: AppStatusRoute,
+  AppWebhooksRoute: AppWebhooksRoute,
   AppIndexRoute: AppIndexRoute,
 }
 
@@ -606,10 +687,12 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRouteRoute: AppRouteRouteWithChildren,
   WalletRouteRoute: WalletRouteRouteWithChildren,
+  ComplianceRoute: ComplianceRoute,
   DevelopersRoute: DevelopersRoute,
   LoginRoute: LoginRoute,
   TrustRoute: TrustRoute,
   DidMultibaseRoute: DidMultibaseRoute,
+  EvidenceRefRoute: EvidenceRefRoute,
   PresentRefRoute: PresentRefRoute,
   ReportRefRoute: ReportRefRoute,
   StatusIdRoute: StatusIdRoute,
@@ -618,6 +701,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiV1OpenapiDotjsonRoute: ApiV1OpenapiDotjsonRoute,
   ApiV1VerifyRoute: ApiV1VerifyRoute,
+  ApiV1EvidenceRefRoute: ApiV1EvidenceRefRoute,
   ApiV1ReportsRefRoute: ApiV1ReportsRefRoute,
 }
 export const routeTree = rootRouteImport

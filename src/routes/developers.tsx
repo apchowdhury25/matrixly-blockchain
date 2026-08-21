@@ -102,6 +102,11 @@ function DevelopersPage() {
                 <td className="px-4 py-3 font-mono text-xs">/api/v1/reports/{"{ref}"}</td>
                 <td className="px-4 py-3">Bearer required</td>
               </tr>
+              <tr className="border-b border-rule/70">
+                <td className="px-4 py-3 font-mono text-xs">GET</td>
+                <td className="px-4 py-3 font-mono text-xs">/api/v1/evidence/{"{ref}"}</td>
+                <td className="px-4 py-3">Bearer required</td>
+              </tr>
               <tr>
                 <td className="px-4 py-3 font-mono text-xs">GET</td>
                 <td className="px-4 py-3 font-mono text-xs">/api/v1/openapi.json</td>
@@ -113,6 +118,56 @@ function DevelopersPage() {
         {list.map((ex) => (
           <Example key={ex.title} {...ex} />
         ))}
+
+        <h2 className="mt-14 font-display text-2xl">Webhooks</h2>
+        <p className="mt-3 leading-relaxed text-ink-soft">
+          After a verification, Matrixly POSTs a JSON event to each active HTTPS endpoint. The body
+          is hashes and flags only. Header{" "}
+          <span className="font-mono text-sm">{"matrixly-signature: t=<iso>,v1=<hmac-sha256>"}</span>{" "}
+          is required; unsigned events are refused. Signing secrets are{" "}
+          <span className="font-mono text-sm">mtx_whsec_…</span>, shown once, sealed at rest. Loopback
+          and link-local URLs are rejected.
+        </p>
+        <pre className="mt-4 overflow-x-auto rounded-xl border border-rule bg-paper-raised p-4 font-mono text-xs leading-relaxed">
+          {`POST https://hooks.bank.example/matrixly
+Content-Type: application/json
+matrixly-signature: t=2026-08-21T18:00:00.000Z,v1=<hex>
+matrixly-event-id: wh_…
+
+{
+  "id": "wh_…",
+  "type": "verification.completed",
+  "source": "api",
+  "status": "VALID",
+  "verified": true,
+  "issuerDid": "did:key:z6Mk…",
+  "credentialId": "urn:uuid:demo-valid-bcs",
+  "credentialHash": "sha256:…",
+  "documentHash": "sha256:…",
+  "reportRef": "…",
+  "reportHash": "sha256:…",
+  "checks": {
+    "issuerRegistered": true,
+    "signatureValid": true,
+    "documentSha256": true,
+    "ledgerProof": true,
+    "signedStatusList": true,
+    "credentialActive": true
+  },
+  "reasons": []
+}`}
+        </pre>
+
+        <h2 className="mt-10 font-display text-2xl">Evidence pack</h2>
+        <p className="mt-3 leading-relaxed text-ink-soft">
+          <span className="font-mono text-sm">GET /api/v1/evidence/{"{ref}"}</span> and{" "}
+          <span className="font-mono text-sm">/evidence/{"{ref}"}</span> return hashes, the signed
+          verification report, and ledger flags. No PDF bytes. No holder name. Control matrix:{" "}
+          <Link to="/compliance" className="underline underline-offset-4">
+            /compliance
+          </Link>
+          . That page is an engineering list, not a certification.
+        </p>
       </article>
     </div>
   );

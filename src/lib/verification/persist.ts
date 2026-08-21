@@ -57,5 +57,23 @@ export async function persistVerificationReport(input: {
       ${verifier.did}, ${anchored.blockHash},
       ${input.apiKeyId ?? null}, ${input.source ?? "ui"}
     )`;
+  if (input.tenantId) {
+    try {
+      const { dispatchVerificationWebhooks } = await import("@/lib/webhooks/deliver");
+      const { toMachineResult } = await import("@/lib/api/machine");
+      await dispatchVerificationWebhooks({
+        tenantId: input.tenantId,
+        source: input.source ?? "ui",
+        result: toMachineResult(input.result, {
+          reportRef,
+          reportHash: reportHashValue,
+          credentialId: String(input.credential.id ?? input.credentialRowId ?? ""),
+          credentialHash: credentialHash(input.credential),
+        }),
+      });
+    } catch {
+      /* Webhook failure must not change the verification outcome. */
+    }
+  }
   return { reportRef, reportHash: reportHashValue };
 }

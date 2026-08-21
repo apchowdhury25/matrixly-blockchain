@@ -135,9 +135,12 @@ export function ResultCard({ result }: { result: VerifyView }) {
         </div>
       ) : null}
       {result.reportRef ? (
-        <div className="border-t border-rule px-6 py-4 text-sm">
+        <div className="flex flex-wrap gap-4 border-t border-rule px-6 py-4 text-sm">
           <Link to="/report/$ref" params={{ ref: result.reportRef }} className="underline">
             Signed verification report
+          </Link>
+          <Link to="/evidence/$ref" params={{ ref: result.reportRef }} className="underline">
+            Evidence pack
           </Link>
         </div>
       ) : null}

@@ -138,6 +138,16 @@ export const openApiSpec = {
         },
       },
     },
+    "/api/v1/evidence/{ref}": {
+      get: {
+        summary: "Evidence pack (hashes + signed report, no PDF, no holder name)",
+        parameters: [{ name: "ref", in: "path", required: true, schema: { type: "string" } }],
+        responses: {
+          "200": { description: "MatrixlyEvidencePack JSON" },
+          "401": { description: "Unauthorized" },
+        },
+      },
+    },
     "/api/v1/openapi.json": {
       get: {
         summary: "This OpenAPI document",
