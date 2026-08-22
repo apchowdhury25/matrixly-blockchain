@@ -49,7 +49,7 @@ These are the ones banks, EUDI wallets, and governments actually ask for next.
 
 | Standard | Body | What it is | Why it is not Matrixly yet |
 |---|---|---|---|
-| [OpenID4VCI 1.0](https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0.html) | OpenID Foundation (Final, Sep 2025) | OAuth API to **issue** credentials into a wallet | Our issue path is a server function, not OID4VCI |
+| [OpenID4VCI 1.0](https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0.html) | OpenID Foundation (Final, Sep 2025) | OAuth API to **issue** credentials into a wallet | **Implemented** (pre-authorized_code, `ldp_vc` only). Not HAIP. Authorization code refused |
 | [OpenID4VP 1.0](https://openid.net/specs/openid-4-verifiable-presentations-1_0.html) | OpenID Foundation (Final, Jul 2025) | OAuth flow to **present** a VP to a verifier | **Implemented** (DCQL + `direct_post`, W3C VP only). Not HAIP certified |
 | [HAIP 1.0](https://openid.net/specs/openid4vc-high-assurance-interoperability-profile-1_0.html) | OpenID Foundation | High-assurance profile of the above | Conformance tests opened 2026; we are not enrolled |
 | SIOPv2 | OpenID Foundation | Self-issued OpenID Provider | Holder DID is not an OIDC OP |
@@ -94,7 +94,7 @@ If interoperability is the next product goal, order of value:
 
 1. **`did:web`** — **done** (Phase 10).
 2. **OpenID4VP** — **done** (Phase 11) for W3C VP; SD-JWT/mdoc still refused.
-3. **OpenID4VCI** — so a wallet can pull a diploma from Matrixly.
+3. **OpenID4VCI** — **done** (Phase 12) pre-authorized `ldp_vc`; authorization code / SD-JWT still refused.
 4. **SD-JWT or mdoc** — only if a regulator names that format; do not dual-write by default.
 
 Do not implement Matrix.org federation to “look decentralized.” It solves chat,

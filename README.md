@@ -41,6 +41,7 @@ Issuer → Identity → Document → SHA-256 → VC 2.0 → Ed25519
 | 9 Webhooks / evidence | Shipped | HMAC events, evidence packs, honest compliance matrix |
 | 10 did:web | Shipped | HTTPS DID documents; unknown methods fail closed |
 | 11 OpenID4VP | Shipped | DCQL + `direct_post`; nonce-bound W3C VP. SD-JWT/mdoc refused |
+| 12 OpenID4VCI | Shipped | Pre-authorized_code delivers already-signed `ldp_vc`. Authorization code refused |
 
 Phase write-ups: [docs/phases/](docs/phases/). Architecture: [docs/architecture/trust-model.md](docs/architecture/trust-model.md). Fabric Gateway mapping: [docs/architecture/fabric-gateway.md](docs/architecture/fabric-gateway.md). Protocol standards: [docs/architecture/protocol-standards.md](docs/architecture/protocol-standards.md). Compliance matrix: [docs/compliance/matrix.md](docs/compliance/matrix.md).
 

@@ -16,6 +16,7 @@ import { Route as DevelopersRouteImport } from './routes/developers'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as TrustRouteImport } from './routes/trust'
 import { Route as WalletRouteRouteImport } from './routes/wallet/route'
+import { Route as DotwellKnownOpenidCredentialIssuerRouteImport } from './routes/[.]well-known/openid-credential-issuer'
 import { Route as AppIndexRouteImport } from './routes/app/index'
 import { Route as AppApiKeysRouteImport } from './routes/app/api-keys'
 import { Route as AppAuditRouteImport } from './routes/app/audit'
@@ -29,6 +30,7 @@ import { Route as AppWebhooksRouteImport } from './routes/app/webhooks'
 import { Route as DidWebSlugRouteImport } from './routes/did-web.$slug'
 import { Route as DidMultibaseRouteImport } from './routes/did.$multibase'
 import { Route as EvidenceRefRouteImport } from './routes/evidence.$ref'
+import { Route as Oid4vciIndexRouteImport } from './routes/oid4vci/index'
 import { Route as Oid4vpIndexRouteImport } from './routes/oid4vp/index'
 import { Route as Oid4vpIdRouteImport } from './routes/oid4vp/$id'
 import { Route as PresentRefRouteImport } from './routes/present.$ref'
@@ -43,8 +45,13 @@ import { Route as ApiV1VerifyRouteImport } from './routes/api/v1/verify'
 import { Route as WalletClaimTokenRouteImport } from './routes/wallet/claim.$token'
 import { Route as ApiV1DidWebSlugRouteImport } from './routes/api/v1/did-web.$slug'
 import { Route as ApiV1EvidenceRefRouteImport } from './routes/api/v1/evidence.$ref'
+import { Route as ApiV1Oid4vciCredentialRouteImport } from './routes/api/v1/oid4vci/credential'
+import { Route as ApiV1Oid4vciMetadataRouteImport } from './routes/api/v1/oid4vci/metadata'
+import { Route as ApiV1Oid4vciPreviewWalletRouteImport } from './routes/api/v1/oid4vci/preview-wallet'
+import { Route as ApiV1Oid4vciTokenRouteImport } from './routes/api/v1/oid4vci/token'
 import { Route as ApiV1Oid4vpRequestsRouteImport } from './routes/api/v1/oid4vp/requests'
 import { Route as ApiV1ReportsRefRouteImport } from './routes/api/v1/reports.$ref'
+import { Route as ApiV1Oid4vciOfferTokenRouteImport } from './routes/api/v1/oid4vci/offer.$token'
 import { Route as ApiV1Oid4vpDirectPostIdRouteImport } from './routes/api/v1/oid4vp/direct-post.$id'
 import { Route as ApiV1Oid4vpPreviewWalletIdRouteImport } from './routes/api/v1/oid4vp/preview-wallet.$id'
 import { Route as ApiV1Oid4vpRequestIdRouteImport } from './routes/api/v1/oid4vp/request.$id'
@@ -84,6 +91,12 @@ const WalletRouteRoute = WalletRouteRouteImport.update({
   path: '/wallet',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DotwellKnownOpenidCredentialIssuerRoute =
+  DotwellKnownOpenidCredentialIssuerRouteImport.update({
+    id: '/.well-known/openid-credential-issuer',
+    path: '/.well-known/openid-credential-issuer',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AppIndexRoute = AppIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -147,6 +160,11 @@ const DidMultibaseRoute = DidMultibaseRouteImport.update({
 const EvidenceRefRoute = EvidenceRefRouteImport.update({
   id: '/evidence/$ref',
   path: '/evidence/$ref',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const Oid4vciIndexRoute = Oid4vciIndexRouteImport.update({
+  id: '/oid4vci/',
+  path: '/oid4vci/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const Oid4vpIndexRoute = Oid4vpIndexRouteImport.update({
@@ -219,6 +237,27 @@ const ApiV1EvidenceRefRoute = ApiV1EvidenceRefRouteImport.update({
   path: '/api/v1/evidence/$ref',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiV1Oid4vciCredentialRoute = ApiV1Oid4vciCredentialRouteImport.update({
+  id: '/api/v1/oid4vci/credential',
+  path: '/api/v1/oid4vci/credential',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiV1Oid4vciMetadataRoute = ApiV1Oid4vciMetadataRouteImport.update({
+  id: '/api/v1/oid4vci/metadata',
+  path: '/api/v1/oid4vci/metadata',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiV1Oid4vciPreviewWalletRoute =
+  ApiV1Oid4vciPreviewWalletRouteImport.update({
+    id: '/api/v1/oid4vci/preview-wallet',
+    path: '/api/v1/oid4vci/preview-wallet',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiV1Oid4vciTokenRoute = ApiV1Oid4vciTokenRouteImport.update({
+  id: '/api/v1/oid4vci/token',
+  path: '/api/v1/oid4vci/token',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiV1Oid4vpRequestsRoute = ApiV1Oid4vpRequestsRouteImport.update({
   id: '/api/v1/oid4vp/requests',
   path: '/api/v1/oid4vp/requests',
@@ -227,6 +266,11 @@ const ApiV1Oid4vpRequestsRoute = ApiV1Oid4vpRequestsRouteImport.update({
 const ApiV1ReportsRefRoute = ApiV1ReportsRefRouteImport.update({
   id: '/api/v1/reports/$ref',
   path: '/api/v1/reports/$ref',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiV1Oid4vciOfferTokenRoute = ApiV1Oid4vciOfferTokenRouteImport.update({
+  id: '/api/v1/oid4vci/offer/$token',
+  path: '/api/v1/oid4vci/offer/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiV1Oid4vpDirectPostIdRoute = ApiV1Oid4vpDirectPostIdRouteImport.update({
@@ -254,6 +298,7 @@ export interface FileRoutesByFullPath {
   '/developers': typeof DevelopersRoute
   '/login': typeof LoginRoute
   '/trust': typeof TrustRoute
+  '/.well-known/openid-credential-issuer': typeof DotwellKnownOpenidCredentialIssuerRoute
   '/app/api-keys': typeof AppApiKeysRoute
   '/app/audit': typeof AppAuditRoute
   '/app/credentials': typeof AppCredentialsRoute
@@ -272,6 +317,7 @@ export interface FileRoutesByFullPath {
   '/status/$id': typeof StatusIdRoute
   '/verify/$ref': typeof VerifyRefRoute
   '/app/': typeof AppIndexRoute
+  '/oid4vci/': typeof Oid4vciIndexRoute
   '/oid4vp/': typeof Oid4vpIndexRoute
   '/verify/': typeof VerifyIndexRoute
   '/wallet/': typeof WalletIndexRoute
@@ -281,8 +327,13 @@ export interface FileRoutesByFullPath {
   '/wallet/claim/$token': typeof WalletClaimTokenRoute
   '/api/v1/did-web/$slug': typeof ApiV1DidWebSlugRoute
   '/api/v1/evidence/$ref': typeof ApiV1EvidenceRefRoute
+  '/api/v1/oid4vci/credential': typeof ApiV1Oid4vciCredentialRoute
+  '/api/v1/oid4vci/metadata': typeof ApiV1Oid4vciMetadataRoute
+  '/api/v1/oid4vci/preview-wallet': typeof ApiV1Oid4vciPreviewWalletRoute
+  '/api/v1/oid4vci/token': typeof ApiV1Oid4vciTokenRoute
   '/api/v1/oid4vp/requests': typeof ApiV1Oid4vpRequestsRoute
   '/api/v1/reports/$ref': typeof ApiV1ReportsRefRoute
+  '/api/v1/oid4vci/offer/$token': typeof ApiV1Oid4vciOfferTokenRoute
   '/api/v1/oid4vp/direct-post/$id': typeof ApiV1Oid4vpDirectPostIdRoute
   '/api/v1/oid4vp/preview-wallet/$id': typeof ApiV1Oid4vpPreviewWalletIdRoute
   '/api/v1/oid4vp/request/$id': typeof ApiV1Oid4vpRequestIdRoute
@@ -293,6 +344,7 @@ export interface FileRoutesByTo {
   '/developers': typeof DevelopersRoute
   '/login': typeof LoginRoute
   '/trust': typeof TrustRoute
+  '/.well-known/openid-credential-issuer': typeof DotwellKnownOpenidCredentialIssuerRoute
   '/app/api-keys': typeof AppApiKeysRoute
   '/app/audit': typeof AppAuditRoute
   '/app/credentials': typeof AppCredentialsRoute
@@ -311,6 +363,7 @@ export interface FileRoutesByTo {
   '/status/$id': typeof StatusIdRoute
   '/verify/$ref': typeof VerifyRefRoute
   '/app': typeof AppIndexRoute
+  '/oid4vci': typeof Oid4vciIndexRoute
   '/oid4vp': typeof Oid4vpIndexRoute
   '/verify': typeof VerifyIndexRoute
   '/wallet': typeof WalletIndexRoute
@@ -320,8 +373,13 @@ export interface FileRoutesByTo {
   '/wallet/claim/$token': typeof WalletClaimTokenRoute
   '/api/v1/did-web/$slug': typeof ApiV1DidWebSlugRoute
   '/api/v1/evidence/$ref': typeof ApiV1EvidenceRefRoute
+  '/api/v1/oid4vci/credential': typeof ApiV1Oid4vciCredentialRoute
+  '/api/v1/oid4vci/metadata': typeof ApiV1Oid4vciMetadataRoute
+  '/api/v1/oid4vci/preview-wallet': typeof ApiV1Oid4vciPreviewWalletRoute
+  '/api/v1/oid4vci/token': typeof ApiV1Oid4vciTokenRoute
   '/api/v1/oid4vp/requests': typeof ApiV1Oid4vpRequestsRoute
   '/api/v1/reports/$ref': typeof ApiV1ReportsRefRoute
+  '/api/v1/oid4vci/offer/$token': typeof ApiV1Oid4vciOfferTokenRoute
   '/api/v1/oid4vp/direct-post/$id': typeof ApiV1Oid4vpDirectPostIdRoute
   '/api/v1/oid4vp/preview-wallet/$id': typeof ApiV1Oid4vpPreviewWalletIdRoute
   '/api/v1/oid4vp/request/$id': typeof ApiV1Oid4vpRequestIdRoute
@@ -335,6 +393,7 @@ export interface FileRoutesById {
   '/developers': typeof DevelopersRoute
   '/login': typeof LoginRoute
   '/trust': typeof TrustRoute
+  '/.well-known/openid-credential-issuer': typeof DotwellKnownOpenidCredentialIssuerRoute
   '/app/api-keys': typeof AppApiKeysRoute
   '/app/audit': typeof AppAuditRoute
   '/app/credentials': typeof AppCredentialsRoute
@@ -353,6 +412,7 @@ export interface FileRoutesById {
   '/status/$id': typeof StatusIdRoute
   '/verify/$ref': typeof VerifyRefRoute
   '/app/': typeof AppIndexRoute
+  '/oid4vci/': typeof Oid4vciIndexRoute
   '/oid4vp/': typeof Oid4vpIndexRoute
   '/verify/': typeof VerifyIndexRoute
   '/wallet/': typeof WalletIndexRoute
@@ -362,8 +422,13 @@ export interface FileRoutesById {
   '/wallet/claim/$token': typeof WalletClaimTokenRoute
   '/api/v1/did-web/$slug': typeof ApiV1DidWebSlugRoute
   '/api/v1/evidence/$ref': typeof ApiV1EvidenceRefRoute
+  '/api/v1/oid4vci/credential': typeof ApiV1Oid4vciCredentialRoute
+  '/api/v1/oid4vci/metadata': typeof ApiV1Oid4vciMetadataRoute
+  '/api/v1/oid4vci/preview-wallet': typeof ApiV1Oid4vciPreviewWalletRoute
+  '/api/v1/oid4vci/token': typeof ApiV1Oid4vciTokenRoute
   '/api/v1/oid4vp/requests': typeof ApiV1Oid4vpRequestsRoute
   '/api/v1/reports/$ref': typeof ApiV1ReportsRefRoute
+  '/api/v1/oid4vci/offer/$token': typeof ApiV1Oid4vciOfferTokenRoute
   '/api/v1/oid4vp/direct-post/$id': typeof ApiV1Oid4vpDirectPostIdRoute
   '/api/v1/oid4vp/preview-wallet/$id': typeof ApiV1Oid4vpPreviewWalletIdRoute
   '/api/v1/oid4vp/request/$id': typeof ApiV1Oid4vpRequestIdRoute
@@ -378,6 +443,7 @@ export interface FileRouteTypes {
     | '/developers'
     | '/login'
     | '/trust'
+    | '/.well-known/openid-credential-issuer'
     | '/app/api-keys'
     | '/app/audit'
     | '/app/credentials'
@@ -396,6 +462,7 @@ export interface FileRouteTypes {
     | '/status/$id'
     | '/verify/$ref'
     | '/app/'
+    | '/oid4vci/'
     | '/oid4vp/'
     | '/verify/'
     | '/wallet/'
@@ -405,8 +472,13 @@ export interface FileRouteTypes {
     | '/wallet/claim/$token'
     | '/api/v1/did-web/$slug'
     | '/api/v1/evidence/$ref'
+    | '/api/v1/oid4vci/credential'
+    | '/api/v1/oid4vci/metadata'
+    | '/api/v1/oid4vci/preview-wallet'
+    | '/api/v1/oid4vci/token'
     | '/api/v1/oid4vp/requests'
     | '/api/v1/reports/$ref'
+    | '/api/v1/oid4vci/offer/$token'
     | '/api/v1/oid4vp/direct-post/$id'
     | '/api/v1/oid4vp/preview-wallet/$id'
     | '/api/v1/oid4vp/request/$id'
@@ -417,6 +489,7 @@ export interface FileRouteTypes {
     | '/developers'
     | '/login'
     | '/trust'
+    | '/.well-known/openid-credential-issuer'
     | '/app/api-keys'
     | '/app/audit'
     | '/app/credentials'
@@ -435,6 +508,7 @@ export interface FileRouteTypes {
     | '/status/$id'
     | '/verify/$ref'
     | '/app'
+    | '/oid4vci'
     | '/oid4vp'
     | '/verify'
     | '/wallet'
@@ -444,8 +518,13 @@ export interface FileRouteTypes {
     | '/wallet/claim/$token'
     | '/api/v1/did-web/$slug'
     | '/api/v1/evidence/$ref'
+    | '/api/v1/oid4vci/credential'
+    | '/api/v1/oid4vci/metadata'
+    | '/api/v1/oid4vci/preview-wallet'
+    | '/api/v1/oid4vci/token'
     | '/api/v1/oid4vp/requests'
     | '/api/v1/reports/$ref'
+    | '/api/v1/oid4vci/offer/$token'
     | '/api/v1/oid4vp/direct-post/$id'
     | '/api/v1/oid4vp/preview-wallet/$id'
     | '/api/v1/oid4vp/request/$id'
@@ -458,6 +537,7 @@ export interface FileRouteTypes {
     | '/developers'
     | '/login'
     | '/trust'
+    | '/.well-known/openid-credential-issuer'
     | '/app/api-keys'
     | '/app/audit'
     | '/app/credentials'
@@ -476,6 +556,7 @@ export interface FileRouteTypes {
     | '/status/$id'
     | '/verify/$ref'
     | '/app/'
+    | '/oid4vci/'
     | '/oid4vp/'
     | '/verify/'
     | '/wallet/'
@@ -485,8 +566,13 @@ export interface FileRouteTypes {
     | '/wallet/claim/$token'
     | '/api/v1/did-web/$slug'
     | '/api/v1/evidence/$ref'
+    | '/api/v1/oid4vci/credential'
+    | '/api/v1/oid4vci/metadata'
+    | '/api/v1/oid4vci/preview-wallet'
+    | '/api/v1/oid4vci/token'
     | '/api/v1/oid4vp/requests'
     | '/api/v1/reports/$ref'
+    | '/api/v1/oid4vci/offer/$token'
     | '/api/v1/oid4vp/direct-post/$id'
     | '/api/v1/oid4vp/preview-wallet/$id'
     | '/api/v1/oid4vp/request/$id'
@@ -500,6 +586,7 @@ export interface RootRouteChildren {
   DevelopersRoute: typeof DevelopersRoute
   LoginRoute: typeof LoginRoute
   TrustRoute: typeof TrustRoute
+  DotwellKnownOpenidCredentialIssuerRoute: typeof DotwellKnownOpenidCredentialIssuerRoute
   DidWebSlugRoute: typeof DidWebSlugRoute
   DidMultibaseRoute: typeof DidMultibaseRoute
   EvidenceRefRoute: typeof EvidenceRefRoute
@@ -508,6 +595,7 @@ export interface RootRouteChildren {
   ReportRefRoute: typeof ReportRefRoute
   StatusIdRoute: typeof StatusIdRoute
   VerifyRefRoute: typeof VerifyRefRoute
+  Oid4vciIndexRoute: typeof Oid4vciIndexRoute
   Oid4vpIndexRoute: typeof Oid4vpIndexRoute
   VerifyIndexRoute: typeof VerifyIndexRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
@@ -515,8 +603,13 @@ export interface RootRouteChildren {
   ApiV1VerifyRoute: typeof ApiV1VerifyRoute
   ApiV1DidWebSlugRoute: typeof ApiV1DidWebSlugRoute
   ApiV1EvidenceRefRoute: typeof ApiV1EvidenceRefRoute
+  ApiV1Oid4vciCredentialRoute: typeof ApiV1Oid4vciCredentialRoute
+  ApiV1Oid4vciMetadataRoute: typeof ApiV1Oid4vciMetadataRoute
+  ApiV1Oid4vciPreviewWalletRoute: typeof ApiV1Oid4vciPreviewWalletRoute
+  ApiV1Oid4vciTokenRoute: typeof ApiV1Oid4vciTokenRoute
   ApiV1Oid4vpRequestsRoute: typeof ApiV1Oid4vpRequestsRoute
   ApiV1ReportsRefRoute: typeof ApiV1ReportsRefRoute
+  ApiV1Oid4vciOfferTokenRoute: typeof ApiV1Oid4vciOfferTokenRoute
   ApiV1Oid4vpDirectPostIdRoute: typeof ApiV1Oid4vpDirectPostIdRoute
   ApiV1Oid4vpPreviewWalletIdRoute: typeof ApiV1Oid4vpPreviewWalletIdRoute
   ApiV1Oid4vpRequestIdRoute: typeof ApiV1Oid4vpRequestIdRoute
@@ -571,6 +664,13 @@ declare module '@tanstack/react-router' {
       path: '/wallet'
       fullPath: '/wallet'
       preLoaderRoute: typeof WalletRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/.well-known/openid-credential-issuer': {
+      id: '/.well-known/openid-credential-issuer'
+      path: '/.well-known/openid-credential-issuer'
+      fullPath: '/.well-known/openid-credential-issuer'
+      preLoaderRoute: typeof DotwellKnownOpenidCredentialIssuerRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/app/': {
@@ -662,6 +762,13 @@ declare module '@tanstack/react-router' {
       path: '/evidence/$ref'
       fullPath: '/evidence/$ref'
       preLoaderRoute: typeof EvidenceRefRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/oid4vci/': {
+      id: '/oid4vci/'
+      path: '/oid4vci'
+      fullPath: '/oid4vci/'
+      preLoaderRoute: typeof Oid4vciIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/oid4vp/': {
@@ -762,6 +869,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiV1EvidenceRefRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/v1/oid4vci/credential': {
+      id: '/api/v1/oid4vci/credential'
+      path: '/api/v1/oid4vci/credential'
+      fullPath: '/api/v1/oid4vci/credential'
+      preLoaderRoute: typeof ApiV1Oid4vciCredentialRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/v1/oid4vci/metadata': {
+      id: '/api/v1/oid4vci/metadata'
+      path: '/api/v1/oid4vci/metadata'
+      fullPath: '/api/v1/oid4vci/metadata'
+      preLoaderRoute: typeof ApiV1Oid4vciMetadataRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/v1/oid4vci/preview-wallet': {
+      id: '/api/v1/oid4vci/preview-wallet'
+      path: '/api/v1/oid4vci/preview-wallet'
+      fullPath: '/api/v1/oid4vci/preview-wallet'
+      preLoaderRoute: typeof ApiV1Oid4vciPreviewWalletRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/v1/oid4vci/token': {
+      id: '/api/v1/oid4vci/token'
+      path: '/api/v1/oid4vci/token'
+      fullPath: '/api/v1/oid4vci/token'
+      preLoaderRoute: typeof ApiV1Oid4vciTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/v1/oid4vp/requests': {
       id: '/api/v1/oid4vp/requests'
       path: '/api/v1/oid4vp/requests'
@@ -774,6 +909,13 @@ declare module '@tanstack/react-router' {
       path: '/api/v1/reports/$ref'
       fullPath: '/api/v1/reports/$ref'
       preLoaderRoute: typeof ApiV1ReportsRefRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/v1/oid4vci/offer/$token': {
+      id: '/api/v1/oid4vci/offer/$token'
+      path: '/api/v1/oid4vci/offer/$token'
+      fullPath: '/api/v1/oid4vci/offer/$token'
+      preLoaderRoute: typeof ApiV1Oid4vciOfferTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/v1/oid4vp/direct-post/$id': {
@@ -852,6 +994,8 @@ const rootRouteChildren: RootRouteChildren = {
   DevelopersRoute: DevelopersRoute,
   LoginRoute: LoginRoute,
   TrustRoute: TrustRoute,
+  DotwellKnownOpenidCredentialIssuerRoute:
+    DotwellKnownOpenidCredentialIssuerRoute,
   DidWebSlugRoute: DidWebSlugRoute,
   DidMultibaseRoute: DidMultibaseRoute,
   EvidenceRefRoute: EvidenceRefRoute,
@@ -860,6 +1004,7 @@ const rootRouteChildren: RootRouteChildren = {
   ReportRefRoute: ReportRefRoute,
   StatusIdRoute: StatusIdRoute,
   VerifyRefRoute: VerifyRefRoute,
+  Oid4vciIndexRoute: Oid4vciIndexRoute,
   Oid4vpIndexRoute: Oid4vpIndexRoute,
   VerifyIndexRoute: VerifyIndexRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
@@ -867,8 +1012,13 @@ const rootRouteChildren: RootRouteChildren = {
   ApiV1VerifyRoute: ApiV1VerifyRoute,
   ApiV1DidWebSlugRoute: ApiV1DidWebSlugRoute,
   ApiV1EvidenceRefRoute: ApiV1EvidenceRefRoute,
+  ApiV1Oid4vciCredentialRoute: ApiV1Oid4vciCredentialRoute,
+  ApiV1Oid4vciMetadataRoute: ApiV1Oid4vciMetadataRoute,
+  ApiV1Oid4vciPreviewWalletRoute: ApiV1Oid4vciPreviewWalletRoute,
+  ApiV1Oid4vciTokenRoute: ApiV1Oid4vciTokenRoute,
   ApiV1Oid4vpRequestsRoute: ApiV1Oid4vpRequestsRoute,
   ApiV1ReportsRefRoute: ApiV1ReportsRefRoute,
+  ApiV1Oid4vciOfferTokenRoute: ApiV1Oid4vciOfferTokenRoute,
   ApiV1Oid4vpDirectPostIdRoute: ApiV1Oid4vpDirectPostIdRoute,
   ApiV1Oid4vpPreviewWalletIdRoute: ApiV1Oid4vpPreviewWalletIdRoute,
   ApiV1Oid4vpRequestIdRoute: ApiV1Oid4vpRequestIdRoute,

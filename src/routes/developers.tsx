@@ -201,6 +201,24 @@ matrixly-event-id: wh_…
           the Data Integrity <span className="font-mono text-sm">challenge</span>. JWT SD-JWT and
           mdoc are refused. This is not HAIP certification.
         </p>
+
+        <h2 className="mt-10 font-display text-2xl">OpenID4VCI</h2>
+        <p className="mt-3 leading-relaxed text-ink-soft">
+          Wallets pull a diploma at{" "}
+          <Link to="/oid4vci" className="underline underline-offset-4">
+            /oid4vci
+          </Link>
+          . Metadata:{" "}
+          <a href="/.well-known/openid-credential-issuer" className="underline underline-offset-4">
+            /.well-known/openid-credential-issuer
+          </a>
+          . Token grant is{" "}
+          <span className="font-mono text-xs">urn:ietf:params:oauth:grant-type:pre-authorized_code</span>
+          . The credential endpoint returns{" "}
+          <span className="font-mono text-sm">{"{ credentials: [{ credential }] }"}</span> — the
+          already-signed W3C VC. Authorization code, SD-JWT, and mdoc are refused. This is not HAIP
+          certification.
+        </p>
       </article>
     </div>
   );

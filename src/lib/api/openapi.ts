@@ -195,5 +195,32 @@ export const openApiSpec = {
         },
       },
     },
+    "/.well-known/openid-credential-issuer": {
+      get: {
+        summary: "OpenID4VCI 1.0 Credential Issuer metadata",
+        security: [],
+        responses: { "200": { description: "credential_configurations_supported (ldp_vc only)" } },
+      },
+    },
+    "/api/v1/oid4vci/token": {
+      post: {
+        summary: "Exchange a pre-authorized_code for a Bearer access token",
+        security: [],
+        responses: {
+          "200": { description: "access_token, token_type=Bearer, expires_in" },
+          "400": { description: "invalid_grant or unsupported_grant_type (authorization_code is refused)" },
+        },
+      },
+    },
+    "/api/v1/oid4vci/credential": {
+      post: {
+        summary: "Deliver the already-signed W3C VC. Does not re-sign.",
+        responses: {
+          "200": { description: "{ credentials: [{ credential }] }" },
+          "401": { description: "invalid_token" },
+          "400": { description: "unsupported_credential_format (SD-JWT/mdoc)" },
+        },
+      },
+    },
   },
 } as const;

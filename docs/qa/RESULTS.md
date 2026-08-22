@@ -1,4 +1,4 @@
-# QA results — 21 August 2026 (Phase 11)
+# QA results — 21 August 2026 (Phase 12)
 
 Executor: Grok-Build.
 
@@ -19,29 +19,31 @@ Score: **PASS** · **FAIL** · **BLOCKED**. A phase is not done if any required 
 | 9 Webhooks / evidence | PASS | included | HMAC, evidence pack, matrix |
 | 10 did:web | PASS | included | HTTPS DID documents; fail-closed fetch |
 | 11 OpenID4VP | PASS | included | DCQL + `direct_post`; nonce-bound VP |
+| 12 OpenID4VCI | PASS | included | Pre-authorized `ldp_vc`; auth code refused |
 
 ## Gate
 
 | Check | Status | Notes |
 |---|---|---|
-| `npm run test:trust` | PASS | 76 / 76 |
+| `npm run test:trust` | PASS | 82 / 82 |
 | `npm run typecheck` | PASS | |
-| Public pages HTTP 200 | PASS | Home, OpenID4VP, Compliance, Developers |
+| Public pages HTTP 200 | PASS | Home, OpenID4VCI, metadata well-known |
 | Browser smoke | PASS | |
 
-## Phase 11 — OpenID4VP
+## Phase 12 — OpenID4VCI
 
 | Step | Status | Notes |
 |---|---|---|
-| 11.1 Create request | PASS | `response_type=vp_token`, `direct_post`, DCQL `ldp_vc`, nonce present |
-| 11.2 Preview wallet | PASS | VALID, `nonceBound=true`, holder proof PASS. Not an EUDI wallet. |
-| 11.3 Replay | PASS | Second submit: request no longer open; `verified: false` |
-| 11.4 SD-JWT refused | PASS | JWT `eyJ…` vp_token → INVALID, never VALID |
-| 11.5 Regression | PASS | `demo-valid-bcs` still VALID |
+| 12.1 Issuer metadata | PASS | `university_degree_ldp_vc` format `ldp_vc`; no `dc+sd-jwt` |
+| 12.2 Preview wallet | PASS | ISSUED `urn:uuid:demo-valid-bcs`; not re-signed |
+| 12.3 Replay | PASS | Second pull: pre-authorized_code already used |
+| 12.4 Authorization code | PASS | `unsupported_grant_type` |
+| 12.5 SD-JWT | PASS | `unsupported_credential_format` |
+| 12.6 Regression | PASS | `demo-valid-bcs` still VALID; OpenID4VP page 200 |
 
 ## Verdict
 
 | Item | Status |
 |---|---|
-| Phase 11 | PASS |
-| HAIP / OpenID4VCI / mdoc not claimed | PASS |
+| Phase 12 | PASS |
+| HAIP / mdoc / authorization code not claimed | PASS |

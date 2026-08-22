@@ -118,8 +118,15 @@ export const COMPLIANCE_MATRIX: ComplianceControl[] = [
   {
     id: "OID-02",
     area: "Interop",
-    control: "HAIP / OpenID4VCI / SD-JWT VC / ISO mdoc certification",
+    control: "HAIP / SD-JWT VC / ISO mdoc certification",
     status: "not-claimed",
     evidence: "Unsupported formats fail closed and never return VALID",
+  },
+  {
+    id: "OID-03",
+    area: "Interop",
+    control: "OpenID4VCI 1.0 pre-authorized_code delivers an already-signed W3C ldp_vc",
+    status: "implemented",
+    evidence: "/oid4vci ; /.well-known/openid-credential-issuer ; authorization_code refused",
   },
 ];

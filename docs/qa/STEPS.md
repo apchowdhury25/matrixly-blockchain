@@ -545,6 +545,40 @@ Home playground four outcomes plus did:web still hold.
 
 ---
 
+## Phase 12 — OpenID4VCI
+
+### 12.1 Issuer metadata
+
+Open **OpenID4VCI** in the header, then the metadata link.
+
+**PASS if** `credential_configurations_supported.university_degree_ldp_vc.format` is `ldp_vc` and there is no `dc+sd-jwt` configuration.
+
+### 12.2 Preview wallet
+
+Click **This preview wallet**.
+
+**PASS if** status is `ISSUED`, a credential id and issuer DID are shown, format `ldp_vc`. The credential is the existing signed diploma — not re-signed. This is not an EUDI wallet.
+
+### 12.3 Replay
+
+Click the preview wallet again.
+
+**PASS if** the second pull fails (`pre-authorized_code has already been used` / INVALID). Never a second ISSUED.
+
+### 12.4 Authorization code refused
+
+`POST /api/v1/oid4vci/token` with `grant_type=authorization_code` → `unsupported_grant_type`.
+
+### 12.5 SD-JWT refused
+
+Credential request with `format: dc+sd-jwt` → `unsupported_credential_format`.
+
+### 12.6 Regression
+
+Home playground four outcomes still hold. OpenID4VP still works.
+
+---
+
 ## Traps (do not mis-score)
 
 | Action | Wrong reading | Correct |
@@ -560,4 +594,5 @@ Home playground four outcomes plus did:web still hold.
 | Webhook FAILED | “Phase 9 is broken” | Unreachable HTTPS is FAILED; the signature must still exist |
 | did:web 404 | “Skip the DID check” | Fetch failure is INVALID, never VALID |
 | OpenID4VP preview wallet | “We are HAIP certified” | W3C VP + DCQL only; OID-02 is not-claimed |
+| OpenID4VCI preview wallet | “We re-issued the diploma” | Delivery copies the existing signed VC |
 
