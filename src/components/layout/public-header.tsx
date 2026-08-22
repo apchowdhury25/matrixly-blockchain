@@ -31,8 +31,8 @@ export function PublicHeader() {
           <Link to="/compliance" className="hidden rounded-sm px-3 py-2 text-ink-soft hover:text-ink sm:inline">
             Compliance
           </Link>
-          <Link to="/trust" className="hidden rounded-sm px-3 py-2 text-ink-soft hover:text-ink sm:inline">
-            Trust model
+          <Link to="/sd-jwt" className="hidden rounded-sm px-3 py-2 text-ink-soft hover:text-ink xl:inline">
+            SD-JWT
           </Link>
           {isPending ? (
             <div className="h-9 w-20 animate-pulse rounded-sm bg-rule/60" />

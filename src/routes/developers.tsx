@@ -220,6 +220,17 @@ matrixly-event-id: wh_…
           certification.
         </p>
 
+        <h2 className="mt-10 font-display text-2xl">SD-JWT</h2>
+        <p className="mt-3 leading-relaxed text-ink-soft">
+          Not supported.{" "}
+          <Link to="/sd-jwt" className="underline underline-offset-4">
+            SD-JWT notes
+          </Link>{" "}
+          explain why <span className="font-mono text-sm">dc+sd-jwt</span> is refused, why we do not
+          dual-write a second hash for the same PDF, and what a real adapter would require. This is
+          not HAIP certification.
+        </p>
+
         <h2 className="mt-10 font-display text-2xl">Status lists and schema</h2>
         <p className="mt-3 leading-relaxed text-ink-soft">
           Revocation is a signed Bitstring Status List credential at{" "}

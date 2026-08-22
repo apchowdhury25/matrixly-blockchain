@@ -134,7 +134,7 @@ export const COMPLIANCE_MATRIX: ComplianceControl[] = [
     area: "Interop",
     control: "HAIP / SD-JWT VC / ISO mdoc certification",
     status: "not-claimed",
-    evidence: "Unsupported formats fail closed and never return VALID",
+    evidence: "Unsupported formats fail closed and never return VALID. Notes: /sd-jwt",
   },
   {
     id: "OID-03",

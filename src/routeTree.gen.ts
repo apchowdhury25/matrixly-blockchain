@@ -14,6 +14,7 @@ import { Route as AppRouteRouteImport } from './routes/app/route'
 import { Route as ComplianceRouteImport } from './routes/compliance'
 import { Route as DevelopersRouteImport } from './routes/developers'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as SdJwtRouteImport } from './routes/sd-jwt'
 import { Route as TrustRouteImport } from './routes/trust'
 import { Route as WalletRouteRouteImport } from './routes/wallet/route'
 import { Route as DotwellKnownOpenidCredentialIssuerRouteImport } from './routes/[.]well-known/openid-credential-issuer'
@@ -82,6 +83,11 @@ const DevelopersRoute = DevelopersRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SdJwtRoute = SdJwtRouteImport.update({
+  id: '/sd-jwt',
+  path: '/sd-jwt',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TrustRoute = TrustRouteImport.update({
@@ -316,6 +322,7 @@ export interface FileRoutesByFullPath {
   '/compliance': typeof ComplianceRoute
   '/developers': typeof DevelopersRoute
   '/login': typeof LoginRoute
+  '/sd-jwt': typeof SdJwtRoute
   '/trust': typeof TrustRoute
   '/.well-known/openid-credential-issuer': typeof DotwellKnownOpenidCredentialIssuerRoute
   '/app/api-keys': typeof AppApiKeysRoute
@@ -365,6 +372,7 @@ export interface FileRoutesByTo {
   '/compliance': typeof ComplianceRoute
   '/developers': typeof DevelopersRoute
   '/login': typeof LoginRoute
+  '/sd-jwt': typeof SdJwtRoute
   '/trust': typeof TrustRoute
   '/.well-known/openid-credential-issuer': typeof DotwellKnownOpenidCredentialIssuerRoute
   '/app/api-keys': typeof AppApiKeysRoute
@@ -417,6 +425,7 @@ export interface FileRoutesById {
   '/compliance': typeof ComplianceRoute
   '/developers': typeof DevelopersRoute
   '/login': typeof LoginRoute
+  '/sd-jwt': typeof SdJwtRoute
   '/trust': typeof TrustRoute
   '/.well-known/openid-credential-issuer': typeof DotwellKnownOpenidCredentialIssuerRoute
   '/app/api-keys': typeof AppApiKeysRoute
@@ -470,6 +479,7 @@ export interface FileRouteTypes {
     | '/compliance'
     | '/developers'
     | '/login'
+    | '/sd-jwt'
     | '/trust'
     | '/.well-known/openid-credential-issuer'
     | '/app/api-keys'
@@ -519,6 +529,7 @@ export interface FileRouteTypes {
     | '/compliance'
     | '/developers'
     | '/login'
+    | '/sd-jwt'
     | '/trust'
     | '/.well-known/openid-credential-issuer'
     | '/app/api-keys'
@@ -570,6 +581,7 @@ export interface FileRouteTypes {
     | '/compliance'
     | '/developers'
     | '/login'
+    | '/sd-jwt'
     | '/trust'
     | '/.well-known/openid-credential-issuer'
     | '/app/api-keys'
@@ -622,6 +634,7 @@ export interface RootRouteChildren {
   ComplianceRoute: typeof ComplianceRoute
   DevelopersRoute: typeof DevelopersRoute
   LoginRoute: typeof LoginRoute
+  SdJwtRoute: typeof SdJwtRoute
   TrustRoute: typeof TrustRoute
   DotwellKnownOpenidCredentialIssuerRoute: typeof DotwellKnownOpenidCredentialIssuerRoute
   DidWebSlugRoute: typeof DidWebSlugRoute
@@ -690,6 +703,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sd-jwt': {
+      id: '/sd-jwt'
+      path: '/sd-jwt'
+      fullPath: '/sd-jwt'
+      preLoaderRoute: typeof SdJwtRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/trust': {
@@ -1054,6 +1074,7 @@ const rootRouteChildren: RootRouteChildren = {
   ComplianceRoute: ComplianceRoute,
   DevelopersRoute: DevelopersRoute,
   LoginRoute: LoginRoute,
+  SdJwtRoute: SdJwtRoute,
   TrustRoute: TrustRoute,
   DotwellKnownOpenidCredentialIssuerRoute:
     DotwellKnownOpenidCredentialIssuerRoute,
