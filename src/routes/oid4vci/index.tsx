@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { PublicHeader } from "@/components/layout/public-header";
 import { Button } from "@/components/ui/button";
 import { Qr } from "@/components/verify/qr";
-import { DEMO } from "@/lib/trust/ids";
+import { DEMO } from "@/lib/trust/demo";
 
 type OfferPayload = {
   offer: {
