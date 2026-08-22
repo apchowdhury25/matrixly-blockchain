@@ -801,6 +801,32 @@ Copy the export, set `merkleRoot` to `sha256:` + 64 zeros, POST `/api/v1/ledger/
 
 ---
 
+## Phase 18 — Merkle inclusion proofs
+
+### 18.1 Fetch a proof
+
+Take `credentialHash` from a demo VALID verify. `GET /api/v1/ledger/proof?credentialHash=…`
+
+**PASS if** `format` is `matrixly.merkle-proof.v1`, `diplomaEvaluated` is false, and there is no `status: VALID`.
+
+### 18.2 Recompute
+
+POST that JSON to `/api/v1/ledger/proof/verify`.
+
+**PASS if** `included` is true and `diplomaEvaluated` is false.
+
+### 18.3 Tamper the path
+
+Change `merkle.path[0].hash` and POST again.
+
+**PASS if** `included` is false.
+
+### 18.4 Regression
+
+Demo diploma still VALID.
+
+---
+
 ## Traps (do not mis-score)
 
 | Action | Wrong reading | Correct |
@@ -820,6 +846,7 @@ Copy the export, set `merkleRoot` to `sha256:` + 64 zeros, POST `/api/v1/ledger/
 | Ops Ready | “Fabric is live” | Preview ledger is hash-chain unless Gateway env is set |
 | Schema anchored | “Tamper should pass now” | Schema hash is independent of PDF SHA-256 |
 | Chain intact | “The diploma is VALID” | Chain integrity is necessary, not sufficient. `diplomaEvaluated` is always false on `/api/v1/ledger/*` |
+| included: true | “The diploma is VALID” | Membership in the Merkle tree is not signature, hash, or status |
 | Team invite | “Email was sent” | No SMTP; you must copy the URL |
 | SOC 2 page | “We passed the audit” | Mapping is readiness notes; REG-01 stays not-claimed |
 

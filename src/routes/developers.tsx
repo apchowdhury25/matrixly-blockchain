@@ -267,7 +267,12 @@ matrixly-event-id: wh_…
             Hash-chain export
           </Link>{" "}
           · <span className="font-mono text-sm">GET /api/v1/ledger/chain</span> ·{" "}
-          <span className="font-mono text-sm">POST /api/v1/ledger/verify</span>. Fabric dumps are
+          <span className="font-mono text-sm">POST /api/v1/ledger/verify</span>
+          {" · "}
+          <span className="font-mono text-sm">GET /api/v1/ledger/proof</span>
+          {" · "}
+          <span className="font-mono text-sm">POST /api/v1/ledger/proof/verify</span>.{" "}
+          <span className="font-mono">included</span> is not diploma VALID. Fabric dumps are
           refused without Gateway data.
         </p>
         <blockquote className="mt-4 border-l-2 border-pine pl-4 text-sm leading-relaxed text-ink-soft">

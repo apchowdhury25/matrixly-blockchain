@@ -1,7 +1,7 @@
 {
   "base": "http://127.0.0.1:8080",
-  "when": "2026-08-22T03:56:59.616Z",
-  "pass": 76,
+  "when": "2026-08-22T04:07:14.804Z",
+  "pass": 81,
   "fail": 0,
   "blocked": 0,
   "rows": [
@@ -45,7 +45,7 @@
       "id": "TC-2.1",
       "title": "Public keys only (DID page)",
       "status": "PASS",
-      "notes": "did:key:z6MksxSPBJqvY1Jw… public"
+      "notes": "did:key:z6MkjGU3kBDyqtPY… public"
     },
     {
       "id": "TC-2.2",
@@ -111,7 +111,7 @@
       "id": "TC-6.1",
       "title": "Signed report exists after verify",
       "status": "PASS",
-      "notes": "reportRef h9TmgXidi42V"
+      "notes": "reportRef EGmEF4BXz3Y5"
     },
     {
       "id": "TC-6.2",
@@ -423,7 +423,7 @@
       "id": "TC-17.1",
       "title": "Chain export",
       "status": "PASS",
-      "notes": "length 61"
+      "notes": "length 45"
     },
     {
       "id": "TC-17.2",
@@ -454,6 +454,36 @@
       "title": "Wrong Merkle root",
       "status": "PASS",
       "notes": "Merkle root does not match the recomputed RFC 6962 tree of block hashes"
+    },
+    {
+      "id": "TC-18.1",
+      "title": "Inclusion proof",
+      "status": "PASS",
+      "notes": "sha256:1bf055ed1d5"
+    },
+    {
+      "id": "TC-18.2",
+      "title": "Recompute inclusion",
+      "status": "PASS",
+      "notes": "included"
+    },
+    {
+      "id": "TC-18.3",
+      "title": "Tampered proof path",
+      "status": "PASS",
+      "notes": "Merkle audit path does not recompute the stated root"
+    },
+    {
+      "id": "TC-18.4",
+      "title": "Proof without query",
+      "status": "PASS",
+      "notes": "400"
+    },
+    {
+      "id": "TC-18.5",
+      "title": "Diploma still VALID",
+      "status": "PASS",
+      "notes": "VALID"
     },
     {
       "id": "TC-AUTO.meta",

@@ -46,6 +46,11 @@ import {
   verifyExportedChain,
 } from "@/lib/ledger/export";
 import { LEDGER_DIPLOMA_DISCLAIMER } from "@/lib/ledger/disclaimer";
+import {
+  buildBlockInclusionProof,
+  findCredentialBlockIndex,
+  verifyCredentialInclusionProof,
+} from "@/lib/ledger/proof";
 import { openSecret, sealSecret } from "./seal";
 
 type CredentialRow = {
@@ -1927,6 +1932,79 @@ export const verifyPublicLedgerExport = createServerFn({ method: "POST" })
       return { chainValid: false, length: 0, model: "hash-chain" as const, genesis: "", reason: "Export is not JSON" };
     }
     return verifyExportedChain(parsed);
+  });
+
+export const getDemoInclusionProof = createServerFn({ method: "GET" }).handler(async () => {
+  await ensureDemoSeed();
+  const ledger = await getLedger();
+  if (ledger.name === "FabricLedgerAdapter") {
+    return {
+      included: false,
+      diplomaEvaluated: false as const,
+      disclaimer: LEDGER_DIPLOMA_DISCLAIMER,
+      reason: "Fabric inclusion proofs require Gateway block data",
+      pathLength: 0,
+      proofJson: "",
+    };
+  }
+  const blocks = await ledger.listBlocks();
+  const sql = await getSql();
+  const rows = await sql<{ credential_hash: string }>`
+    select credential_hash from credentials where opaque_ref = ${DEMO.validRef}`;
+  const credentialHash = rows[0]?.credential_hash;
+  if (!credentialHash) {
+    return {
+      included: false,
+      diplomaEvaluated: false as const,
+      disclaimer: LEDGER_DIPLOMA_DISCLAIMER,
+      reason: "Demo diploma is not registered",
+      pathLength: 0,
+      proofJson: "",
+    };
+  }
+  const index = findCredentialBlockIndex(blocks, credentialHash);
+  const built = index >= 0 ? buildBlockInclusionProof(blocks, index, credentialHash) : { ok: false as const, reason: "No CREDENTIAL block" };
+  if (!built.ok) {
+    return {
+      included: false,
+      diplomaEvaluated: false as const,
+      disclaimer: LEDGER_DIPLOMA_DISCLAIMER,
+      reason: built.reason,
+      credentialHash,
+      pathLength: 0,
+      proofJson: "",
+    };
+  }
+  const check = verifyCredentialInclusionProof(built.proof);
+  return {
+    included: check.included,
+    diplomaEvaluated: false as const,
+    disclaimer: LEDGER_DIPLOMA_DISCLAIMER,
+    credentialHash,
+    merkleRoot: check.merkleRoot,
+    index,
+    seq: built.proof.block.seq,
+    pathLength: built.proof.merkle.path.length,
+    proofJson: JSON.stringify(built.proof),
+    reason: check.reason,
+  };
+});
+
+export const verifyPublicInclusionProof = createServerFn({ method: "POST" })
+  .validator((raw: unknown) => z.object({ proofJson: z.string().min(2).max(2_000_000) }).parse(raw))
+  .handler(async ({ data }) => {
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(data.proofJson);
+    } catch {
+      return {
+        included: false,
+        diplomaEvaluated: false as const,
+        disclaimer: LEDGER_DIPLOMA_DISCLAIMER,
+        reason: "Proof is not JSON",
+      };
+    }
+    return verifyCredentialInclusionProof(parsed);
   });
 
 export const getDidWebDocument = createServerFn({ method: "GET" })

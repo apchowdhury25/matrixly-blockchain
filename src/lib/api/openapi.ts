@@ -261,6 +261,31 @@ export const openApiSpec = {
         },
       },
     },
+    "/api/v1/ledger/proof": {
+      get: {
+        summary: "RFC 6962 inclusion proof for a credential hash or seq. Not diploma VALID.",
+        description: LEDGER_DIPLOMA_DISCLAIMER,
+        security: [],
+        parameters: [
+          { name: "credentialHash", in: "query", schema: { type: "string" } },
+          { name: "seq", in: "query", schema: { type: "integer" } },
+        ],
+        responses: {
+          "200": { description: "matrixly.merkle-proof.v1; diplomaEvaluated false" },
+          "404": { description: "No matching CREDENTIAL block; included false" },
+        },
+      },
+    },
+    "/api/v1/ledger/proof/verify": {
+      post: {
+        summary: "Recompute an inclusion proof. included is not diploma VALID.",
+        description: LEDGER_DIPLOMA_DISCLAIMER,
+        security: [],
+        responses: {
+          "200": { description: "included, diplomaEvaluated=false, disclaimer" },
+        },
+      },
+    },
     "/healthz": {
       get: {
         summary: "Liveness. Does not imply the ledger is reachable.",

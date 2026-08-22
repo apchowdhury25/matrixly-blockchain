@@ -58,6 +58,7 @@ import { Route as WalletClaimTokenRouteImport } from './routes/wallet/claim.$tok
 import { Route as ApiV1DidWebSlugRouteImport } from './routes/api/v1/did-web.$slug'
 import { Route as ApiV1EvidenceRefRouteImport } from './routes/api/v1/evidence.$ref'
 import { Route as ApiV1LedgerChainRouteImport } from './routes/api/v1/ledger.chain'
+import { Route as ApiV1LedgerProofRouteImport } from './routes/api/v1/ledger.proof'
 import { Route as ApiV1LedgerVerifyRouteImport } from './routes/api/v1/ledger.verify'
 import { Route as ApiV1Oid4vciCredentialRouteImport } from './routes/api/v1/oid4vci/credential'
 import { Route as ApiV1Oid4vciMetadataRouteImport } from './routes/api/v1/oid4vci/metadata'
@@ -65,6 +66,7 @@ import { Route as ApiV1Oid4vciPreviewWalletRouteImport } from './routes/api/v1/o
 import { Route as ApiV1Oid4vciTokenRouteImport } from './routes/api/v1/oid4vci/token'
 import { Route as ApiV1Oid4vpRequestsRouteImport } from './routes/api/v1/oid4vp/requests'
 import { Route as ApiV1ReportsRefRouteImport } from './routes/api/v1/reports.$ref'
+import { Route as ApiV1LedgerProofVerifyRouteImport } from './routes/api/v1/ledger.proof.verify'
 import { Route as ApiV1Oid4vciOfferTokenRouteImport } from './routes/api/v1/oid4vci/offer.$token'
 import { Route as ApiV1Oid4vpDirectPostIdRouteImport } from './routes/api/v1/oid4vp/direct-post.$id'
 import { Route as ApiV1Oid4vpPreviewWalletIdRouteImport } from './routes/api/v1/oid4vp/preview-wallet.$id'
@@ -317,6 +319,11 @@ const ApiV1LedgerChainRoute = ApiV1LedgerChainRouteImport.update({
   path: '/api/v1/ledger/chain',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiV1LedgerProofRoute = ApiV1LedgerProofRouteImport.update({
+  id: '/api/v1/ledger/proof',
+  path: '/api/v1/ledger/proof',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiV1LedgerVerifyRoute = ApiV1LedgerVerifyRouteImport.update({
   id: '/api/v1/ledger/verify',
   path: '/api/v1/ledger/verify',
@@ -352,6 +359,11 @@ const ApiV1ReportsRefRoute = ApiV1ReportsRefRouteImport.update({
   id: '/api/v1/reports/$ref',
   path: '/api/v1/reports/$ref',
   getParentRoute: () => rootRouteImport,
+} as any)
+const ApiV1LedgerProofVerifyRoute = ApiV1LedgerProofVerifyRouteImport.update({
+  id: '/verify',
+  path: '/verify',
+  getParentRoute: () => ApiV1LedgerProofRoute,
 } as any)
 const ApiV1Oid4vciOfferTokenRoute = ApiV1Oid4vciOfferTokenRouteImport.update({
   id: '/api/v1/oid4vci/offer/$token',
@@ -425,6 +437,7 @@ export interface FileRoutesByFullPath {
   '/api/v1/did-web/$slug': typeof ApiV1DidWebSlugRoute
   '/api/v1/evidence/$ref': typeof ApiV1EvidenceRefRoute
   '/api/v1/ledger/chain': typeof ApiV1LedgerChainRoute
+  '/api/v1/ledger/proof': typeof ApiV1LedgerProofRouteWithChildren
   '/api/v1/ledger/verify': typeof ApiV1LedgerVerifyRoute
   '/api/v1/oid4vci/credential': typeof ApiV1Oid4vciCredentialRoute
   '/api/v1/oid4vci/metadata': typeof ApiV1Oid4vciMetadataRoute
@@ -432,6 +445,7 @@ export interface FileRoutesByFullPath {
   '/api/v1/oid4vci/token': typeof ApiV1Oid4vciTokenRoute
   '/api/v1/oid4vp/requests': typeof ApiV1Oid4vpRequestsRoute
   '/api/v1/reports/$ref': typeof ApiV1ReportsRefRoute
+  '/api/v1/ledger/proof/verify': typeof ApiV1LedgerProofVerifyRoute
   '/api/v1/oid4vci/offer/$token': typeof ApiV1Oid4vciOfferTokenRoute
   '/api/v1/oid4vp/direct-post/$id': typeof ApiV1Oid4vpDirectPostIdRoute
   '/api/v1/oid4vp/preview-wallet/$id': typeof ApiV1Oid4vpPreviewWalletIdRoute
@@ -485,6 +499,7 @@ export interface FileRoutesByTo {
   '/api/v1/did-web/$slug': typeof ApiV1DidWebSlugRoute
   '/api/v1/evidence/$ref': typeof ApiV1EvidenceRefRoute
   '/api/v1/ledger/chain': typeof ApiV1LedgerChainRoute
+  '/api/v1/ledger/proof': typeof ApiV1LedgerProofRouteWithChildren
   '/api/v1/ledger/verify': typeof ApiV1LedgerVerifyRoute
   '/api/v1/oid4vci/credential': typeof ApiV1Oid4vciCredentialRoute
   '/api/v1/oid4vci/metadata': typeof ApiV1Oid4vciMetadataRoute
@@ -492,6 +507,7 @@ export interface FileRoutesByTo {
   '/api/v1/oid4vci/token': typeof ApiV1Oid4vciTokenRoute
   '/api/v1/oid4vp/requests': typeof ApiV1Oid4vpRequestsRoute
   '/api/v1/reports/$ref': typeof ApiV1ReportsRefRoute
+  '/api/v1/ledger/proof/verify': typeof ApiV1LedgerProofVerifyRoute
   '/api/v1/oid4vci/offer/$token': typeof ApiV1Oid4vciOfferTokenRoute
   '/api/v1/oid4vp/direct-post/$id': typeof ApiV1Oid4vpDirectPostIdRoute
   '/api/v1/oid4vp/preview-wallet/$id': typeof ApiV1Oid4vpPreviewWalletIdRoute
@@ -548,6 +564,7 @@ export interface FileRoutesById {
   '/api/v1/did-web/$slug': typeof ApiV1DidWebSlugRoute
   '/api/v1/evidence/$ref': typeof ApiV1EvidenceRefRoute
   '/api/v1/ledger/chain': typeof ApiV1LedgerChainRoute
+  '/api/v1/ledger/proof': typeof ApiV1LedgerProofRouteWithChildren
   '/api/v1/ledger/verify': typeof ApiV1LedgerVerifyRoute
   '/api/v1/oid4vci/credential': typeof ApiV1Oid4vciCredentialRoute
   '/api/v1/oid4vci/metadata': typeof ApiV1Oid4vciMetadataRoute
@@ -555,6 +572,7 @@ export interface FileRoutesById {
   '/api/v1/oid4vci/token': typeof ApiV1Oid4vciTokenRoute
   '/api/v1/oid4vp/requests': typeof ApiV1Oid4vpRequestsRoute
   '/api/v1/reports/$ref': typeof ApiV1ReportsRefRoute
+  '/api/v1/ledger/proof/verify': typeof ApiV1LedgerProofVerifyRoute
   '/api/v1/oid4vci/offer/$token': typeof ApiV1Oid4vciOfferTokenRoute
   '/api/v1/oid4vp/direct-post/$id': typeof ApiV1Oid4vpDirectPostIdRoute
   '/api/v1/oid4vp/preview-wallet/$id': typeof ApiV1Oid4vpPreviewWalletIdRoute
@@ -612,6 +630,7 @@ export interface FileRouteTypes {
     | '/api/v1/did-web/$slug'
     | '/api/v1/evidence/$ref'
     | '/api/v1/ledger/chain'
+    | '/api/v1/ledger/proof'
     | '/api/v1/ledger/verify'
     | '/api/v1/oid4vci/credential'
     | '/api/v1/oid4vci/metadata'
@@ -619,6 +638,7 @@ export interface FileRouteTypes {
     | '/api/v1/oid4vci/token'
     | '/api/v1/oid4vp/requests'
     | '/api/v1/reports/$ref'
+    | '/api/v1/ledger/proof/verify'
     | '/api/v1/oid4vci/offer/$token'
     | '/api/v1/oid4vp/direct-post/$id'
     | '/api/v1/oid4vp/preview-wallet/$id'
@@ -672,6 +692,7 @@ export interface FileRouteTypes {
     | '/api/v1/did-web/$slug'
     | '/api/v1/evidence/$ref'
     | '/api/v1/ledger/chain'
+    | '/api/v1/ledger/proof'
     | '/api/v1/ledger/verify'
     | '/api/v1/oid4vci/credential'
     | '/api/v1/oid4vci/metadata'
@@ -679,6 +700,7 @@ export interface FileRouteTypes {
     | '/api/v1/oid4vci/token'
     | '/api/v1/oid4vp/requests'
     | '/api/v1/reports/$ref'
+    | '/api/v1/ledger/proof/verify'
     | '/api/v1/oid4vci/offer/$token'
     | '/api/v1/oid4vp/direct-post/$id'
     | '/api/v1/oid4vp/preview-wallet/$id'
@@ -734,6 +756,7 @@ export interface FileRouteTypes {
     | '/api/v1/did-web/$slug'
     | '/api/v1/evidence/$ref'
     | '/api/v1/ledger/chain'
+    | '/api/v1/ledger/proof'
     | '/api/v1/ledger/verify'
     | '/api/v1/oid4vci/credential'
     | '/api/v1/oid4vci/metadata'
@@ -741,6 +764,7 @@ export interface FileRouteTypes {
     | '/api/v1/oid4vci/token'
     | '/api/v1/oid4vp/requests'
     | '/api/v1/reports/$ref'
+    | '/api/v1/ledger/proof/verify'
     | '/api/v1/oid4vci/offer/$token'
     | '/api/v1/oid4vp/direct-post/$id'
     | '/api/v1/oid4vp/preview-wallet/$id'
@@ -784,6 +808,7 @@ export interface RootRouteChildren {
   ApiV1DidWebSlugRoute: typeof ApiV1DidWebSlugRoute
   ApiV1EvidenceRefRoute: typeof ApiV1EvidenceRefRoute
   ApiV1LedgerChainRoute: typeof ApiV1LedgerChainRoute
+  ApiV1LedgerProofRoute: typeof ApiV1LedgerProofRouteWithChildren
   ApiV1LedgerVerifyRoute: typeof ApiV1LedgerVerifyRoute
   ApiV1Oid4vciCredentialRoute: typeof ApiV1Oid4vciCredentialRoute
   ApiV1Oid4vciMetadataRoute: typeof ApiV1Oid4vciMetadataRoute
@@ -1142,6 +1167,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiV1LedgerChainRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/v1/ledger/proof': {
+      id: '/api/v1/ledger/proof'
+      path: '/api/v1/ledger/proof'
+      fullPath: '/api/v1/ledger/proof'
+      preLoaderRoute: typeof ApiV1LedgerProofRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/v1/ledger/verify': {
       id: '/api/v1/ledger/verify'
       path: '/api/v1/ledger/verify'
@@ -1190,6 +1222,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/v1/reports/$ref'
       preLoaderRoute: typeof ApiV1ReportsRefRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/api/v1/ledger/proof/verify': {
+      id: '/api/v1/ledger/proof/verify'
+      path: '/verify'
+      fullPath: '/api/v1/ledger/proof/verify'
+      preLoaderRoute: typeof ApiV1LedgerProofVerifyRouteImport
+      parentRoute: typeof ApiV1LedgerProofRoute
     }
     '/api/v1/oid4vci/offer/$token': {
       id: '/api/v1/oid4vci/offer/$token'
@@ -1268,6 +1307,17 @@ const WalletRouteRouteWithChildren = WalletRouteRoute._addFileChildren(
   WalletRouteRouteChildren,
 )
 
+interface ApiV1LedgerProofRouteChildren {
+  ApiV1LedgerProofVerifyRoute: typeof ApiV1LedgerProofVerifyRoute
+}
+
+const ApiV1LedgerProofRouteChildren: ApiV1LedgerProofRouteChildren = {
+  ApiV1LedgerProofVerifyRoute: ApiV1LedgerProofVerifyRoute,
+}
+
+const ApiV1LedgerProofRouteWithChildren =
+  ApiV1LedgerProofRoute._addFileChildren(ApiV1LedgerProofRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRouteRoute: AppRouteRouteWithChildren,
@@ -1307,6 +1357,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiV1DidWebSlugRoute: ApiV1DidWebSlugRoute,
   ApiV1EvidenceRefRoute: ApiV1EvidenceRefRoute,
   ApiV1LedgerChainRoute: ApiV1LedgerChainRoute,
+  ApiV1LedgerProofRoute: ApiV1LedgerProofRouteWithChildren,
   ApiV1LedgerVerifyRoute: ApiV1LedgerVerifyRoute,
   ApiV1Oid4vciCredentialRoute: ApiV1Oid4vciCredentialRoute,
   ApiV1Oid4vciMetadataRoute: ApiV1Oid4vciMetadataRoute,

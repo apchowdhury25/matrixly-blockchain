@@ -1,8 +1,8 @@
 # QA last run
 
 Base: `http://127.0.0.1:8080`
-When: 2026-08-22T03:56:59.616Z
-Result: **PASS** · 76 pass · 0 fail · 0 blocked
+When: 2026-08-22T04:07:14.803Z
+Result: **PASS** · 81 pass · 0 fail · 0 blocked
 
 | ID | Title | Status | Notes |
 |---|---|---|---|
@@ -12,7 +12,7 @@ Result: **PASS** · 76 pass · 0 fail · 0 blocked
 | TC-1.4 | Expired | PASS | EXPIRED |
 | TC-1.5 | Opaque link | PASS | /verify/demo-valid-bcs has no holder PII in the URL |
 | TC-1.6 | Trust model | PASS | Trust model mentions ledger and hash |
-| TC-2.1 | Public keys only (DID page) | PASS | did:key:z6MksxSPBJqvY1Jw… public |
+| TC-2.1 | Public keys only (DID page) | PASS | did:key:z6MkjGU3kBDyqtPY… public |
 | TC-2.2 | Public DID document | PASS | DID page, no secret |
 | TC-2.3 | Rotation preserves old VCs | PASS | Covered by src/lib/identity/identity.test.ts (historical signatures) |
 | TC-3.1 | PDF magic bytes accepted | PASS | PDF magic accepted |
@@ -23,7 +23,7 @@ Result: **PASS** · 76 pass · 0 fail · 0 blocked
 | TC-4.3 | Claim is not re-issuance | PASS | Covered by presentation tests (inner VC issuer proof) |
 | TC-5.1 | Signed status list JSON | PASS | signed BitstringStatusListCredential |
 | TC-5.2 | Revoke outcome via API | PASS | REVOKED |
-| TC-6.1 | Signed report exists after verify | PASS | reportRef h9TmgXidi42V |
+| TC-6.1 | Signed report exists after verify | PASS | reportRef EGmEF4BXz3Y5 |
 | TC-6.2 | Audit hash-chain | PASS | Covered by src/lib/audit/chain.test.ts |
 | TC-7.1 | Preview ledger is hash-chain | PASS | hashchain |
 | TC-7.2 | Fabric refuse | PASS | unconfigured Fabric throws |
@@ -75,10 +75,15 @@ Result: **PASS** · 76 pass · 0 fail · 0 blocked
 | TC-N.2 | SD-JWT notes | PASS | refused |
 | TC-N.3 | HAIP not claimed | PASS | not HAIP |
 | TC-N.4 | No fake Fabric | PASS | hashchain |
-| TC-17.1 | Chain export | PASS | length 61 |
+| TC-17.1 | Chain export | PASS | length 45 |
 | TC-17.2 | Independent recompute | PASS | chainValid |
 | TC-17.3 | Tampered export fails | PASS | Payload hash mismatch at seq 1 |
 | TC-17.4 | Chain page | PASS | 200 |
 | TC-17.5 | Diploma still VALID | PASS | VALID |
 | TC-17.6 | Wrong Merkle root | PASS | Merkle root does not match the recomputed RFC 6962 tree of block hashes |
+| TC-18.1 | Inclusion proof | PASS | sha256:1bf055ed1d5 |
+| TC-18.2 | Recompute inclusion | PASS | included |
+| TC-18.3 | Tampered proof path | PASS | Merkle audit path does not recompute the stated root |
+| TC-18.4 | Proof without query | PASS | 400 |
+| TC-18.5 | Diploma still VALID | PASS | VALID |
 | TC-AUTO.meta | OID4VCI metadata helper | PASS | ldp_vc |

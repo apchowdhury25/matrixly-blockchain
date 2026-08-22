@@ -679,6 +679,69 @@ await liveCase("TC-17.6", "Wrong Merkle root", async () => {
   return String(json.reason);
 });
 
+await liveCase("TC-18.1", "Inclusion proof", async () => {
+  const { json: verified } = await verifyApi({ ref: "demo-valid-bcs" });
+  const hash = String(verified.credentialHash ?? "");
+  if (!hash.startsWith("sha256:")) throw new Error("no credentialHash");
+  const res = await fetchOk(`/api/v1/ledger/proof?credentialHash=${encodeURIComponent(hash)}`);
+  const proof = (await res.json()) as Record<string, unknown>;
+  if (res.status !== 200) throw new Error(`HTTP ${res.status}`);
+  if (proof.format !== "matrixly.merkle-proof.v1") throw new Error("format");
+  if (proof.diplomaEvaluated !== false) throw new Error("diplomaEvaluated");
+  if (proof.status === "VALID") throw new Error("VALID");
+  return hash.slice(0, 18);
+});
+
+await liveCase("TC-18.2", "Recompute inclusion", async () => {
+  const { json: verified } = await verifyApi({ ref: "demo-valid-bcs" });
+  const hash = String(verified.credentialHash ?? "");
+  const proof = await (await fetchOk(`/api/v1/ledger/proof?credentialHash=${encodeURIComponent(hash)}`)).json();
+  const res = await fetchOk("/api/v1/ledger/proof/verify", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(proof),
+  });
+  const json = (await res.json()) as Record<string, unknown>;
+  if (json.included !== true) throw new Error(JSON.stringify(json));
+  if (json.diplomaEvaluated !== false) throw new Error("diplomaEvaluated");
+  if (json.verified === true || json.status === "VALID") throw new Error("credential VALID");
+  return "included";
+});
+
+await liveCase("TC-18.3", "Tampered proof path", async () => {
+  const { json: verified } = await verifyApi({ ref: "demo-valid-bcs" });
+  const hash = String(verified.credentialHash ?? "");
+  const proof = (await (await fetchOk(`/api/v1/ledger/proof?credentialHash=${encodeURIComponent(hash)}`)).json()) as {
+    merkle: { path: Array<{ hash: string; side: string }> };
+  };
+  if (proof.merkle.path[0]) proof.merkle.path[0].hash = "sha256:" + "00".repeat(32);
+  else throw new Error("empty path — use a chain with >1 block");
+  const json = (await (
+    await fetchOk("/api/v1/ledger/proof/verify", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(proof),
+    })
+  ).json()) as Record<string, unknown>;
+  if (json.included !== false) throw new Error("tamper accepted");
+  if (json.status === "VALID") throw new Error("VALID");
+  return String(json.reason);
+});
+
+await liveCase("TC-18.4", "Proof without query", async () => {
+  const res = await fetchOk("/api/v1/ledger/proof");
+  const json = (await res.json()) as Record<string, unknown>;
+  if (res.status !== 400) throw new Error(`HTTP ${res.status}`);
+  if (json.included !== false) throw new Error("missing query included");
+  return "400";
+});
+
+await liveCase("TC-18.5", "Diploma still VALID", async () => {
+  const { json } = await verifyApi({ ref: "demo-valid-bcs" });
+  if (json.status !== "VALID") throw new Error(String(json.status));
+  return "VALID";
+});
+
 unitCase("TC-AUTO.meta", "OID4VCI metadata helper", () => {
   const meta = credentialIssuerMetadata("https://issuer.example.test");
   if (meta.credential_configurations_supported.university_degree_ldp_vc?.format !== "ldp_vc") {

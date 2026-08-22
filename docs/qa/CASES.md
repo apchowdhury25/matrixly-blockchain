@@ -218,6 +218,16 @@ Expect `x-schema-hash: sha256:` + 64 hex and `content-type: application/schema+j
 | TC-17.5 | Regression | TC-8.2 | Demo still VALID |
 | TC-17.6 | Wrong Merkle root | Flip `merkleRoot`, POST verify | `chainValid` false |
 
+## Phase 18 — Merkle inclusion proofs
+
+| ID | Title | Steps | Expected |
+|---|---|---|---|
+| TC-18.1 | Proof fetch | GET `/api/v1/ledger/proof?credentialHash=` from demo verify | `matrixly.merkle-proof.v1`, `diplomaEvaluated` false |
+| TC-18.2 | Recompute | POST proof to `/api/v1/ledger/proof/verify` | `included: true`, not VALID |
+| TC-18.3 | Tampered path | Flip a sibling hash | `included: false` |
+| TC-18.4 | Missing query | GET `/api/v1/ledger/proof` | 400, `included: false` |
+| TC-18.5 | Regression | TC-8.2 | Demo still VALID |
+
 ---
 
 ## Automated gate

@@ -33,6 +33,7 @@ A green badge that skipped a failed cryptographic check is a defect, not a contr
 | DLT-01 | Ledger | Hashes and DIDs on an append-only ledger; original files stay off-chain | implemented | HashChainLedgerAdapter; document bytes in object storage |
 | DLT-02 | Ledger | Hyperledger Fabric is not faked; missing Gateway fails closed | fail-closed | FabricLedgerAdapter throws; never returns a successful submit |
 | DLT-03 | Ledger | Hash-chain can be exported and recomputed independently; export is not a credential VALID | implemented | `GET /api/v1/ledger/chain` ; RFC 6962 `merkleRoot` ; `POST /api/v1/ledger/verify` ; `/chain` |
+| DLT-04 | Ledger | RFC 6962 inclusion proofs bind a CREDENTIAL payload to the Merkle root; included is not diploma VALID | implemented | `GET /api/v1/ledger/proof` ; `POST /api/v1/ledger/proof/verify` |
 | PII-01 | Privacy | Opaque verify links; machine API omits holder names by default | implemented | `includeSubject` is opt-in; reports exclude holder PII |
 | API-01 | Access | Verifier API requires hashed Bearer keys; 401 never returns VALID | implemented | `POST /api/v1/verify` |
 | API-02 | Access | Verifier API rate limits return 429 RATE_LIMITED, never VALID | implemented | Per-key sliding window; Retry-After |

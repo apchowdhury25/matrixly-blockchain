@@ -116,6 +116,13 @@ export const COMPLIANCE_MATRIX: ComplianceControl[] = [
     evidence: "GET /api/v1/ledger/chain ; POST /api/v1/ledger/verify ; RFC 6962 merkleRoot ; /chain",
   },
   {
+    id: "DLT-04",
+    area: "Ledger",
+    control: "RFC 6962 inclusion proofs bind a CREDENTIAL payload to the Merkle root; included is not diploma VALID",
+    status: "implemented",
+    evidence: "GET /api/v1/ledger/proof ; POST /api/v1/ledger/proof/verify",
+  },
+  {
     id: "PII-01",
     area: "Privacy",
     control: "Opaque verify links; machine API omits holder names by default",
