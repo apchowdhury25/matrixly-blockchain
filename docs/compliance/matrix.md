@@ -27,12 +27,14 @@ A green badge that skipped a failed cryptographic check is a defect, not a contr
 | STS-01 | Status | Revocation via signed Bitstring Status List 1.0, not a database flag alone | implemented | Signed status list credential + bit |
 | STS-02 | Status | Status list is resolved from `credentialStatus.statusListCredential` URL; SSRF blocked | implemented | `GET /credentials/status/{id}` |
 | SCH-01 | Schema | W3C credentialSchema JsonSchema for UniversityDegreeCredential; unknown ids fail closed | implemented | `/schemas/university-degree-credential.json` |
+| SCH-02 | Schema | Published JsonSchema is hashed (JCS SHA-256) and registered on the ledger | implemented | `registerSchema`; `schemaAnchored`; `x-schema-hash` |
 | DLT-01 | Ledger | Hashes and DIDs on an append-only ledger; original files stay off-chain | implemented | HashChainLedgerAdapter; document bytes in object storage |
 | DLT-02 | Ledger | Hyperledger Fabric is not faked; missing Gateway fails closed | fail-closed | FabricLedgerAdapter throws; never returns a successful submit |
 | PII-01 | Privacy | Opaque verify links; machine API omits holder names by default | implemented | `includeSubject` is opt-in; reports exclude holder PII |
 | API-01 | Access | Verifier API requires hashed Bearer keys; 401 never returns VALID | implemented | `POST /api/v1/verify` |
 | API-02 | Access | Verifier API rate limits return 429 RATE_LIMITED, never VALID | implemented | Per-key sliding window; Retry-After |
 | TEN-01 | Tenancy | Issuer data and verification exports are tenant-scoped; AUDITOR cannot issue | implemented | `canExportVerification`; RBAC; 404 across tenants |
+| TEN-02 | Tenancy | TENANT_ADMIN invites hashed email tokens; last admin cannot be removed | implemented | `/app/team`; invite tokens hashed |
 | OPS-01 | Operations | Liveness and readiness are distinct; missing Fabric Gateway is not ready | implemented | `GET /healthz` ; `GET /readyz` ; `/ops` |
 | WH-01 | Integrity | Outbound verification events are HMAC-SHA256 signed; unsigned events are refused | implemented | Webhook deliveries; secret sealed at rest |
 | AUD-01 | Audit | Signed verification reports anchored by hash; tenant audit is hash-chained | implemented | VerificationReport + `audit_events.prev_hash` |

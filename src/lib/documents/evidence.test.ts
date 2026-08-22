@@ -5,6 +5,7 @@ import { sha256Bytes } from "../crypto/hash";
 import { issueCredential, credentialHash } from "../credentials/issue";
 import { statusListForIssuer } from "../credentials/status-list-credential";
 import { HashChainLedgerAdapter, MemoryLedgerStore } from "../ledger/hash-chain";
+import { registerPublishedSchema } from "../schema/anchor";
 import { verifyCredential } from "../verification/pipeline";
 import { createIssuerIdentity } from "../identity/keys";
 import { tamperOneByte } from "./diploma";
@@ -55,6 +56,7 @@ test("ledger document anchors store the hash, never the original bytes", async (
     status: "ACTIVE",
     publicKeyMultibase: identity.publicKeyMultibase,
   });
+  await registerPublishedSchema(ledger);
   const bytes = new TextEncoder().encode("%PDF-1.7 confidential-holder-name");
   const built = buildEvidence(bytes, "UPLOADED");
   const credential = issueCredential({

@@ -31,10 +31,12 @@ import { Route as AppIssueRouteImport } from './routes/app/issue'
 import { Route as AppKeysRouteImport } from './routes/app/keys'
 import { Route as AppLedgerRouteImport } from './routes/app/ledger'
 import { Route as AppStatusRouteImport } from './routes/app/status'
+import { Route as AppTeamRouteImport } from './routes/app/team'
 import { Route as AppWebhooksRouteImport } from './routes/app/webhooks'
 import { Route as DidWebSlugRouteImport } from './routes/did-web.$slug'
 import { Route as DidMultibaseRouteImport } from './routes/did.$multibase'
 import { Route as EvidenceRefRouteImport } from './routes/evidence.$ref'
+import { Route as InviteTokenRouteImport } from './routes/invite.$token'
 import { Route as Oid4vciIndexRouteImport } from './routes/oid4vci/index'
 import { Route as Oid4vpIndexRouteImport } from './routes/oid4vp/index'
 import { Route as Oid4vpIdRouteImport } from './routes/oid4vp/$id'
@@ -175,6 +177,11 @@ const AppStatusRoute = AppStatusRouteImport.update({
   path: '/status',
   getParentRoute: () => AppRouteRoute,
 } as any)
+const AppTeamRoute = AppTeamRouteImport.update({
+  id: '/team',
+  path: '/team',
+  getParentRoute: () => AppRouteRoute,
+} as any)
 const AppWebhooksRoute = AppWebhooksRouteImport.update({
   id: '/webhooks',
   path: '/webhooks',
@@ -193,6 +200,11 @@ const DidMultibaseRoute = DidMultibaseRouteImport.update({
 const EvidenceRefRoute = EvidenceRefRouteImport.update({
   id: '/evidence/$ref',
   path: '/evidence/$ref',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InviteTokenRoute = InviteTokenRouteImport.update({
+  id: '/invite/$token',
+  path: '/invite/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
 const Oid4vciIndexRoute = Oid4vciIndexRouteImport.update({
@@ -361,10 +373,12 @@ export interface FileRoutesByFullPath {
   '/app/keys': typeof AppKeysRoute
   '/app/ledger': typeof AppLedgerRoute
   '/app/status': typeof AppStatusRoute
+  '/app/team': typeof AppTeamRoute
   '/app/webhooks': typeof AppWebhooksRoute
   '/did-web/$slug': typeof DidWebSlugRoute
   '/did/$multibase': typeof DidMultibaseRoute
   '/evidence/$ref': typeof EvidenceRefRoute
+  '/invite/$token': typeof InviteTokenRoute
   '/oid4vp/$id': typeof Oid4vpIdRoute
   '/present/$ref': typeof PresentRefRoute
   '/report/$ref': typeof ReportRefRoute
@@ -415,10 +429,12 @@ export interface FileRoutesByTo {
   '/app/keys': typeof AppKeysRoute
   '/app/ledger': typeof AppLedgerRoute
   '/app/status': typeof AppStatusRoute
+  '/app/team': typeof AppTeamRoute
   '/app/webhooks': typeof AppWebhooksRoute
   '/did-web/$slug': typeof DidWebSlugRoute
   '/did/$multibase': typeof DidMultibaseRoute
   '/evidence/$ref': typeof EvidenceRefRoute
+  '/invite/$token': typeof InviteTokenRoute
   '/oid4vp/$id': typeof Oid4vpIdRoute
   '/present/$ref': typeof PresentRefRoute
   '/report/$ref': typeof ReportRefRoute
@@ -472,10 +488,12 @@ export interface FileRoutesById {
   '/app/keys': typeof AppKeysRoute
   '/app/ledger': typeof AppLedgerRoute
   '/app/status': typeof AppStatusRoute
+  '/app/team': typeof AppTeamRoute
   '/app/webhooks': typeof AppWebhooksRoute
   '/did-web/$slug': typeof DidWebSlugRoute
   '/did/$multibase': typeof DidMultibaseRoute
   '/evidence/$ref': typeof EvidenceRefRoute
+  '/invite/$token': typeof InviteTokenRoute
   '/oid4vp/$id': typeof Oid4vpIdRoute
   '/present/$ref': typeof PresentRefRoute
   '/report/$ref': typeof ReportRefRoute
@@ -530,10 +548,12 @@ export interface FileRouteTypes {
     | '/app/keys'
     | '/app/ledger'
     | '/app/status'
+    | '/app/team'
     | '/app/webhooks'
     | '/did-web/$slug'
     | '/did/$multibase'
     | '/evidence/$ref'
+    | '/invite/$token'
     | '/oid4vp/$id'
     | '/present/$ref'
     | '/report/$ref'
@@ -584,10 +604,12 @@ export interface FileRouteTypes {
     | '/app/keys'
     | '/app/ledger'
     | '/app/status'
+    | '/app/team'
     | '/app/webhooks'
     | '/did-web/$slug'
     | '/did/$multibase'
     | '/evidence/$ref'
+    | '/invite/$token'
     | '/oid4vp/$id'
     | '/present/$ref'
     | '/report/$ref'
@@ -640,10 +662,12 @@ export interface FileRouteTypes {
     | '/app/keys'
     | '/app/ledger'
     | '/app/status'
+    | '/app/team'
     | '/app/webhooks'
     | '/did-web/$slug'
     | '/did/$multibase'
     | '/evidence/$ref'
+    | '/invite/$token'
     | '/oid4vp/$id'
     | '/present/$ref'
     | '/report/$ref'
@@ -692,6 +716,7 @@ export interface RootRouteChildren {
   DidWebSlugRoute: typeof DidWebSlugRoute
   DidMultibaseRoute: typeof DidMultibaseRoute
   EvidenceRefRoute: typeof EvidenceRefRoute
+  InviteTokenRoute: typeof InviteTokenRoute
   Oid4vpIdRoute: typeof Oid4vpIdRoute
   PresentRefRoute: typeof PresentRefRoute
   ReportRefRoute: typeof ReportRefRoute
@@ -876,6 +901,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppStatusRouteImport
       parentRoute: typeof AppRouteRoute
     }
+    '/app/team': {
+      id: '/app/team'
+      path: '/team'
+      fullPath: '/app/team'
+      preLoaderRoute: typeof AppTeamRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
     '/app/webhooks': {
       id: '/app/webhooks'
       path: '/webhooks'
@@ -902,6 +934,13 @@ declare module '@tanstack/react-router' {
       path: '/evidence/$ref'
       fullPath: '/evidence/$ref'
       preLoaderRoute: typeof EvidenceRefRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/invite/$token': {
+      id: '/invite/$token'
+      path: '/invite/$token'
+      fullPath: '/invite/$token'
+      preLoaderRoute: typeof InviteTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/oid4vci/': {
@@ -1112,6 +1151,7 @@ interface AppRouteRouteChildren {
   AppKeysRoute: typeof AppKeysRoute
   AppLedgerRoute: typeof AppLedgerRoute
   AppStatusRoute: typeof AppStatusRoute
+  AppTeamRoute: typeof AppTeamRoute
   AppWebhooksRoute: typeof AppWebhooksRoute
   AppIndexRoute: typeof AppIndexRoute
 }
@@ -1125,6 +1165,7 @@ const AppRouteRouteChildren: AppRouteRouteChildren = {
   AppKeysRoute: AppKeysRoute,
   AppLedgerRoute: AppLedgerRoute,
   AppStatusRoute: AppStatusRoute,
+  AppTeamRoute: AppTeamRoute,
   AppWebhooksRoute: AppWebhooksRoute,
   AppIndexRoute: AppIndexRoute,
 }
@@ -1165,6 +1206,7 @@ const rootRouteChildren: RootRouteChildren = {
   DidWebSlugRoute: DidWebSlugRoute,
   DidMultibaseRoute: DidMultibaseRoute,
   EvidenceRefRoute: EvidenceRefRoute,
+  InviteTokenRoute: InviteTokenRoute,
   Oid4vpIdRoute: Oid4vpIdRoute,
   PresentRefRoute: PresentRefRoute,
   ReportRefRoute: ReportRefRoute,

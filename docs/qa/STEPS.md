@@ -633,6 +633,58 @@ Automated: `canExportVerification` is false for a foreign tenant + foreign key.
 
 ---
 
+## Phase 15 — Ledger-anchored schema
+
+### 15.1 Schema page
+
+Open **Schema**. Hash starts with `sha256:`. Status is **Anchored on the ledger**.
+
+**PASS if** the page does not claim a full JSON Schema 2020-12 processor.
+
+### 15.2 Machine schema
+
+`GET /schemas/university-degree-credential.json` includes `x-schema-hash` matching the page.
+
+**PASS if** content-type is `application/schema+json` (or JSON) and the hash header is present.
+
+### 15.3 Demo still verifies
+
+Public verifier / API verify of the demo diploma.
+
+**PASS if** VALID and `checks.schemaAnchored` is true.
+
+### 15.4 Wrong hash
+
+Automated: a SCHEMA record with a different hash never returns VALID.
+
+---
+
+## Phase 16 — Team
+
+### 16.1 Team page
+
+Sign in → **Team**.
+
+**PASS if** the page loads for a tenant admin and explains that invite tokens are shown once.
+
+### 16.2 Invite token hashed
+
+Create an invite. Copy the `mtx_inv_` URL. Reload Team — the plaintext token is gone; the invite row remains PENDING.
+
+**PASS if** the token is not listed again.
+
+### 16.3 Last admin
+
+Automated: demoting the only TENANT_ADMIN throws.
+
+**PASS if** the last admin remains.
+
+### 16.4 AUDITOR still cannot issue
+
+**PASS if** `hasPermission("AUDITOR", "issue")` is false.
+
+---
+
 ## Traps (do not mis-score)
 
 | Action | Wrong reading | Correct |

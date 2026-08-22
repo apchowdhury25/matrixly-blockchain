@@ -242,7 +242,7 @@ matrixly-event-id: wh_…
           <Link to="/schemas/university-degree" className="underline underline-offset-4">
             UniversityDegreeCredential JsonSchema
           </Link>
-          . Unknown schema ids fail closed.
+          . Unknown schema ids fail closed. The schema hash is on the ledger; a mismatch is INVALID.
         </p>
 
         <h2 className="mt-10 font-display text-2xl">Operations</h2>
@@ -253,7 +253,8 @@ matrixly-event-id: wh_…
           · <span className="font-mono text-sm">GET /healthz</span> (liveness) ·{" "}
           <span className="font-mono text-sm">GET /readyz</span> (database + ledger adapter). A 429
           from the verifier API is <span className="font-mono text-sm">RATE_LIMITED</span>, never
-          VALID. Evidence and report APIs are tenant-scoped.
+          VALID. Evidence and report APIs are tenant-scoped. Tenant admins manage members at{" "}
+          <span className="font-mono text-sm">/app/team</span>; invite tokens are hashed.
         </p>
       </article>
     </div>

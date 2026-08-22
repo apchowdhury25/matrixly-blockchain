@@ -9,6 +9,7 @@ import { sha256Bytes } from "../crypto/hash";
 import { issueCredential, credentialHash } from "../credentials/issue";
 import { statusListForIssuer } from "../credentials/status-list-credential";
 import { HashChainLedgerAdapter, MemoryLedgerStore } from "../ledger/hash-chain";
+import { registerPublishedSchema } from "../schema/anchor";
 import { FabricLedgerAdapter } from "../ledger/fabric";
 import { verifyCredential } from "../verification/pipeline";
 import { didDocumentHash, didKeyFromMultibase, resolveDidKey } from "./did";
@@ -92,6 +93,7 @@ test("key rotation: old credential still verifies; new DID signs new credentials
     status: "ACTIVE",
     publicKeyMultibase: first.publicKeyMultibase,
   });
+  await registerPublishedSchema(ledger);
 
   const original = new TextEncoder().encode("%PDF-1.7 prior-key diploma");
   const documentHash = sha256Bytes(original).prefixed;

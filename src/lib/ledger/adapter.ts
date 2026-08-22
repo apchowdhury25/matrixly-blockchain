@@ -58,6 +58,13 @@ export type CredentialStatusRecord = {
   at: string;
 };
 
+export type SchemaLedgerRecord = {
+  schemaId: string;
+  schemaHash: string;
+  schemaType: "JsonSchema";
+  status: "ACTIVE" | "SUPERSEDED";
+};
+
 export type VerificationAnchorRecord = {
   reportId: string;
   reportHash: string;
@@ -88,12 +95,14 @@ export interface DistributedLedgerAdapter {
   registerDid(record: DidLedgerRecord): Promise<LedgerSubmitResult>;
   registerCredential(record: CredentialLedgerRecord): Promise<LedgerSubmitResult>;
   registerDocumentAnchor(record: DocumentAnchorRecord): Promise<LedgerSubmitResult>;
+  registerSchema(record: SchemaLedgerRecord): Promise<LedgerSubmitResult>;
   registerVerificationAnchor(record: VerificationAnchorRecord): Promise<LedgerSubmitResult>;
   setCredentialStatus(record: CredentialStatusRecord): Promise<LedgerSubmitResult>;
   getIssuer(issuerId: string): Promise<IssuerLedgerRecord | null>;
   getDid(did: string): Promise<DidLedgerRecord | null>;
   getCredential(credentialId: string): Promise<CredentialLedgerRecord | null>;
   getDocumentAnchor(documentHash: string): Promise<DocumentAnchorRecord | null>;
+  getSchema(schemaId: string): Promise<SchemaLedgerRecord | null>;
   getVerificationAnchor(reportHash: string): Promise<VerificationAnchorRecord | null>;
   getCredentialStatus(credentialId: string): Promise<CredentialStatusRecord | null>;
   getLatestBlock(): Promise<{ seq: number; blockHash: string } | null>;

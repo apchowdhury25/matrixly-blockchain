@@ -8,6 +8,7 @@ import type {
   DocumentAnchorRecord,
   IssuerLedgerRecord,
   LedgerSubmitResult,
+  SchemaLedgerRecord,
   VerificationAnchorRecord,
 } from "./adapter";
 import {
@@ -114,6 +115,9 @@ export class FabricLedgerAdapter implements DistributedLedgerAdapter {
   async registerDocumentAnchor(record: DocumentAnchorRecord): Promise<LedgerSubmitResult> {
     return this.submit("RegisterDocumentAnchor", record as unknown as Record<string, unknown>);
   }
+  async registerSchema(record: SchemaLedgerRecord): Promise<LedgerSubmitResult> {
+    return this.submit("RegisterSchema", record as unknown as Record<string, unknown>);
+  }
   async registerVerificationAnchor(record: VerificationAnchorRecord): Promise<LedgerSubmitResult> {
     return this.submit("RegisterVerificationAnchor", record as unknown as Record<string, unknown>);
   }
@@ -131,6 +135,9 @@ export class FabricLedgerAdapter implements DistributedLedgerAdapter {
   }
   async getDocumentAnchor(documentHash: string): Promise<DocumentAnchorRecord | null> {
     return this.evaluate<DocumentAnchorRecord>("GetDocumentAnchor", documentHash);
+  }
+  async getSchema(schemaId: string): Promise<SchemaLedgerRecord | null> {
+    return this.evaluate<SchemaLedgerRecord>("GetSchema", schemaId);
   }
   async getVerificationAnchor(reportHash: string): Promise<VerificationAnchorRecord | null> {
     return this.evaluate<VerificationAnchorRecord>("GetVerificationAnchor", reportHash);

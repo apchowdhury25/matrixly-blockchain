@@ -3,6 +3,7 @@ import { test } from "node:test";
 import { generateEd25519KeyPair, encodeDidKey } from "../crypto/ed25519";
 import { sha256Bytes } from "../crypto/hash";
 import { HashChainLedgerAdapter, MemoryLedgerStore } from "../ledger/hash-chain";
+import { registerPublishedSchema } from "../schema/anchor";
 import { issueCredential, credentialHash } from "./issue";
 import { statusListForIssuer } from "./status-list-credential";
 import { buildPresentation, signPresentation, verifyPresentation } from "./presentation";
@@ -27,6 +28,7 @@ async function issueBound(
     status: "ACTIVE",
     publicKeyMultibase: ctx.issuerDid.slice("did:key:".length),
   });
+  await registerPublishedSchema(ctx.ledger);
   const documentHash = sha256Bytes(new TextEncoder().encode("%PDF-1.7 holder-phase")).prefixed;
   const credential = issueCredential({
     credentialId: "urn:uuid:holder-vp",

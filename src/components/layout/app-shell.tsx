@@ -13,6 +13,7 @@ const links = [
   { to: "/app/keys", label: "Keys" },
   { to: "/app/api-keys", label: "API keys" },
   { to: "/app/webhooks", label: "Webhooks" },
+  { to: "/app/team", label: "Team" },
   { to: "/app/audit", label: "Audit" },
 ] as const;
 

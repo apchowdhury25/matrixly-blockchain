@@ -18,6 +18,7 @@ class MemoryGatewayContract implements GatewayContract {
     else if (name === "RegisterDocumentAnchor") this.world.set("DOCUMENT:" + rec.documentHash, payload);
     else if (name === "RegisterCredential") this.world.set("CREDENTIAL:" + rec.credentialId, payload);
     else if (name === "RegisterVerificationAnchor") this.world.set("VREPORT:" + rec.reportHash, payload);
+    else if (name === "RegisterSchema") this.world.set("SCHEMA:" + rec.schemaId, payload);
     else if (name === "SetCredentialStatus") {
       const cred = this.world.get("CREDENTIAL:" + rec.credentialId);
       if (!cred) throw new Error("unknown credential");
@@ -47,6 +48,8 @@ class MemoryGatewayContract implements GatewayContract {
                 ? "STATUS:" + id
                 : name === "GetVerificationAnchor"
                   ? "VREPORT:" + id
+                  : name === "GetSchema"
+                    ? "SCHEMA:" + id
                   : name + ":" + id;
     const found = this.world.get(key);
     if (!found) throw new Error("not found");
@@ -94,6 +97,15 @@ test("injected Gateway contract submits JSON and maps commit status honestly", a
   const chain = await ledger.verifyChain();
   assert.equal(chain.model, "fabric-endorsement");
   assert.equal(chain.valid, true);
+  const schema = await ledger.registerSchema({
+    schemaId: "https://trust.matrixly.ai/schemas/university-degree-credential.json",
+    schemaHash: "sha256:" + "aa".repeat(32),
+    schemaType: "JsonSchema",
+    status: "ACTIVE",
+  });
+  assert.equal(schema.blockHash.startsWith("fabric:tx:"), true);
+  const got = await ledger.getSchema("https://trust.matrixly.ai/schemas/university-degree-credential.json");
+  assert.equal(got?.schemaType, "JsonSchema");
 });
 
 test("mock Gateway stores hashes only — no PDF bytes in world state", async () => {

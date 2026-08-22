@@ -1,10 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PublicHeader } from "@/components/layout/public-header";
 import { UNIVERSITY_DEGREE_SCHEMA, UNIVERSITY_DEGREE_SCHEMA_ID } from "@/lib/schema/university-degree";
+import { getPublishedSchemaMeta } from "@/lib/trust/functions";
 
-export const Route = createFileRoute("/schemas/university-degree")({ component: SchemaPage });
+export const Route = createFileRoute("/schemas/university-degree")({
+  loader: () => getPublishedSchemaMeta(),
+  component: SchemaPage,
+});
 
 function SchemaPage() {
+  const meta = Route.useLoaderData();
   return (
     <div className="min-h-screen bg-paper">
       <PublicHeader />
@@ -14,10 +19,14 @@ function SchemaPage() {
         <p className="mt-4 max-w-2xl text-ink-soft">
           New diplomas include{" "}
           <span className="font-mono text-sm">credentialSchema.type = JsonSchema</span>. The verifier
-          checks claims against this document. Unknown schema ids fail closed. This is not a full JSON
-          Schema 2020-12 processor.
+          checks claims against this document <em>and</em> that its SHA-256 is on the ledger. Unknown
+          schema ids fail closed. This is not a full JSON Schema 2020-12 processor.
         </p>
         <p className="mt-4 break-all font-mono text-xs text-stone">{UNIVERSITY_DEGREE_SCHEMA_ID}</p>
+        <p className="mt-2 break-all font-mono text-xs text-stone">{meta.schemaHash}</p>
+        <p className={`mt-2 text-sm ${meta.ledgerAnchored ? "text-valid" : "text-invalid"}`}>
+          {meta.ledgerAnchored ? "Anchored on the ledger" : "Not anchored — verification will fail closed"}
+        </p>
         <p className="mt-3 text-sm">
           <a href="/schemas/university-degree-credential.json" className="underline underline-offset-4">
             Machine-readable schema

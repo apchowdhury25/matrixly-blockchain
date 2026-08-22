@@ -74,6 +74,13 @@ export const COMPLIANCE_MATRIX: ComplianceControl[] = [
     evidence: "/schemas/university-degree-credential.json",
   },
   {
+    id: "SCH-02",
+    area: "Schema",
+    control: "Published JsonSchema is hashed (JCS SHA-256) and registered on the ledger",
+    status: "implemented",
+    evidence: "registerSchema; schemaAnchored check; x-schema-hash",
+  },
+  {
     id: "DLT-01",
     area: "Ledger",
     control: "Hashes and DIDs on an append-only ledger; original files stay off-chain",
@@ -114,6 +121,13 @@ export const COMPLIANCE_MATRIX: ComplianceControl[] = [
     control: "Issuer data and verification exports are tenant-scoped; AUDITOR cannot issue",
     status: "implemented",
     evidence: "canExportVerification; RBAC; 404 not 200 across tenants",
+  },
+  {
+    id: "TEN-02",
+    area: "Tenancy",
+    control: "TENANT_ADMIN invites hashed email tokens; last admin cannot be removed; AUDITOR cannot issue",
+    status: "implemented",
+    evidence: "/app/team ; invite tokens hashed; last-admin guard",
   },
   {
     id: "OPS-01",

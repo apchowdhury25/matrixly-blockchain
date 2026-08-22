@@ -47,8 +47,8 @@ The platform’s Gateway identity submits hashes. The issuer DID still signs cre
 
 | Adapter method | Gateway call | Why |
 |---|---|---|
-| `registerDid` / `registerIssuer` / `registerCredential` / `registerDocumentAnchor` / `registerVerificationAnchor` / `setCredentialStatus` | `contract.submitAsync(name, { arguments: [json] })` then `commit.getStatus()` | Must land in a block |
-| `getDid` / `getIssuer` / `getCredential` / `getDocumentAnchor` / `getVerificationAnchor` / `getCredentialStatus` | `contract.evaluateTransaction(name, id)` | Read world state; no orderer |
+| `registerDid` / `registerIssuer` / `registerCredential` / `registerDocumentAnchor` / `registerSchema` / `registerVerificationAnchor` / `setCredentialStatus` | `contract.submitAsync(name, { arguments: [json] })` then `commit.getStatus()` | Must land in a block |
+| `getDid` / `getIssuer` / `getCredential` / `getDocumentAnchor` / `getSchema` / `getVerificationAnchor` / `getCredentialStatus` | `contract.evaluateTransaction(name, id)` | Read world state; no orderer |
 
 `submitTransaction` is a one-liner but hides commit status. Use **`submitAsync` + `getStatus()`** so we can fail closed:
 

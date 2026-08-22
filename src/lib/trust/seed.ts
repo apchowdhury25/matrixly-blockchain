@@ -23,6 +23,7 @@ import { getLedger, audit } from "./runtime";
 import { DEMO } from "./ids";
 import { openSecret, sealSecret } from "./seal";
 import { hashApiKey } from "@/lib/api/keys";
+import { registerPublishedSchema } from "@/lib/schema/anchor";
 
 const globalSeed = globalThis as typeof globalThis & { __matrixlySeed__?: Promise<void> };
 
@@ -34,6 +35,7 @@ export async function ensureDemoSeed(): Promise<void> {
       await ensureDemoDelivery();
       await ensureDemoStatusList();
       await ensureDemoApiKey();
+      await ensureDemoSchema();
       await ensureDemoDidWeb();
       return;
     }
@@ -67,6 +69,8 @@ export async function ensureDemoSeed(): Promise<void> {
 
 async function seedDemo(): Promise<void> {
   const sql = await getSql();
+  const ledger = await getLedger();
+  await registerPublishedSchema(ledger);
   const keys = generateEd25519KeyPair();
   const did = encodeDidKey(keys.publicKey);
   const sealed = sealSecret(encodeSecretKeyHex(keys.secretKey));
@@ -98,7 +102,6 @@ async function seedDemo(): Promise<void> {
     insert into key_secrets (id, tenant_id, did, secret_key_hex, status, public_key_multibase, purpose)
     values (${"key_demo_registrar"}, ${DEMO.tenantId}, ${did}, ${sealed}, ${"ACTIVE"}, ${publicKeyMultibase(keys.publicKey)}, ${"assertionMethod"})`;
 
-  const ledger = await getLedger();
   await ledger.registerDid({
     did,
     documentHash,
@@ -112,6 +115,7 @@ async function seedDemo(): Promise<void> {
     status: "ACTIVE",
     publicKeyMultibase: publicKeyMultibase(keys.publicKey),
   });
+  await registerPublishedSchema(ledger);
 
   let statusBits = emptyStatusList();
   const validPdf = await renderDiplomaPdf({
@@ -248,6 +252,7 @@ async function seedDemo(): Promise<void> {
       documentHash: input.hash,
       issuerId: did,
       issuerDid: did,
+      schemaId: "https://trust.matrixly.ai/schemas/university-degree-credential.json",
       status: input.status as "ACTIVE" | "REVOKED" | "EXPIRED",
       issuedAt: input.validFrom,
       expiresAt: input.validUntil,
@@ -471,10 +476,16 @@ async function ensureDemoDidWeb(): Promise<void> {
     documentHash: doc.hash,
     issuerId: webDid,
     issuerDid: webDid,
+    schemaId: "https://trust.matrixly.ai/schemas/university-degree-credential.json",
     status: "ACTIVE",
     issuedAt: issued,
     version: 1,
   });
+}
+
+async function ensureDemoSchema(): Promise<void> {
+  const ledger = await getLedger();
+  await registerPublishedSchema(ledger);
 }
 
 

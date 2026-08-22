@@ -24,11 +24,22 @@ import { didWebForTenant } from "@/lib/identity/did-web";
 import { resolveDid } from "@/lib/identity/resolve";
 import { assertActiveSigningKey, createHolderIdentity, createIssuerIdentity } from "@/lib/identity/keys";
 import { assertPermission, permissionMap } from "@/lib/identity/roles";
+import {
+  assertAssignableRole,
+  assertInviteFresh,
+  assertLastAdminGuard,
+  generateInviteToken,
+  hashInviteToken,
+  inviteExpiresAt,
+  normalizeEmail,
+} from "@/lib/identity/members";
 import { AUDIT_GENESIS, verifyAuditSequence } from "@/lib/audit/chain";
 import { ensureDemoSeed } from "./seed";
 import { audit, getLedger, getStorage, publishedStatusResolve, readDocumentBytes, runtimeAdapterStatus } from "./runtime";
 import { DEMO, newId, opaqueRef } from "./ids";
 import { readiness } from "@/lib/ops/health";
+import { UNIVERSITY_DEGREE_SCHEMA_ID } from "@/lib/schema/university-degree";
+import { schemaDocumentHash, registerPublishedSchema } from "@/lib/schema/anchor";
 import { openSecret, sealSecret } from "./seal";
 
 type CredentialRow = {
@@ -122,6 +133,7 @@ export const verifyOpaqueRef = createServerFn({ method: "POST" })
         documentIntegrityValid: null,
         ledgerProofValid: false,
         statusListValid: null,
+        schemaAnchored: null,
         credentialActive: false,
         expired: false,
         revoked: false,
@@ -199,6 +211,7 @@ export const verifyUploaded = createServerFn({ method: "POST" })
         documentIntegrityValid: null,
         ledgerProofValid: false,
         statusListValid: null,
+        schemaAnchored: null,
         credentialActive: false,
         expired: false,
         revoked: false,
@@ -334,26 +347,85 @@ type Workspace = {
   orgName: string;
 };
 
+async function loadWorkspace(tenantId: string, role: string): Promise<Workspace> {
+  const sql = await getSql();
+  const issuers = await sql<{ id: string; did: string; name: string }>`
+    select id, did, name from issuers where tenant_id = ${tenantId} limit 1`;
+  const orgs = await sql<{ name: string }>`select name from organizations where tenant_id = ${tenantId} limit 1`;
+  const issuer = issuers[0];
+  if (!issuer) throw new Error("Issuer missing for tenant");
+  return {
+    tenantId,
+    role,
+    issuerId: issuer.id,
+    issuerDid: issuer.did,
+    issuerName: issuer.name,
+    orgName: orgs[0]?.name ?? "Organization",
+  };
+}
+
+async function userEmail(userId: string): Promise<{ email: string; verified: boolean } | null> {
+  const sql = await getSql();
+  try {
+    const rows = await sql<{ email: string; verified: boolean }>`
+      select email, coalesce("emailVerified", false) as verified from "user" where id = ${userId}`;
+    const row = rows[0];
+    if (!row?.email) return null;
+    return { email: normalizeEmail(row.email), verified: Boolean(row.verified) };
+  } catch {
+    return null;
+  }
+}
+
+async function claimPendingInviteForUser(userId: string): Promise<{ tenantId: string; role: string } | null> {
+  const profile = await userEmail(userId);
+  if (!profile) return null;
+  const sql = await getSql();
+  const invites = await sql<{
+    id: string;
+    tenant_id: string;
+    role: string;
+    status: string;
+    expires_at: string;
+  }>`
+    select id, tenant_id, role, status, expires_at::text as expires_at
+    from membership_invites
+    where email = ${profile.email} and status = ${"PENDING"}
+    order by created_at asc
+    limit 1`;
+  const invite = invites[0];
+  if (!invite) return null;
+  assertInviteFresh(invite.expires_at);
+  if (!profile.verified) {
+    throw new Error("Verify your email before joining this organization");
+  }
+  await sql`
+    insert into memberships (id, tenant_id, user_id, role, status)
+    values (${newId("mem")}, ${invite.tenant_id}, ${userId}, ${invite.role}, ${"ACTIVE"})`;
+  await sql`update membership_invites set status = ${"ACCEPTED"} where id = ${invite.id}`;
+  await audit({
+    tenantId: invite.tenant_id,
+    actorUserId: userId,
+    action: "member.accepted",
+    resourceType: "membership",
+    resourceId: invite.id,
+    metadata: { role: invite.role, email: profile.email },
+  });
+  return { tenantId: invite.tenant_id, role: invite.role };
+}
+
 async function workspaceFor(userId: string): Promise<Workspace> {
   const sql = await getSql();
-  const existing = await sql<{ tenant_id: string; role: string }>`
-    select tenant_id, role from memberships where user_id = ${userId} limit 1`;
-  if (existing[0]) {
-    const tenantId = existing[0].tenant_id;
-    const issuers = await sql<{ id: string; did: string; name: string }>`
-      select id, did, name from issuers where tenant_id = ${tenantId} limit 1`;
-    const orgs = await sql<{ name: string }>`select name from organizations where tenant_id = ${tenantId} limit 1`;
-    const issuer = issuers[0];
-    if (!issuer) throw new Error("Issuer missing for tenant");
-    return {
-      tenantId,
-      role: existing[0].role,
-      issuerId: issuer.id,
-      issuerDid: issuer.did,
-      issuerName: issuer.name,
-      orgName: orgs[0]?.name ?? "Organization",
-    };
+  const existing = await sql<{ tenant_id: string; role: string; status: string }>`
+    select tenant_id, role, status from memberships where user_id = ${userId} order by created_at desc`;
+  const active = existing.find((row) => row.status === "ACTIVE");
+  if (active) return loadWorkspace(active.tenant_id, active.role);
+  if (existing.length) {
+    throw new Error("Membership is deactivated. Ask a tenant admin to restore access.");
   }
+
+  const claimed = await claimPendingInviteForUser(userId);
+  if (claimed) return loadWorkspace(claimed.tenantId, claimed.role);
 
   const tenantId = newId("tenant");
   const orgId = newId("org");
@@ -397,6 +469,7 @@ async function workspaceFor(userId: string): Promise<Workspace> {
     status: "ACTIVE",
     publicKeyMultibase: identity.publicKeyMultibase,
   });
+  await registerPublishedSchema(ledger);
   await audit({
     tenantId,
     actorUserId: userId,
@@ -755,6 +828,7 @@ export const issueDegree = createServerFn({ method: "POST" })
       documentHash,
       issuerId: ws.issuerDid,
       issuerDid: ws.issuerDid,
+      schemaId: UNIVERSITY_DEGREE_SCHEMA_ID,
       status: "ACTIVE",
       issuedAt,
       version: 1,
@@ -1278,6 +1352,7 @@ export const verifyPresentationRef = createServerFn({ method: "POST" })
         documentIntegrityValid: null,
         ledgerProofValid: false,
         statusListValid: null,
+        schemaAnchored: null,
         credentialActive: false,
         expired: false,
         revoked: false,
@@ -1577,6 +1652,227 @@ export const getComplianceMatrix = createServerFn({ method: "GET" }).handler(asy
 }));
 
 export const getRuntimeOps = createServerFn({ method: "GET" }).handler(async () => readiness());
+
+async function activeAdminCount(tenantId: string): Promise<number> {
+  const sql = await getSql();
+  const rows = await sql<{ n: number }>`
+    select count(*)::int as n from memberships
+    where tenant_id = ${tenantId} and role = ${"TENANT_ADMIN"} and status = ${"ACTIVE"}`;
+  return Number(rows[0]?.n ?? 0);
+}
+
+export const listMembers = createServerFn({ method: "GET" })
+  .middleware([authMiddleware])
+  .handler(async ({ context }) => {
+    const ws = await workspaceFor(context.userId);
+    assertPermission(ws.role, "manageMembers");
+    const sql = await getSql();
+    const members = await sql<{
+      id: string;
+      user_id: string;
+      role: string;
+      status: string;
+      email: string | null;
+      created_at: string;
+    }>`
+      select m.id, m.user_id, m.role, m.status, u.email, m.created_at::text as created_at
+      from memberships m
+      left join "user" u on u.id = m.user_id
+      where m.tenant_id = ${ws.tenantId}
+      order by m.created_at asc`;
+    const invites = await sql<{
+      id: string;
+      email: string;
+      role: string;
+      status: string;
+      expires_at: string;
+      created_at: string;
+    }>`
+      select id, email, role, status, expires_at::text as expires_at, created_at::text as created_at
+      from membership_invites
+      where tenant_id = ${ws.tenantId}
+      order by created_at desc`;
+    return { role: ws.role, orgName: ws.orgName, members, invites };
+  });
+
+export const inviteMember = createServerFn({ method: "POST" })
+  .middleware([authMiddleware])
+  .validator((raw: unknown) =>
+    z.object({ email: z.string().email().max(200), role: z.string().min(6).max(20) }).parse(raw),
+  )
+  .handler(async ({ context, data }) => {
+    const ws = await workspaceFor(context.userId);
+    assertPermission(ws.role, "manageMembers");
+    const email = normalizeEmail(data.email);
+    assertAssignableRole(data.role);
+    const generated = generateInviteToken();
+    const sql = await getSql();
+    await sql`
+      update membership_invites set status = ${"REVOKED"}
+      where tenant_id = ${ws.tenantId} and email = ${email} and status = ${"PENDING"}`;
+    const id = newId("inv");
+    await sql`
+      insert into membership_invites (
+        id, tenant_id, email, role, token_hash, invited_by_user_id, status, expires_at
+      ) values (
+        ${id}, ${ws.tenantId}, ${email}, ${data.role}, ${generated.tokenHash}, ${context.userId},
+        ${"PENDING"}, ${inviteExpiresAt()}
+      )`;
+    await audit({
+      tenantId: ws.tenantId,
+      actorUserId: context.userId,
+      action: "member.invited",
+      resourceType: "membership_invite",
+      resourceId: id,
+      metadata: { email, role: data.role },
+    });
+    return { token: generated.token, email, role: data.role, expiresAt: inviteExpiresAt() };
+  });
+
+export const setMemberRole = createServerFn({ method: "POST" })
+  .middleware([authMiddleware])
+  .validator((raw: unknown) =>
+    z.object({ membershipId: z.string().min(6), role: z.string().min(6).max(20) }).parse(raw),
+  )
+  .handler(async ({ context, data }) => {
+    const ws = await workspaceFor(context.userId);
+    assertPermission(ws.role, "manageMembers");
+    assertAssignableRole(data.role);
+    const sql = await getSql();
+    const rows = await sql<{ id: string; role: string; status: string }>`
+      select id, role, status from memberships
+      where id = ${data.membershipId} and tenant_id = ${ws.tenantId}`;
+    const row = rows[0];
+    if (!row) throw new Error("Member not found");
+    assertLastAdminGuard({
+      targetCurrentRole: row.role,
+      next: data.role,
+      activeAdminCount: await activeAdminCount(ws.tenantId),
+    });
+    await sql`update memberships set role = ${data.role} where id = ${row.id} and tenant_id = ${ws.tenantId}`;
+    await audit({
+      tenantId: ws.tenantId,
+      actorUserId: context.userId,
+      action: "member.role_changed",
+      resourceType: "membership",
+      resourceId: row.id,
+      metadata: { from: row.role, to: data.role },
+    });
+    return { ok: true };
+  });
+
+export const deactivateMember = createServerFn({ method: "POST" })
+  .middleware([authMiddleware])
+  .validator((raw: unknown) => z.object({ membershipId: z.string().min(6) }).parse(raw))
+  .handler(async ({ context, data }) => {
+    const ws = await workspaceFor(context.userId);
+    assertPermission(ws.role, "manageMembers");
+    const sql = await getSql();
+    const rows = await sql<{ id: string; role: string; user_id: string }>`
+      select id, role, user_id from memberships
+      where id = ${data.membershipId} and tenant_id = ${ws.tenantId} and status = ${"ACTIVE"}`;
+    const row = rows[0];
+    if (!row) throw new Error("Member not found");
+    assertLastAdminGuard({
+      targetCurrentRole: row.role,
+      next: "INACTIVE",
+      activeAdminCount: await activeAdminCount(ws.tenantId),
+    });
+    await sql`update memberships set status = ${"INACTIVE"} where id = ${row.id} and tenant_id = ${ws.tenantId}`;
+    await audit({
+      tenantId: ws.tenantId,
+      actorUserId: context.userId,
+      action: "member.deactivated",
+      resourceType: "membership",
+      resourceId: row.id,
+    });
+    return { ok: true };
+  });
+
+export const peekInvite = createServerFn({ method: "GET" })
+  .validator((raw: unknown) => z.object({ token: z.string().min(16).max(80) }).parse(raw))
+  .handler(async ({ data }) => {
+    const sql = await getSql();
+    const rows = await sql<{
+      email: string;
+      role: string;
+      status: string;
+      expires_at: string;
+      org: string | null;
+    }>`
+      select i.email, i.role, i.status, i.expires_at::text as expires_at, o.name as org
+      from membership_invites i
+      left join organizations o on o.tenant_id = i.tenant_id
+      where i.token_hash = ${hashInviteToken(data.token)}
+      limit 1`;
+    const row = rows[0];
+    if (!row) throw new Error("Invite not found");
+    return {
+      email: row.email,
+      role: row.role,
+      status: row.status,
+      expiresAt: row.expires_at,
+      orgName: row.org ?? "Organization",
+    };
+  });
+
+export const acceptInvite = createServerFn({ method: "POST" })
+  .middleware([authMiddleware])
+  .validator((raw: unknown) => z.object({ token: z.string().min(16).max(80) }).parse(raw))
+  .handler(async ({ context, data }) => {
+    const sql = await getSql();
+    const already = await sql<{ tenant_id: string; status: string }>`
+      select tenant_id, status from memberships where user_id = ${context.userId}`;
+    if (already.some((row) => row.status === "ACTIVE")) {
+      throw new Error("Already a member of an organization");
+    }
+    const rows = await sql<{
+      id: string;
+      tenant_id: string;
+      email: string;
+      role: string;
+      status: string;
+      expires_at: string;
+    }>`
+      select id, tenant_id, email, role, status, expires_at::text as expires_at
+      from membership_invites
+      where token_hash = ${hashInviteToken(data.token)}
+      limit 1`;
+    const invite = rows[0];
+    if (!invite || invite.status !== "PENDING") throw new Error("Invite not found");
+    assertInviteFresh(invite.expires_at);
+    assertAssignableRole(invite.role);
+    const profile = await userEmail(context.userId);
+    if (!profile) throw new Error("Sign in with the invited email address");
+    if (profile.email !== invite.email) throw new Error("This invite is for a different email address");
+    if (!profile.verified) throw new Error("Verify your email before joining this organization");
+    await sql`
+      insert into memberships (id, tenant_id, user_id, role, status)
+      values (${newId("mem")}, ${invite.tenant_id}, ${context.userId}, ${invite.role}, ${"ACTIVE"})`;
+    await sql`update membership_invites set status = ${"ACCEPTED"} where id = ${invite.id}`;
+    await audit({
+      tenantId: invite.tenant_id,
+      actorUserId: context.userId,
+      action: "member.accepted",
+      resourceType: "membership",
+      resourceId: invite.id,
+      metadata: { role: invite.role, email: profile.email },
+    });
+    return { ok: true, role: invite.role };
+  });
+
+
+export const getPublishedSchemaMeta = createServerFn({ method: "GET" }).handler(async () => {
+  await ensureDemoSeed();
+  const ledger = await getLedger();
+  const rec = await ledger.getSchema(UNIVERSITY_DEGREE_SCHEMA_ID);
+  const hash = schemaDocumentHash();
+  return {
+    schemaId: UNIVERSITY_DEGREE_SCHEMA_ID,
+    schemaHash: hash,
+    ledgerAnchored: Boolean(rec && rec.schemaHash === hash && rec.status === "ACTIVE"),
+  };
+});
 
 export const getDidWebDocument = createServerFn({ method: "GET" })
   .validator((raw: unknown) => z.object({ slug: z.string().min(2).max(80) }).parse(raw ?? { slug: "global-university" }))

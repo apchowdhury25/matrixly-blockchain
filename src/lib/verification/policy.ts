@@ -4,6 +4,7 @@ export type VerifierPolicy = {
   requireSignedStatusList: boolean;
   requireIssuerOnLedger: boolean;
   requireLedgerAnchor: boolean;
+  requireAnchoredSchema: boolean;
   requireUnrevoked: boolean;
   allowExpired: boolean;
   allowedIssuerDids: string[] | null;
@@ -15,6 +16,7 @@ export const DEFAULT_POLICY: VerifierPolicy = {
   requireSignedStatusList: true,
   requireIssuerOnLedger: true,
   requireLedgerAnchor: true,
+  requireAnchoredSchema: true,
   requireUnrevoked: true,
   allowExpired: false,
   allowedIssuerDids: null,
@@ -26,6 +28,8 @@ export function applyPolicyReasons(
     issuerVerified: boolean;
     ledgerProofValid: boolean;
     statusListValid: boolean | null;
+    schemaAnchored?: boolean | null;
+    hasCredentialSchema?: boolean;
     revoked: boolean;
     expired: boolean;
   },
@@ -37,6 +41,9 @@ export function applyPolicyReasons(
   }
   if (policy.requireLedgerAnchor && !input.ledgerProofValid) {
     reasons.push(`Policy ${policy.id}: credential must be ledger-anchored`);
+  }
+  if (policy.requireAnchoredSchema && input.hasCredentialSchema && input.schemaAnchored !== true) {
+    reasons.push(`Policy ${policy.id}: credentialSchema must be ledger-anchored`);
   }
   if (policy.requireSignedStatusList && input.statusListValid !== true) {
     reasons.push(`Policy ${policy.id}: a signed Bitstring Status List credential is required`);

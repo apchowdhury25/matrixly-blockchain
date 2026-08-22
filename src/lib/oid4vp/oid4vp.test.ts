@@ -6,6 +6,7 @@ import { issueCredential } from "../credentials/issue";
 import { buildPresentation, signPresentation } from "../credentials/presentation";
 import { statusListForIssuer } from "../credentials/status-list-credential";
 import { HashChainLedgerAdapter, MemoryLedgerStore } from "../ledger/hash-chain";
+import { registerPublishedSchema } from "../schema/anchor";
 import { defaultDegreeDcql, matchCredentialToDcql, parseDcqlQuery, REFUSED_FORMATS } from "./dcql";
 import { buildAuthorizationRequest } from "./request";
 import { verifyOid4vpSubmission } from "./verify";
@@ -24,6 +25,7 @@ async function issued() {
     status: "ACTIVE",
     publicKeyMultibase: issuerDid.slice("did:key:".length),
   });
+  await registerPublishedSchema(ledger);
   const documentHash = sha256Bytes(new TextEncoder().encode("%PDF-1.7 oid4vp")).prefixed;
   const credential = issueCredential({
     credentialId: "urn:uuid:oid4vp",

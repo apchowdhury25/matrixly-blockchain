@@ -7,6 +7,7 @@ import { statusListForIssuer } from "../credentials/status-list-credential";
 import { HashChainLedgerAdapter, MemoryLedgerStore } from "../ledger/hash-chain";
 import { verifyCredential } from "./pipeline";
 import { DEFAULT_POLICY } from "./policy";
+import { registerPublishedSchema } from "../schema/anchor";
 
 function setup() {
   const keys = generateEd25519KeyPair();
@@ -23,6 +24,7 @@ async function issued(ctx: ReturnType<typeof setup>, validUntil?: string) {
     status: "ACTIVE",
     publicKeyMultibase: ctx.did.slice("did:key:".length),
   });
+  await registerPublishedSchema(ctx.ledger);
   const documentHash = sha256Bytes(new TextEncoder().encode("%PDF-1.7 policy")).prefixed;
   const credential = issueCredential({
     credentialId: "urn:uuid:policy-1",

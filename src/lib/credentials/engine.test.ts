@@ -13,18 +13,20 @@ import { issueCredential, credentialHash } from "./issue";
 import { emptyStatusList, encodeStatusList } from "./status-list";
 import { statusListForIssuer } from "./status-list-credential";
 import { tamperOneByte } from "../documents/diploma";
+import { publishedSchemaRecord } from "../schema/anchor";
 
-function setupIssuer() {
+async function setupIssuer() {
   const keys = generateEd25519KeyPair();
   const did = encodeDidKey(keys.publicKey);
   const store = new MemoryLedgerStore();
   const ledger = new HashChainLedgerAdapter(store);
   const statusListCredential = statusListForIssuer({ issuerDid: did, secretKey: keys.secretKey });
+  await ledger.registerSchema(publishedSchemaRecord());
   return { keys, did, ledger, statusListCredential };
 }
 
 test("TEST A: one-byte document mutation fails integrity", async () => {
-  const { keys, did, ledger, statusListCredential } = setupIssuer();
+  const { keys, did, ledger, statusListCredential } = await setupIssuer();
   await ledger.registerIssuer({
     issuerId: did,
     issuerDid: did,
@@ -67,7 +69,7 @@ test("TEST A: one-byte document mutation fails integrity", async () => {
 });
 
 test("TEST B: modified claim fails signature", async () => {
-  const { keys, did, ledger, statusListCredential } = setupIssuer();
+  const { keys, did, ledger, statusListCredential } = await setupIssuer();
   await ledger.registerIssuer({
     issuerId: did,
     issuerDid: did,
@@ -109,7 +111,7 @@ test("TEST B: modified claim fails signature", async () => {
 });
 
 test("TEST C: unknown issuer fails", async () => {
-  const { did, ledger } = setupIssuer();
+  const { did, ledger } = await setupIssuer();
   const other = generateEd25519KeyPair();
   const otherDid = encodeDidKey(other.publicKey);
   const documentHash = sha256Bytes(new TextEncoder().encode("doc")).prefixed;
@@ -138,7 +140,7 @@ test("TEST C: unknown issuer fails", async () => {
 });
 
 test("TEST D: revoked credential returns REVOKED", async () => {
-  const { keys, did, ledger } = setupIssuer();
+  const { keys, did, ledger } = await setupIssuer();
   await ledger.registerIssuer({
     issuerId: did,
     issuerDid: did,
@@ -189,7 +191,7 @@ test("TEST D: revoked credential returns REVOKED", async () => {
 });
 
 test("TEST D2: signed status list bit revokes even when the ledger row is still ACTIVE", async () => {
-  const { keys, did, ledger } = setupIssuer();
+  const { keys, did, ledger } = await setupIssuer();
   await ledger.registerIssuer({
     issuerId: did,
     issuerDid: did,
@@ -229,7 +231,7 @@ test("TEST D2: signed status list bit revokes even when the ledger row is still 
 });
 
 test("TEST D3: unsigned bitstring is not enough under the default policy", async () => {
-  const { keys, did, ledger } = setupIssuer();
+  const { keys, did, ledger } = await setupIssuer();
   await ledger.registerIssuer({
     issuerId: did,
     issuerDid: did,
@@ -268,7 +270,7 @@ test("TEST D3: unsigned bitstring is not enough under the default policy", async
 });
 
 test("TEST E: expired credential returns EXPIRED", async () => {
-  const { keys, did, ledger, statusListCredential } = setupIssuer();
+  const { keys, did, ledger, statusListCredential } = await setupIssuer();
   await ledger.registerIssuer({
     issuerId: did,
     issuerDid: did,
@@ -317,7 +319,7 @@ test("verification method id is bound to did:key", () => {
 });
 
 test("status list is resolved from credentialStatus URL via loader", async () => {
-  const { keys, did, ledger, statusListCredential } = setupIssuer();
+  const { keys, did, ledger, statusListCredential } = await setupIssuer();
   await ledger.registerIssuer({
     issuerId: did,
     issuerDid: did,
@@ -365,7 +367,7 @@ test("status list is resolved from credentialStatus URL via loader", async () =>
 });
 
 test("unknown credentialSchema id never returns VALID", async () => {
-  const { keys, did, ledger, statusListCredential } = setupIssuer();
+  const { keys, did, ledger, statusListCredential } = await setupIssuer();
   await ledger.registerIssuer({
     issuerId: did,
     issuerDid: did,
@@ -390,4 +392,54 @@ test("unknown credentialSchema id never returns VALID", async () => {
   const result = await verifyCredential({ credential, statusListCredential }, ledger);
   assert.equal(result.status, "INVALID");
   assert.match(result.reasons.join(" "), /Unknown credentialSchema/);
+});
+
+test("credentialSchema must be anchored on the ledger with the published hash", async () => {
+  const keys = generateEd25519KeyPair();
+  const did = encodeDidKey(keys.publicKey);
+  const ledger = new HashChainLedgerAdapter(new MemoryLedgerStore());
+  const statusListCredential = statusListForIssuer({ issuerDid: did, secretKey: keys.secretKey });
+  await ledger.registerIssuer({
+    issuerId: did,
+    issuerDid: did,
+    name: "Global University",
+    status: "ACTIVE",
+    publicKeyMultibase: did.slice("did:key:".length),
+  });
+  const documentHash = sha256Bytes(new TextEncoder().encode("doc-schema-ledger")).prefixed;
+  const credential = issueCredential({
+    credentialId: "urn:uuid:test-schema-ledger",
+    issuerDid: did,
+    issuerName: "Global University",
+    subjectName: "Alex Rivera",
+    degreeName: "Bachelor of Computer Science",
+    validFrom: "2026-08-20T00:00:00.000Z",
+    documentHash,
+    statusListCredentialId: "https://trust.matrixly.ai/credentials/status/demo",
+    statusListIndex: 0,
+    secretKey: keys.secretKey,
+  });
+  await ledger.registerDocumentAnchor({ documentHash, credentialId: credential.id, issuerDid: did });
+  await ledger.registerCredential({
+    credentialId: credential.id,
+    credentialHash: credentialHash(credential),
+    documentHash,
+    issuerId: did,
+    issuerDid: did,
+    status: "ACTIVE",
+    issuedAt: "2026-08-20T00:00:00.000Z",
+    version: 1,
+  });
+  const missing = await verifyCredential({ credential, statusListCredential }, ledger);
+  assert.equal(missing.schemaAnchored, false);
+  assert.equal(missing.status, "INVALID");
+  await ledger.registerSchema({
+    schemaId: publishedSchemaRecord().schemaId,
+    schemaHash: "sha256:" + "ab".repeat(32),
+    schemaType: "JsonSchema",
+    status: "ACTIVE",
+  });
+  const wrong = await verifyCredential({ credential, statusListCredential }, ledger);
+  assert.equal(wrong.schemaAnchored, false);
+  assert.equal(wrong.status, "INVALID");
 });

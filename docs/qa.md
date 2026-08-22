@@ -31,6 +31,8 @@ Quick index (full procedures in STEPS.md):
 | 12 OpenID4VCI | `/oid4vci` + This preview wallet | ISSUED `ldp_vc`; replay refused; authorization_code refused |
 | 13 Status + schema | `/credentials/status/demo` + `/schemas/university-degree` | JSON status list + schema; verify still VALID |
 | 14 Tenancy + ops | `/ops` + `/healthz` + `/readyz` | Ready; 401 still not VALID; cross-tenant export 404 |
+| 15 Schema ledger | Schema page + `x-schema-hash` | Anchored; demo VALID with `schemaAnchored` |
+| 16 Team | `/app/team` | Invite token shown once; last admin cannot be removed |
 
 ## Out of scope
 

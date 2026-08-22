@@ -1,5 +1,7 @@
 import { getSql } from "@/lib/db";
 import { createLedger } from "@/lib/ledger/factory";
+import { UNIVERSITY_DEGREE_SCHEMA_ID } from "@/lib/schema/university-degree";
+import { schemaDocumentHash } from "@/lib/schema/anchor";
 import { runtimeAdapterStatus } from "@/lib/trust/runtime";
 
 export function liveness() {
@@ -25,7 +27,11 @@ export async function readiness(): Promise<{
     return { ready: false, db: false, ...base, reason: (err as Error).message };
   }
   try {
-    await createLedger();
+    const ledger = await createLedger();
+    const rec = await ledger.getSchema(UNIVERSITY_DEGREE_SCHEMA_ID);
+    const expected = schemaDocumentHash();
+    const schemaAnchored = Boolean(rec && rec.schemaHash === expected && rec.status === "ACTIVE");
+    return { ready: db, db, ...base, schemaAnchored };
   } catch (err) {
     return {
       ready: false,

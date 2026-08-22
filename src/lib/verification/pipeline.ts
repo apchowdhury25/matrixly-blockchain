@@ -5,6 +5,7 @@ import { decodeStatusList, getBit } from "../credentials/status-list";
 import { verifyStatusListCredential } from "../credentials/status-list-credential";
 import { resolveDid, type ResolveDidOptions } from "../identity/resolve";
 import type { DistributedLedgerAdapter } from "../ledger/adapter";
+import { expectedSchemaHash } from "../schema/anchor";
 import { validateCredentialSchema } from "../schema/university-degree";
 import { resolveStatusListCredential, type StatusListResolveOptions } from "../status/resolve";
 import { applyPolicyReasons, DEFAULT_POLICY, type VerifierPolicy } from "./policy";
@@ -28,6 +29,7 @@ export type VerificationResult = {
   documentIntegrityValid: boolean | null;
   ledgerProofValid: boolean;
   statusListValid: boolean | null;
+  schemaAnchored: boolean | null;
   credentialActive: boolean;
   expired: boolean;
   revoked: boolean;
@@ -60,6 +62,18 @@ function subjectDocumentHash(credential: Record<string, unknown>): string | unde
   return typeof subject?.documentHash === "string" ? subject.documentHash : undefined;
 }
 
+function schemaIdOf(credential: Record<string, unknown>): string | undefined {
+  const raw = credential.credentialSchema;
+  if (typeof raw === "string") return raw;
+  if (Array.isArray(raw) && raw[0]) return schemaIdOf({ credentialSchema: raw[0] });
+  if (raw && typeof raw === "object") {
+    const rec = raw as { id?: unknown; "@id"?: unknown };
+    if (typeof rec.id === "string") return rec.id;
+    if (typeof rec["@id"] === "string") return rec["@id"];
+  }
+  return undefined;
+}
+
 export async function verifyCredential(
   input: VerificationInput,
   ledger: DistributedLedgerAdapter,
@@ -74,6 +88,7 @@ export async function verifyCredential(
     documentIntegrityValid: null,
     ledgerProofValid: false,
     statusListValid: null,
+    schemaAnchored: null,
     credentialActive: false,
     expired: false,
     revoked: false,
@@ -170,6 +185,21 @@ export async function verifyCredential(
   const latest = await ledger.getLatestBlock();
   result.ledgerBlockHash = latest?.blockHash;
 
+  const schemaId = schemaIdOf(input.credential);
+  if (schemaId) {
+    const rec = await ledger.getSchema(schemaId);
+    const expected = expectedSchemaHash(schemaId);
+    if (!rec) {
+      result.schemaAnchored = false;
+      reasons.push(`credentialSchema ${schemaId} is not registered on the ledger`);
+    } else if (rec.status !== "ACTIVE" || !expected || rec.schemaHash !== expected) {
+      result.schemaAnchored = false;
+      reasons.push("Ledger schema hash does not match the published JsonSchema");
+    } else {
+      result.schemaAnchored = true;
+    }
+  }
+
   const validFrom = new Date(String(input.credential.validFrom));
   const validUntil = input.credential.validUntil
     ? new Date(String(input.credential.validUntil))
@@ -262,6 +292,8 @@ function finalize(result: VerificationResult, policy: VerifierPolicy): Verificat
       issuerVerified: result.issuerVerified,
       ledgerProofValid: result.ledgerProofValid,
       statusListValid: result.statusListValid,
+      schemaAnchored: result.schemaAnchored,
+      hasCredentialSchema: result.schemaAnchored !== null,
       revoked: result.revoked,
       expired: result.expired,
     },
@@ -280,6 +312,7 @@ function finalize(result: VerificationResult, policy: VerifierPolicy): Verificat
     result.signatureValid &&
     result.ledgerProofValid &&
     result.documentIntegrityValid !== false &&
+    result.schemaAnchored !== false &&
     (result.statusListValid === true || result.statusListValid === null) &&
     result.credentialActive &&
     policyReasons.length === 0
@@ -292,6 +325,7 @@ function finalize(result: VerificationResult, policy: VerifierPolicy): Verificat
     result.signatureValid &&
     result.ledgerProofValid &&
     result.documentIntegrityValid !== false &&
+    result.schemaAnchored !== false &&
     result.statusListValid === true &&
     !result.revoked &&
     !result.superseded &&

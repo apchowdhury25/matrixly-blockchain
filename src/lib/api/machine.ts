@@ -7,6 +7,7 @@ export type MachineChecks = {
   documentSha256: boolean | null;
   ledgerProof: boolean;
   signedStatusList: boolean | null;
+  schemaAnchored: boolean | null;
   credentialActive: boolean;
   holderPresentationProof?: boolean;
 };
@@ -45,6 +46,7 @@ export function toMachineResult(
     documentSha256: result.documentIntegrityValid,
     ledgerProof: result.ledgerProofValid,
     signedStatusList: result.statusListValid ?? null,
+    schemaAnchored: result.schemaAnchored ?? null,
     credentialActive: result.credentialActive,
   };
   if (presentation.holderProofValid !== undefined) {

@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { publishedSchemaRecord, schemaDocumentHash } from "./anchor";
 import {
   UNIVERSITY_DEGREE_SCHEMA,
   UNIVERSITY_DEGREE_SCHEMA_ID,
@@ -46,4 +47,13 @@ test("unknown schema id is refused, never skipped", () => {
 test("absent schema is not an error (legacy credentials still verify)", () => {
   const { credentialSchema: _omit, ...legacy } = valid;
   assert.deepEqual(validateCredentialSchema(legacy), []);
+});
+
+test("schema hash is JCS SHA-256 of the published document", () => {
+  const rec = publishedSchemaRecord();
+  assert.equal(rec.schemaId, UNIVERSITY_DEGREE_SCHEMA_ID);
+  assert.equal(rec.schemaHash, schemaDocumentHash(UNIVERSITY_DEGREE_SCHEMA));
+  assert.match(rec.schemaHash, /^sha256:[a-f0-9]{64}$/);
+  const tampered = { ...UNIVERSITY_DEGREE_SCHEMA, title: "Evil" };
+  assert.notEqual(schemaDocumentHash(tampered), rec.schemaHash);
 });

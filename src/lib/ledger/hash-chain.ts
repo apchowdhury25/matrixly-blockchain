@@ -9,6 +9,7 @@ import type {
   IssuerLedgerRecord,
   LedgerRecordKind,
   LedgerSubmitResult,
+  SchemaLedgerRecord,
   VerificationAnchorRecord,
 } from "./adapter";
 
@@ -159,6 +160,25 @@ export class HashChainLedgerAdapter implements DistributedLedgerAdapter {
     return this.commit("DOCUMENT_ANCHOR", record as unknown as Record<string, unknown>);
   }
 
+  async registerSchema(record: SchemaLedgerRecord): Promise<LedgerSubmitResult> {
+    const existing = await this.getSchema(record.schemaId);
+    if (existing) {
+      if (existing.schemaHash !== record.schemaHash) {
+        throw new Error("Schema already registered with a different hash");
+      }
+      const latest = await this.getLatestBlock();
+      if (!latest) throw new Error("Schema exists without ledger head");
+      return {
+        blockHash: latest.blockHash,
+        seq: latest.seq,
+        previousHash: latest.blockHash,
+        payloadHash: latest.blockHash,
+        timestamp: new Date().toISOString(),
+      };
+    }
+    return this.commit("SCHEMA", record as unknown as Record<string, unknown>);
+  }
+
   async registerVerificationAnchor(record: VerificationAnchorRecord): Promise<LedgerSubmitResult> {
     return this.commit("VERIFICATION_ANCHOR", record as unknown as Record<string, unknown>);
   }
@@ -196,6 +216,10 @@ export class HashChainLedgerAdapter implements DistributedLedgerAdapter {
       "DOCUMENT_ANCHOR",
       (r) => r.documentHash === documentHash,
     );
+  }
+
+  async getSchema(schemaId: string): Promise<SchemaLedgerRecord | null> {
+    return this.latestOf<SchemaLedgerRecord>("SCHEMA", (r) => r.schemaId === schemaId);
   }
 
   async getVerificationAnchor(reportHash: string): Promise<VerificationAnchorRecord | null> {

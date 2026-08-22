@@ -57,6 +57,20 @@ test("DID registration is append-only and retrievable", async () => {
   assert.equal(typeof again.blockHash, "string");
 });
 
+test("schema registration is retrievable and rejects a different hash", async () => {
+  const ledger = new HashChainLedgerAdapter(new MemoryLedgerStore());
+  const rec = {
+    schemaId: "https://trust.matrixly.ai/schemas/university-degree-credential.json",
+    schemaHash: "sha256:" + "aa".repeat(32),
+    schemaType: "JsonSchema" as const,
+    status: "ACTIVE" as const,
+  };
+  await ledger.registerSchema(rec);
+  const found = await ledger.getSchema(rec.schemaId);
+  assert.equal(found?.schemaHash, rec.schemaHash);
+  await assert.rejects(() => ledger.registerSchema({ ...rec, schemaHash: "sha256:" + "bb".repeat(32) }));
+});
+
 test("Fabric adapter refuses to fake transactions", async () => {
   const fabric = new FabricLedgerAdapter();
   await assert.rejects(() => fabric.registerCredential({
@@ -75,4 +89,12 @@ test("Fabric adapter refuses to fake transactions", async () => {
     publicKeyMultibase: "z",
     status: "ACTIVE",
   }));
+  await assert.rejects(() =>
+    fabric.registerSchema({
+      schemaId: "https://example/schema.json",
+      schemaHash: "sha256:00",
+      schemaType: "JsonSchema",
+      status: "ACTIVE",
+    }),
+  );
 });

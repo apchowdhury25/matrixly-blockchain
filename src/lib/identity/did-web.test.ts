@@ -4,6 +4,7 @@ import { encodeDidKey, generateEd25519KeyPair, publicKeyMultibase } from "../cry
 import { issueCredential } from "../credentials/issue";
 import { statusListForIssuer } from "../credentials/status-list-credential";
 import { HashChainLedgerAdapter, MemoryLedgerStore } from "../ledger/hash-chain";
+import { registerPublishedSchema } from "../schema/anchor";
 import { verifyCredential } from "../verification/pipeline";
 import {
   assertDidWebHost,
@@ -75,6 +76,7 @@ test("injected did:web document verifies a credential signed with the same key",
     status: "ACTIVE",
     publicKeyMultibase: mb,
   });
+  await registerPublishedSchema(ledger);
   await ledger.registerDocumentAnchor({
     documentHash: credential.credentialSubject.documentHash,
     credentialId: credential.id,
