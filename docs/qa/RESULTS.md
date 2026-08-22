@@ -1,6 +1,6 @@
 # QA results — 21 August 2026 (Phases 15–16)
 
-Catalog: [CASES.md](CASES.md). Procedures: [STEPS.md](STEPS.md).
+Catalog: [CASES.md](CASES.md). Procedures: [STEPS.md](STEPS.md). Last automated run: [LAST-RUN.md](LAST-RUN.md).
 
 Executor: Grok-Build.
 
@@ -18,6 +18,7 @@ Score: **PASS** · **FAIL** · **BLOCKED**. A phase is not done if any required 
 
 | Check | Status | Notes |
 |---|---|---|
+| `npm run test:qa` | PASS | 69 / 69 (catalog TC-1.1 … TC-N.4) |
 | `npm run test:trust` | PASS | 110 / 110 |
 | `npm run typecheck` | PASS | |
 | Schema page | PASS | Anchored; `sha256:` shown; not a full 2020-12 processor |

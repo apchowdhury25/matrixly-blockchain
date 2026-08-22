@@ -2,6 +2,7 @@
 
 - **Click-by-click procedures:** [STEPS.md](STEPS.md)
 - **Numbered test cases:** [CASES.md](CASES.md)
+- **Automated runner:** `npm run test:qa` → [LAST-RUN.md](LAST-RUN.md)
 - **Latest automated results:** [RESULTS.md](RESULTS.md)
 - **API examples:** [api-examples.md](../api-examples.md)
 - **Compliance matrix:** [compliance/matrix.md](../compliance/matrix.md)
@@ -35,7 +36,7 @@ Quick index (full procedures in STEPS.md):
 | 15 Schema ledger | Schema page + `x-schema-hash` | Anchored; demo VALID with `schemaAnchored` |
 | 16 Team | `/app/team` | Invite token shown once; last admin cannot be removed |
 
-Always re-run the [minimum ship set](CASES.md#minimum-ship-set-every-phase) after a change: original VALID, tamper INVALID, API 401, demo VALID + schemaAnchored, SOC 2 not claimed.
+Always re-run `npm run test:qa` and the [minimum ship set](CASES.md#minimum-ship-set-every-phase) after a change.
 
 ## Out of scope
 

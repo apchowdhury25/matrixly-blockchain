@@ -217,6 +217,8 @@ curl -sS "$BASE/api/v1/openapi.json"
 | `npm run preview` | Serve the production build |
 | `npm run db:migrate` | Apply `migrations/*.sql` |
 | `npm test` | Crypto, credential engine, hash-chain, and script tests |
+| `npm run test:trust` | Engine / ledger / OpenID unit tests |
+| `npm run test:qa` | Catalog in `docs/qa/CASES.md` against the live preview |
 | `npm run typecheck` | TypeScript (`tsc --noEmit`) |
 | `npm run lint` | ESLint |
 | `npm run format` | Prettier |

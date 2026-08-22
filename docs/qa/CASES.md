@@ -6,9 +6,10 @@ A case is FAIL if a cryptographic check is skipped or if the product returns **V
 
 How to use:
 
-1. Run public cases first (no account).
-2. Sign in for issuer / team / wallet cases.
-3. Record results in [RESULTS.md](RESULTS.md). Click-by-click narrative is in [STEPS.md](STEPS.md).
+1. **Automated:** `npm run test:qa` (live preview + in-process policy checks). Writes [LAST-RUN.md](LAST-RUN.md).
+2. Run public cases first in the browser if you want to see the cards.
+3. Sign in for issuer / team / wallet cases the runner cannot click.
+4. Record human results in [RESULTS.md](RESULTS.md). Click-by-click: [STEPS.md](STEPS.md).
 
 Demo verifier key (preview only): `mtx_live_demo_verifier_qa_only`. Demo diploma ref: `demo-valid-bcs`.
 

@@ -1,0 +1,423 @@
+{
+  "base": "http://127.0.0.1:8080",
+  "when": "2026-08-22T03:36:58.532Z",
+  "pass": 69,
+  "fail": 0,
+  "blocked": 0,
+  "rows": [
+    {
+      "id": "TC-1.1",
+      "title": "Original PDF",
+      "status": "PASS",
+      "notes": "VALID + all required checks"
+    },
+    {
+      "id": "TC-1.2",
+      "title": "One-byte tamper",
+      "status": "PASS",
+      "notes": "INVALID; SHA-256 failed"
+    },
+    {
+      "id": "TC-1.3",
+      "title": "Revoked",
+      "status": "PASS",
+      "notes": "REVOKED"
+    },
+    {
+      "id": "TC-1.4",
+      "title": "Expired",
+      "status": "PASS",
+      "notes": "EXPIRED"
+    },
+    {
+      "id": "TC-1.5",
+      "title": "Opaque link",
+      "status": "PASS",
+      "notes": "/verify/demo-valid-bcs has no holder PII in the URL"
+    },
+    {
+      "id": "TC-1.6",
+      "title": "Trust model",
+      "status": "PASS",
+      "notes": "Trust model mentions ledger and hash"
+    },
+    {
+      "id": "TC-2.1",
+      "title": "Public keys only (DID page)",
+      "status": "PASS",
+      "notes": "did:key:z6MkgD1oQXGujBuF… public"
+    },
+    {
+      "id": "TC-2.2",
+      "title": "Public DID document",
+      "status": "PASS",
+      "notes": "DID page, no secret"
+    },
+    {
+      "id": "TC-2.3",
+      "title": "Rotation preserves old VCs",
+      "status": "PASS",
+      "notes": "Covered by src/lib/identity/identity.test.ts (historical signatures)"
+    },
+    {
+      "id": "TC-3.1",
+      "title": "PDF magic bytes accepted",
+      "status": "PASS",
+      "notes": "PDF magic accepted"
+    },
+    {
+      "id": "TC-3.2",
+      "title": "MZ rejected",
+      "status": "PASS",
+      "notes": "MZ rejected"
+    },
+    {
+      "id": "TC-3.3",
+      "title": "Dedup is hash identity",
+      "status": "PASS",
+      "notes": "Covered by documents/evidence tests (same SHA-256)"
+    },
+    {
+      "id": "TC-4.1",
+      "title": "Demo claim page",
+      "status": "PASS",
+      "notes": "claim route loads"
+    },
+    {
+      "id": "TC-4.2",
+      "title": "Wallet page",
+      "status": "PASS",
+      "notes": "wallet route loads"
+    },
+    {
+      "id": "TC-4.3",
+      "title": "Claim is not re-issuance",
+      "status": "PASS",
+      "notes": "Covered by presentation tests (inner VC issuer proof)"
+    },
+    {
+      "id": "TC-5.1",
+      "title": "Signed status list JSON",
+      "status": "PASS",
+      "notes": "signed BitstringStatusListCredential"
+    },
+    {
+      "id": "TC-5.2",
+      "title": "Revoke outcome via API",
+      "status": "PASS",
+      "notes": "REVOKED"
+    },
+    {
+      "id": "TC-6.1",
+      "title": "Signed report exists after verify",
+      "status": "PASS",
+      "notes": "reportRef tgdq43vtC5vj"
+    },
+    {
+      "id": "TC-6.2",
+      "title": "Audit hash-chain",
+      "status": "PASS",
+      "notes": "Covered by src/lib/audit/chain.test.ts"
+    },
+    {
+      "id": "TC-7.1",
+      "title": "Preview ledger is hash-chain",
+      "status": "PASS",
+      "notes": "hashchain"
+    },
+    {
+      "id": "TC-7.2",
+      "title": "Fabric refuse",
+      "status": "PASS",
+      "notes": "unconfigured Fabric throws"
+    },
+    {
+      "id": "TC-7.3",
+      "title": "Bytes off-chain",
+      "status": "PASS",
+      "notes": "Covered by fabric.test.ts (no PDF in world state)"
+    },
+    {
+      "id": "TC-8.1",
+      "title": "Missing API key",
+      "status": "PASS",
+      "notes": "UNAUTHORIZED"
+    },
+    {
+      "id": "TC-8.2",
+      "title": "Demo VALID",
+      "status": "PASS",
+      "notes": "VALID + schemaAnchored"
+    },
+    {
+      "id": "TC-8.3",
+      "title": "Tamper via API",
+      "status": "PASS",
+      "notes": "not VALID"
+    },
+    {
+      "id": "TC-8.4",
+      "title": "OpenAPI",
+      "status": "PASS",
+      "notes": "openapi has /api/v1/verify"
+    },
+    {
+      "id": "TC-9.1",
+      "title": "HMAC required",
+      "status": "PASS",
+      "notes": "unsigned refused"
+    },
+    {
+      "id": "TC-9.2",
+      "title": "Evidence 401 without key",
+      "status": "PASS",
+      "notes": "401"
+    },
+    {
+      "id": "TC-9.3",
+      "title": "Compliance matrix not a certificate",
+      "status": "PASS",
+      "notes": "REG-01 not claimed"
+    },
+    {
+      "id": "TC-10.1",
+      "title": "did:web document",
+      "status": "PASS",
+      "notes": "hosted DID"
+    },
+    {
+      "id": "TC-10.2",
+      "title": "did:web SSRF",
+      "status": "PASS",
+      "notes": "loopback refused (webhook SSRF sibling; did:web tests cover DID fetch)"
+    },
+    {
+      "id": "TC-10.3",
+      "title": "did:web demo credential",
+      "status": "PASS",
+      "notes": "demo-valid-didweb VALID"
+    },
+    {
+      "id": "TC-11.1",
+      "title": "OpenID4VP page",
+      "status": "PASS",
+      "notes": "oid4vp loads"
+    },
+    {
+      "id": "TC-11.2",
+      "title": "Nonce-bound VP (unit)",
+      "status": "PASS",
+      "notes": "Covered by oid4vp.test.ts (nonce / replay)"
+    },
+    {
+      "id": "TC-11.3",
+      "title": "Replay refused (unit)",
+      "status": "PASS",
+      "notes": "Covered by oid4vp.test.ts"
+    },
+    {
+      "id": "TC-11.4",
+      "title": "SD-JWT DCQL refused",
+      "status": "PASS",
+      "notes": "Credential format dc+sd-jwt is not implemented (OpenID4VP W3C ldp_vc only)"
+    },
+    {
+      "id": "TC-12.1",
+      "title": "OID4VCI metadata",
+      "status": "PASS",
+      "notes": "ldp_vc only"
+    },
+    {
+      "id": "TC-12.2",
+      "title": "OpenID4VCI page",
+      "status": "PASS",
+      "notes": "oid4vci loads"
+    },
+    {
+      "id": "TC-12.3",
+      "title": "Replay pre-auth (unit)",
+      "status": "PASS",
+      "notes": "Covered by oid4vci persist tests — not run live (would consume the demo offer)"
+    },
+    {
+      "id": "TC-12.4",
+      "title": "Authorization code refused",
+      "status": "PASS",
+      "notes": "unsupported_grant_type"
+    },
+    {
+      "id": "TC-12.5",
+      "title": "SD-JWT credential format refused",
+      "status": "PASS",
+      "notes": "unsupported_credential_format"
+    },
+    {
+      "id": "TC-13.1",
+      "title": "Status JSON",
+      "status": "PASS",
+      "notes": "200"
+    },
+    {
+      "id": "TC-13.2",
+      "title": "Schema page",
+      "status": "PASS",
+      "notes": "schema page"
+    },
+    {
+      "id": "TC-13.3",
+      "title": "Loopback status URL",
+      "status": "PASS",
+      "notes": "Covered by status/resolve.test.ts (SSRF)"
+    },
+    {
+      "id": "TC-13.4",
+      "title": "Unknown schema id",
+      "status": "PASS",
+      "notes": "Covered by university-degree.test.ts"
+    },
+    {
+      "id": "TC-14.1",
+      "title": "Ops page",
+      "status": "PASS",
+      "notes": "ops"
+    },
+    {
+      "id": "TC-14.2",
+      "title": "Liveness",
+      "status": "PASS",
+      "notes": "ok"
+    },
+    {
+      "id": "TC-14.3",
+      "title": "Readiness",
+      "status": "PASS",
+      "notes": "hashchain"
+    },
+    {
+      "id": "TC-14.4",
+      "title": "Cross-tenant export",
+      "status": "PASS",
+      "notes": "denied"
+    },
+    {
+      "id": "TC-14.5",
+      "title": "Rate limit never VALID",
+      "status": "PASS",
+      "notes": "RATE_LIMITED path"
+    },
+    {
+      "id": "TC-14.6",
+      "title": "AUDITOR cannot issue",
+      "status": "PASS",
+      "notes": "false"
+    },
+    {
+      "id": "TC-15.1",
+      "title": "Schema hash on page",
+      "status": "PASS",
+      "notes": "sha256:a6673240e3edc32705801d2928a5ea07ff3ccb30df553c7bf36544d82f8b0400"
+    },
+    {
+      "id": "TC-15.2",
+      "title": "Hash header",
+      "status": "PASS",
+      "notes": "sha256:a6673240e3edc32705801d2928a5ea07ff3ccb30df553c7bf36544d82f8b0400"
+    },
+    {
+      "id": "TC-15.3",
+      "title": "Demo schemaAnchored",
+      "status": "PASS",
+      "notes": "VALID"
+    },
+    {
+      "id": "TC-15.4",
+      "title": "Wrong ledger hash",
+      "status": "PASS",
+      "notes": "Covered by engine.test.ts (schema hash mismatch → INVALID)"
+    },
+    {
+      "id": "TC-15.5",
+      "title": "Readyz schemaAnchored",
+      "status": "PASS",
+      "notes": "true"
+    },
+    {
+      "id": "TC-15.6",
+      "title": "Tamper independent of schema",
+      "status": "PASS",
+      "notes": "SHA-256 still fails"
+    },
+    {
+      "id": "TC-16.1",
+      "title": "Team route",
+      "status": "PASS",
+      "notes": "loads"
+    },
+    {
+      "id": "TC-16.2",
+      "title": "Invite token format",
+      "status": "PASS",
+      "notes": "mtx_inv_ hashed"
+    },
+    {
+      "id": "TC-16.3",
+      "title": "Token hashed at rest",
+      "status": "PASS",
+      "notes": "hash ≠ token"
+    },
+    {
+      "id": "TC-16.4",
+      "title": "Last admin guard",
+      "status": "PASS",
+      "notes": "throws"
+    },
+    {
+      "id": "TC-16.5",
+      "title": "AUDITOR cannot issue",
+      "status": "PASS",
+      "notes": "false"
+    },
+    {
+      "id": "TC-16.6",
+      "title": "Invalid invite URL",
+      "status": "PASS",
+      "notes": "200"
+    },
+    {
+      "id": "TC-16.7",
+      "title": "ISSUER cannot manage members",
+      "status": "PASS",
+      "notes": "false"
+    },
+    {
+      "id": "TC-N.1",
+      "title": "SOC 2 not claimed",
+      "status": "PASS",
+      "notes": "not-claimed"
+    },
+    {
+      "id": "TC-N.2",
+      "title": "SD-JWT notes",
+      "status": "PASS",
+      "notes": "refused"
+    },
+    {
+      "id": "TC-N.3",
+      "title": "HAIP not claimed",
+      "status": "PASS",
+      "notes": "not HAIP"
+    },
+    {
+      "id": "TC-N.4",
+      "title": "No fake Fabric",
+      "status": "PASS",
+      "notes": "hashchain"
+    },
+    {
+      "id": "TC-AUTO.meta",
+      "title": "OID4VCI metadata helper",
+      "status": "PASS",
+      "notes": "ldp_vc"
+    }
+  ]
+}
