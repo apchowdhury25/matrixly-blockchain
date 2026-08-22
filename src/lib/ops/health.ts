@@ -14,6 +14,7 @@ export async function readiness(): Promise<{
   ledger: string;
   storage: string;
   kms: string;
+  schemaAnchored?: boolean;
   reason?: string;
 }> {
   const adapters = runtimeAdapterStatus();
@@ -40,5 +41,4 @@ export async function readiness(): Promise<{
       reason: (err as Error).message,
     };
   }
-  return { ready: db, db, ...base };
 }

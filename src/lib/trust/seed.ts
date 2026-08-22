@@ -54,6 +54,7 @@ export async function ensureDemoSeed(): Promise<void> {
       await sql`delete from dids where tenant_id = ${DEMO.tenantId}`;
       await sql`delete from issuers where tenant_id = ${DEMO.tenantId}`;
       await sql`delete from organizations where tenant_id = ${DEMO.tenantId}`;
+      await sql`delete from membership_invites where tenant_id = ${DEMO.tenantId}`;
       await sql`delete from memberships where tenant_id = ${DEMO.tenantId}`;
       await sql`delete from tenants where id = ${DEMO.tenantId}`;
     }
@@ -64,7 +65,8 @@ export async function ensureDemoSeed(): Promise<void> {
     globalSeed.__matrixlySeed__ = undefined;
     throw err;
   });
-  return globalSeed.__matrixlySeed__;
+  await globalSeed.__matrixlySeed__;
+  await ensureDemoSchema();
 }
 
 async function seedDemo(): Promise<void> {

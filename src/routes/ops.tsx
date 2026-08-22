@@ -41,6 +41,12 @@ function OpsPage() {
             <dt className="text-stone">KMS</dt>
             <dd className="font-mono text-xs">{data.kms}</dd>
           </div>
+          <div>
+            <dt className="text-stone">Published schema on ledger</dt>
+            <dd className={data.schemaAnchored ? "text-valid" : "text-invalid"}>
+              {data.schemaAnchored ? "Anchored" : "Not anchored"}
+            </dd>
+          </div>
           {data.reason ? (
             <div>
               <dt className="text-stone">Reason</dt>
