@@ -2,8 +2,10 @@
 
 import { GENESIS_PREV, verifyBlockSequence, type LedgerBlock } from "./hash-chain";
 import { MERKLE_ALG, merkleRootFromBlockHashes, merkleRootsEqual } from "./merkle";
+import { LEDGER_DIPLOMA_DISCLAIMER } from "./disclaimer";
 
 export const LEDGER_EXPORT_FORMAT = "matrixly.ledger.v1";
+export { LEDGER_DIPLOMA_DISCLAIMER };
 
 export type LedgerExport = {
   format: typeof LEDGER_EXPORT_FORMAT;
@@ -11,6 +13,8 @@ export type LedgerExport = {
   genesis: string;
   merkleAlgorithm: typeof MERKLE_ALG;
   merkleRoot: string;
+  disclaimer: typeof LEDGER_DIPLOMA_DISCLAIMER;
+  diplomaEvaluated: false;
   blocks: LedgerBlock[];
 };
 
@@ -21,6 +25,8 @@ export type IndependentChainCheck = {
   genesis: string;
   merkleAlgorithm?: typeof MERKLE_ALG;
   merkleRoot?: string;
+  diplomaEvaluated: false;
+  disclaimer: typeof LEDGER_DIPLOMA_DISCLAIMER;
   head?: { seq: number; blockHash: string };
   reason?: string;
 };
@@ -33,6 +39,8 @@ export function buildLedgerExport(blocks: LedgerBlock[], model: LedgerExport["mo
     genesis: GENESIS_PREV,
     merkleAlgorithm: merkle.algorithm,
     merkleRoot: merkle.merkleRoot,
+    disclaimer: LEDGER_DIPLOMA_DISCLAIMER,
+    diplomaEvaluated: false,
     blocks,
   };
 }
@@ -58,59 +66,65 @@ export function parseLedgerExport(raw: unknown): { ok: true; export: LedgerExpor
       genesis: typeof rec.genesis === "string" ? rec.genesis : GENESIS_PREV,
       merkleAlgorithm: MERKLE_ALG,
       merkleRoot: rec.merkleRoot,
+      disclaimer: LEDGER_DIPLOMA_DISCLAIMER,
+      diplomaEvaluated: false,
       blocks: rec.blocks as LedgerBlock[],
     },
   };
 }
 
+function withDisclaimer<T extends object>(row: T): T & { diplomaEvaluated: false; disclaimer: typeof LEDGER_DIPLOMA_DISCLAIMER } {
+  return { ...row, diplomaEvaluated: false, disclaimer: LEDGER_DIPLOMA_DISCLAIMER };
+}
+
 export function verifyExportedChain(raw: unknown): IndependentChainCheck {
   const parsed = parseLedgerExport(raw);
   if (!parsed.ok) {
-    return { chainValid: false, length: 0, model: "hash-chain", genesis: GENESIS_PREV, reason: parsed.reason };
+    return withDisclaimer({ chainValid: false, length: 0, model: "hash-chain" as const, genesis: GENESIS_PREV, reason: parsed.reason });
   }
   if (parsed.export.model === "fabric-endorsement") {
-    return {
+    return withDisclaimer({
       chainValid: false,
       length: parsed.export.blocks.length,
-      model: "fabric-endorsement",
+      model: "fabric-endorsement" as const,
       genesis: parsed.export.genesis,
       merkleRoot: parsed.export.merkleRoot,
       reason: "Fabric endorsement export is not independently verifiable without Gateway block data",
-    };
+    });
   }
   if (parsed.export.genesis !== GENESIS_PREV) {
-    return {
+    return withDisclaimer({
       chainValid: false,
       length: parsed.export.blocks.length,
-      model: "hash-chain",
+      model: "hash-chain" as const,
       genesis: parsed.export.genesis,
       reason: "Genesis previous-hash does not match the published hash-chain genesis",
-    };
+    });
   }
   const chain = verifyBlockSequence(parsed.export.blocks);
   const merkle = merkleRootFromBlockHashes(parsed.export.blocks.map((b) => b.blockHash));
   if (chain.valid && !merkleRootsEqual(parsed.export.merkleRoot, merkle.merkleRoot)) {
-    return {
+    return withDisclaimer({
       chainValid: false,
       length: chain.length,
-      model: "hash-chain",
+      model: "hash-chain" as const,
       genesis: parsed.export.genesis,
       merkleAlgorithm: merkle.algorithm,
       merkleRoot: merkle.merkleRoot,
       reason: "Merkle root does not match the recomputed RFC 6962 tree of block hashes",
-    };
+    });
   }
   const last = parsed.export.blocks[parsed.export.blocks.length - 1];
-  return {
+  return withDisclaimer({
     chainValid: chain.valid,
     length: chain.length,
-    model: "hash-chain",
+    model: "hash-chain" as const,
     genesis: parsed.export.genesis,
     merkleAlgorithm: merkle.algorithm,
     merkleRoot: merkle.merkleRoot,
     head: last ? { seq: last.seq, blockHash: last.blockHash } : undefined,
     reason: chain.reason,
-  };
+  });
 }
 
 export function findCredentialHash(blocks: LedgerBlock[], credentialHash: string): { seq: number; blockHash: string } | null {

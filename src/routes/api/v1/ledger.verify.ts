@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { corsHeaders, json } from "@/lib/api/http";
-import { verifyExportedChain } from "@/lib/ledger/export";
+import { LEDGER_DIPLOMA_DISCLAIMER, verifyExportedChain } from "@/lib/ledger/export";
 
 export const Route = createFileRoute("/api/v1/ledger/verify")({
   server: {
@@ -11,14 +11,26 @@ export const Route = createFileRoute("/api/v1/ledger/verify")({
         try {
           body = await request.json();
         } catch {
-          return json({ chainValid: false, reason: "JSON body required", status: "INVALID", verified: false }, 400);
+          return json(
+            {
+              chainValid: false,
+              diplomaEvaluated: false,
+              disclaimer: LEDGER_DIPLOMA_DISCLAIMER,
+              reason: "JSON body required",
+            },
+            400,
+          );
         }
         const check = verifyExportedChain(body);
         return json({
           chainValid: check.chainValid,
+          diplomaEvaluated: check.diplomaEvaluated,
+          disclaimer: check.disclaimer,
           length: check.length,
           model: check.model,
           genesis: check.genesis,
+          merkleRoot: check.merkleRoot,
+          merkleAlgorithm: check.merkleAlgorithm,
           head: check.head,
           reason: check.reason,
         });

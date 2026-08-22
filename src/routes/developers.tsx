@@ -264,7 +264,8 @@ matrixly-event-id: wh_…
           </Link>{" "}
           · <span className="font-mono text-sm">GET /api/v1/ledger/chain</span> ·{" "}
           <span className="font-mono text-sm">POST /api/v1/ledger/verify</span> recomputes hashes and
-          never returns credential VALID. Fabric dumps are refused without Gateway data.
+          never returns credential VALID (`diplomaEvaluated` is always false). Fabric dumps are
+          refused without Gateway data.
         </p>
       </article>
     </div>

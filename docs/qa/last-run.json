@@ -1,6 +1,6 @@
 {
   "base": "http://127.0.0.1:8080",
-  "when": "2026-08-22T03:46:10.531Z",
+  "when": "2026-08-22T03:48:40.686Z",
   "pass": 75,
   "fail": 0,
   "blocked": 0,
@@ -111,7 +111,7 @@
       "id": "TC-6.1",
       "title": "Signed report exists after verify",
       "status": "PASS",
-      "notes": "reportRef bpeo3GIa18lE"
+      "notes": "reportRef 9XIDYkJ80Cef"
     },
     {
       "id": "TC-6.2",
@@ -417,7 +417,7 @@
       "id": "TC-17.1",
       "title": "Chain export",
       "status": "PASS",
-      "notes": "length 265"
+      "notes": "length 430"
     },
     {
       "id": "TC-17.2",

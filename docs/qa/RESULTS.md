@@ -39,5 +39,5 @@ Score: **PASS** · **FAIL** · **BLOCKED**. A phase is not done if any required 
 | Item | Status |
 |---|---|
 | Phase 17 | PASS |
-| Export is not credential VALID | PASS |
+| Export is not credential VALID | PASS | `diplomaEvaluated: false` + disclaimer |
 | Fabric dump not faked | PASS |

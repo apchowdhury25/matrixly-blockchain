@@ -819,7 +819,7 @@ Copy the export, set `merkleRoot` to `sha256:` + 64 zeros, POST `/api/v1/ledger/
 | Schema page | “We run a full JSON Schema 2020-12 processor” | Published university-degree rules only |
 | Ops Ready | “Fabric is live” | Preview ledger is hash-chain unless Gateway env is set |
 | Schema anchored | “Tamper should pass now” | Schema hash is independent of PDF SHA-256 |
-| Chain intact | “The diploma is VALID” | Chain integrity is necessary, not sufficient |
+| Chain intact | “The diploma is VALID” | Chain integrity is necessary, not sufficient. `diplomaEvaluated` is always false on `/api/v1/ledger/*` |
 | Team invite | “Email was sent” | No SMTP; you must copy the URL |
 | SOC 2 page | “We passed the audit” | Mapping is readiness notes; REG-01 stays not-claimed |
 

@@ -594,7 +594,10 @@ await liveCase("TC-17.1", "Chain export", async () => {
   if (res.status !== 200) throw new Error(`HTTP ${res.status}`);
   if (json.format !== "matrixly.ledger.v1") throw new Error("format");
   if (json.chainValid !== true) throw new Error(String(json.reason));
-  if (json.status === "VALID") throw new Error("export used credential VALID");
+  if (json.diplomaEvaluated !== false) throw new Error("diplomaEvaluated");
+  if (typeof json.disclaimer !== "string" || !/does not mean a diploma is VALID/.test(json.disclaimer)) {
+    throw new Error("missing diploma disclaimer");
+  }
   if (typeof json.merkleRoot !== "string" || !json.merkleRoot.startsWith("sha256:")) {
     throw new Error("missing merkleRoot");
   }
@@ -613,6 +616,7 @@ await liveCase("TC-17.2", "Independent recompute", async () => {
   const json = (await res.json()) as Record<string, unknown>;
   if (json.chainValid !== true) throw new Error(JSON.stringify(json));
   if (json.status === "VALID" || json.verified === true) throw new Error("credential VALID");
+  if (json.diplomaEvaluated !== false) throw new Error("diplomaEvaluated");
   return "chainValid";
 });
 
@@ -636,7 +640,7 @@ await liveCase("TC-17.3", "Tampered export fails", async () => {
 await liveCase("TC-17.4", "Chain page", async () => {
   const { status, text } = await html("/chain");
   if (status !== 200) throw new Error(`HTTP ${status}`);
-  if (!/hash-chain|Independent|Merkle/i.test(text)) throw new Error("copy");
+  if (!/Not a diploma result|does not mean a diploma is VALID/i.test(text)) throw new Error("copy");
   return "200";
 });
 

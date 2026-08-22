@@ -3,6 +3,7 @@ import { useState } from "react";
 import { PublicHeader } from "@/components/layout/public-header";
 import { Button } from "@/components/ui/button";
 import { getPublicLedgerExport, verifyPublicLedgerExport } from "@/lib/trust/functions";
+import { LEDGER_DIPLOMA_DISCLAIMER } from "@/lib/ledger/disclaimer";
 
 export const Route = createFileRoute("/chain")({
   loader: () => getPublicLedgerExport(),
@@ -38,15 +39,26 @@ function ChainPage() {
         <h1 className="mt-3 font-display text-4xl">Hash-chain export</h1>
         <p className="mt-4 text-ink-soft">
           Download the append-only log and recompute block hashes yourself. The Merkle root is
-          RFC 6962 over those hashes — not a Bitcoin tree and not a diploma VALID. Fabric dumps
-          are refused without Gateway block data.
+          RFC 6962 over those hashes — not a Bitcoin tree. Fabric dumps are refused without
+          Gateway block data.
         </p>
+        <aside className="mt-6 rounded-xl border border-rule bg-paper-raised p-5 text-sm leading-relaxed">
+          <p className="font-medium">Not a diploma result</p>
+          <p className="mt-2 text-ink-soft">{LEDGER_DIPLOMA_DISCLAIMER}</p>
+          <p className="mt-2 text-ink-soft">
+            <a href="/verify/demo-valid-bcs" className="underline underline-offset-4">
+              Verify the demo diploma
+            </a>{" "}
+            for signature, file hash, status list, and schema.
+          </p>
+        </aside>
         <dl className="mt-8 grid gap-4 sm:grid-cols-2">
           <div className="rounded-xl border border-rule bg-paper-raised p-5">
-            <dt className="text-sm text-stone">Independent check</dt>
-            <dd className={data.chainValid ? "text-valid" : "text-invalid"}>
-              {data.chainValid ? "Chain intact" : data.reason ?? "Broken"}
+            <dt className="text-sm text-stone">Ledger hashes</dt>
+            <dd className="text-ink">
+              {data.chainValid ? "Match" : data.reason ?? "Broken"}
             </dd>
+            <p className="mt-2 text-xs text-stone">Not diploma VALID</p>
           </div>
           <div className="rounded-xl border border-rule bg-paper-raised p-5">
             <dt className="text-sm text-stone">Blocks</dt>
@@ -62,7 +74,7 @@ function ChainPage() {
             GET /api/v1/ledger/chain
           </a>
           {" · "}
-          POST /api/v1/ledger/verify does not return credential VALID
+          POST /api/v1/ledger/verify does not evaluate diplomas
         </p>
 
         <form className="mt-10 space-y-3" onSubmit={onVerify}>
@@ -81,7 +93,7 @@ function ChainPage() {
         {independent ? (
           <p className={`mt-4 ${independent.chainValid ? "text-valid" : "text-invalid"}`}>
             {independent.chainValid
-              ? `Independent check intact · ${independent.length} blocks`
+              ? `Ledger hashes match · ${independent.length} blocks · diploma not evaluated`
               : independent.reason ?? "Broken"}
           </p>
         ) : null}

@@ -45,6 +45,7 @@ import {
   buildLedgerExport,
   verifyExportedChain,
 } from "@/lib/ledger/export";
+import { LEDGER_DIPLOMA_DISCLAIMER } from "@/lib/ledger/disclaimer";
 import { openSecret, sealSecret } from "./seal";
 
 type CredentialRow = {
@@ -1888,6 +1889,8 @@ export const getPublicLedgerExport = createServerFn({ method: "GET" }).handler(a
       model: "fabric-endorsement" as const,
       genesis: "",
       chainValid: false,
+      diplomaEvaluated: false as const,
+      disclaimer: LEDGER_DIPLOMA_DISCLAIMER,
       length: 0,
       reason: "Fabric chain export requires Gateway block data",
     };
@@ -1902,6 +1905,8 @@ export const getPublicLedgerExport = createServerFn({ method: "GET" }).handler(a
     genesis: exported.genesis,
     merkleAlgorithm: exported.merkleAlgorithm,
     merkleRoot: exported.merkleRoot,
+    diplomaEvaluated: false as const,
+    disclaimer: exported.disclaimer,
     chainValid: check.chainValid,
     length: check.length,
     head: check.head,

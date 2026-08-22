@@ -41,6 +41,8 @@ test("exported hash-chain verifies independently and includes the credential has
   assert.equal(check.length, 2);
   assert.equal(exported.merkleRoot.startsWith("sha256:"), true);
   assert.equal(check.merkleRoot, exported.merkleRoot);
+  assert.equal(check.diplomaEvaluated, false);
+  assert.match(check.disclaimer, /does not mean a diploma is VALID/);
   assert.equal(findCredentialHash(blocks, credentialHash)?.seq, 2);
 });
 

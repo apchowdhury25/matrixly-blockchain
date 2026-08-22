@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { corsHeaders, json } from "@/lib/api/http";
-import { buildLedgerExport, verifyExportedChain, assertExportHasNoHolderPii } from "@/lib/ledger/export";
+import { buildLedgerExport, verifyExportedChain, assertExportHasNoHolderPii, LEDGER_DIPLOMA_DISCLAIMER } from "@/lib/ledger/export";
 import { getLedger } from "@/lib/trust/runtime";
 import { ensureDemoSeed } from "@/lib/trust/seed";
 
@@ -15,6 +15,8 @@ export const Route = createFileRoute("/api/v1/ledger/chain")({
           return json(
             {
               chainValid: false,
+              diplomaEvaluated: false,
+              disclaimer: LEDGER_DIPLOMA_DISCLAIMER,
               model: "fabric-endorsement",
               reason: "Fabric chain export requires Gateway block data. Refusing to fake a hash-chain dump.",
             },
