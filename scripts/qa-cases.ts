@@ -285,7 +285,11 @@ await liveCase("TC-8.4", "OpenAPI", async () => {
   const res = await fetchOk("/api/v1/openapi.json");
   const spec = (await res.json()) as { paths?: Record<string, unknown> };
   if (!spec.paths?.["/api/v1/verify"]) throw new Error("missing verify path");
-  return "openapi has /api/v1/verify";
+  const ledger = JSON.stringify(spec.paths["/api/v1/ledger/verify"] ?? {});
+  if (!/does not mean a diploma is VALID/.test(ledger) && !/diplomaEvaluated/.test(ledger)) {
+    throw new Error("openapi ledger path missing disclaimer");
+  }
+  return "openapi has /api/v1/verify + ledger disclaimer";
 });
 
 unitCase("TC-9.1", "HMAC required", () => {

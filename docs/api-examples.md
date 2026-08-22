@@ -14,7 +14,11 @@ UI catalog: **Developers**. Spec: `GET $BASE/api/v1/openapi.json`.
 |---|---|---|
 | POST | `/api/v1/verify` | Bearer `mtx_live_…` |
 | GET | `/api/v1/reports/{ref}` | Bearer `mtx_live_…` |
+| GET | `/api/v1/ledger/chain` | None |
+| POST | `/api/v1/ledger/verify` | None |
 | GET | `/api/v1/openapi.json` | None |
+
+`GET /api/v1/ledger/chain` and `POST /api/v1/ledger/verify` are **not diploma verification**. `diplomaEvaluated` is always `false`. `chainValid` is ledger integrity only. Use `POST /api/v1/verify` for Ed25519, SHA-256, status list, and schema.
 
 ## Missing key — must be 401, never VALID
 
@@ -495,6 +499,72 @@ curl -sS "$BASE/api/v1/reports/WWKAPed4Y2Ye" \
   "ledgerAnchored": true
 }
 ```
+
+## Hash-chain export — not a diploma VALID
+
+HTTP `200`
+
+No API key. `diplomaEvaluated` is always `false`. There is no `status: VALID`.
+
+### Request
+
+```http
+GET $BASE/api/v1/ledger/chain
+```
+
+### curl
+
+```bash
+curl -sS "$BASE/api/v1/ledger/chain"
+```
+
+### Response (abridged)
+
+```json
+{
+  "format": "matrixly.ledger.v1",
+  "model": "hash-chain",
+  "merkleAlgorithm": "rfc6962-sha256",
+  "merkleRoot": "sha256:…",
+  "diplomaEvaluated": false,
+  "disclaimer": "chainValid is ledger integrity only. It does not mean a diploma is VALID. Ed25519, document SHA-256, signed status list, and schema hash must still pass independently via POST /api/v1/verify.",
+  "chainValid": true,
+  "length": 2
+}
+```
+
+## Recompute Merkle root — diplomaEvaluated is false
+
+HTTP `200`
+
+### Request
+
+```http
+POST $BASE/api/v1/ledger/verify
+Content-Type: application/json
+```
+
+### curl
+
+```bash
+curl -sS -X POST "$BASE/api/v1/ledger/verify" \
+  -H "Content-Type: application/json" \
+  -d @chain.json
+```
+
+### Response
+
+```json
+{
+  "chainValid": true,
+  "diplomaEvaluated": false,
+  "disclaimer": "chainValid is ledger integrity only. It does not mean a diploma is VALID. Ed25519, document SHA-256, signed status list, and schema hash must still pass independently via POST /api/v1/verify.",
+  "length": 2,
+  "model": "hash-chain"
+}
+```
+
+A non-JSON body is `400` with the same disclaimer and **no** credential `status` field.
 
 ## OpenAPI document (no key)
 

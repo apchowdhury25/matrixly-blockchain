@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PublicHeader } from "@/components/layout/public-header";
 import { DEMO_API_KEY, examples } from "@/lib/api/examples";
+import { LEDGER_DIPLOMA_DISCLAIMER } from "@/lib/ledger/disclaimer";
 
 export const Route = createFileRoute("/developers")({ component: DevelopersPage });
 
@@ -51,6 +52,9 @@ function DevelopersPage() {
     examples.postedCredential,
     examples.presentation,
     examples.report,
+    examples.ledgerChain,
+    examples.ledgerVerify,
+    examples.ledgerVerifyBadJson,
     examples.openapi,
   ];
   return (
@@ -263,10 +267,24 @@ matrixly-event-id: wh_…
             Hash-chain export
           </Link>{" "}
           · <span className="font-mono text-sm">GET /api/v1/ledger/chain</span> ·{" "}
-          <span className="font-mono text-sm">POST /api/v1/ledger/verify</span> recomputes hashes and
-          never returns credential VALID (`diplomaEvaluated` is always false). Fabric dumps are
+          <span className="font-mono text-sm">POST /api/v1/ledger/verify</span>. Fabric dumps are
           refused without Gateway data.
         </p>
+        <blockquote className="mt-4 border-l-2 border-pine pl-4 text-sm leading-relaxed text-ink-soft">
+          {LEDGER_DIPLOMA_DISCLAIMER}
+        </blockquote>
+        <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-ink-soft">
+          <li>
+            <span className="font-mono">diplomaEvaluated</span> is always <span className="font-mono">false</span>
+          </li>
+          <li>
+            Responses do not include <span className="font-mono">status: VALID</span> or{" "}
+            <span className="font-mono">verified: true</span>
+          </li>
+          <li>
+            Diploma checks stay on <span className="font-mono">POST /api/v1/verify</span>
+          </li>
+        </ul>
       </article>
     </div>
   );

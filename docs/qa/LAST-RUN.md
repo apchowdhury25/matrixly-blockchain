@@ -1,7 +1,7 @@
 # QA last run
 
 Base: `http://127.0.0.1:8080`
-When: 2026-08-22T03:48:40.685Z
+When: 2026-08-22T03:50:52.681Z
 Result: **PASS** · 75 pass · 0 fail · 0 blocked
 
 | ID | Title | Status | Notes |
@@ -23,7 +23,7 @@ Result: **PASS** · 75 pass · 0 fail · 0 blocked
 | TC-4.3 | Claim is not re-issuance | PASS | Covered by presentation tests (inner VC issuer proof) |
 | TC-5.1 | Signed status list JSON | PASS | signed BitstringStatusListCredential |
 | TC-5.2 | Revoke outcome via API | PASS | REVOKED |
-| TC-6.1 | Signed report exists after verify | PASS | reportRef 9XIDYkJ80Cef |
+| TC-6.1 | Signed report exists after verify | PASS | reportRef 31AfJAQW7_pA |
 | TC-6.2 | Audit hash-chain | PASS | Covered by src/lib/audit/chain.test.ts |
 | TC-7.1 | Preview ledger is hash-chain | PASS | hashchain |
 | TC-7.2 | Fabric refuse | PASS | unconfigured Fabric throws |
@@ -31,7 +31,7 @@ Result: **PASS** · 75 pass · 0 fail · 0 blocked
 | TC-8.1 | Missing API key | PASS | UNAUTHORIZED |
 | TC-8.2 | Demo VALID | PASS | VALID + schemaAnchored |
 | TC-8.3 | Tamper via API | PASS | not VALID |
-| TC-8.4 | OpenAPI | PASS | openapi has /api/v1/verify |
+| TC-8.4 | OpenAPI | PASS | openapi has /api/v1/verify + ledger disclaimer |
 | TC-9.1 | HMAC required | PASS | unsigned refused |
 | TC-9.2 | Evidence 401 without key | PASS | 401 |
 | TC-9.3 | Compliance matrix not a certificate | PASS | REG-01 not claimed |
@@ -74,7 +74,7 @@ Result: **PASS** · 75 pass · 0 fail · 0 blocked
 | TC-N.2 | SD-JWT notes | PASS | refused |
 | TC-N.3 | HAIP not claimed | PASS | not HAIP |
 | TC-N.4 | No fake Fabric | PASS | hashchain |
-| TC-17.1 | Chain export | PASS | length 430 |
+| TC-17.1 | Chain export | PASS | length 571 |
 | TC-17.2 | Independent recompute | PASS | chainValid |
 | TC-17.3 | Tampered export fails | PASS | Payload hash mismatch at seq 1 |
 | TC-17.4 | Chain page | PASS | 200 |

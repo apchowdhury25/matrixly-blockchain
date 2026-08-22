@@ -1,3 +1,5 @@
+import { LEDGER_DIPLOMA_DISCLAIMER } from "../ledger/disclaimer";
+
 /** Copy-paste examples. `$BASE` is this site’s origin.
  *  Response bodies are complete JSON captured from the live verifier API.
  *  DID / hashes / reportRef change if the demo tenant is re-seeded.
@@ -203,6 +205,30 @@ export const responseBodies = {
     signatureValid: true,
     ledgerAnchored: true,
   },
+  ledgerChain: {
+    format: "matrixly.ledger.v1",
+    model: "hash-chain",
+    merkleAlgorithm: "rfc6962-sha256",
+    merkleRoot: "sha256:e4087ea8ef27f000000000000000000000000000000000000000000000000000",
+    diplomaEvaluated: false,
+    disclaimer: LEDGER_DIPLOMA_DISCLAIMER,
+    chainValid: true,
+    length: 2,
+  },
+  ledgerVerify: {
+    chainValid: true,
+    diplomaEvaluated: false,
+    disclaimer: LEDGER_DIPLOMA_DISCLAIMER,
+    length: 2,
+    model: "hash-chain",
+    merkleRoot: "sha256:e4087ea8ef27f000000000000000000000000000000000000000000000000000",
+  },
+  ledgerVerifyBadJson: {
+    chainValid: false,
+    diplomaEvaluated: false,
+    disclaimer: LEDGER_DIPLOMA_DISCLAIMER,
+    reason: "JSON body required",
+  },
   openapi: {
     openapi: "3.0.3",
     info: {
@@ -357,6 +383,37 @@ Authorization: Bearer mtx_live_demo_verifier_qa_only`,
   -H "Authorization: Bearer mtx_live_demo_verifier_qa_only"`,
     response: pretty(responseBodies.report),
     status: "200",
+  },
+  ledgerChain: {
+    title: "Hash-chain export — not a diploma VALID",
+    request: `GET $BASE/api/v1/ledger/chain`,
+    curl: `curl -sS "$BASE/api/v1/ledger/chain"`,
+    response: pretty(responseBodies.ledgerChain),
+    status: "200",
+  },
+  ledgerVerify: {
+    title: "Recompute Merkle root — diplomaEvaluated is false",
+    request: `POST $BASE/api/v1/ledger/verify
+Content-Type: application/json
+
+{"format":"matrixly.ledger.v1","model":"hash-chain","merkleRoot":"sha256:…","blocks":[]}`,
+    curl: `curl -sS -X POST "$BASE/api/v1/ledger/verify" \\
+  -H "Content-Type: application/json" \\
+  -d @chain.json`,
+    response: pretty(responseBodies.ledgerVerify),
+    status: "200",
+  },
+  ledgerVerifyBadJson: {
+    title: "Ledger verify bad JSON — no credential status field",
+    request: `POST $BASE/api/v1/ledger/verify
+Content-Type: application/json
+
+not-json`,
+    curl: `curl -sS -X POST "$BASE/api/v1/ledger/verify" \\
+  -H "Content-Type: application/json" \\
+  -d 'not-json'`,
+    response: pretty(responseBodies.ledgerVerifyBadJson),
+    status: "400",
   },
   openapi: {
     title: "OpenAPI document (no key)",

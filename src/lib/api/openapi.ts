@@ -1,4 +1,5 @@
 import { responseBodies } from "./examples";
+import { LEDGER_DIPLOMA_DISCLAIMER } from "../ledger/disclaimer";
 
 export const openApiSpec = {
   openapi: "3.0.3",
@@ -197,23 +198,65 @@ export const openApiSpec = {
     },
     "/api/v1/ledger/chain": {
       get: {
-        summary: "Export the hash-chain (hashes and DIDs). Not a credential VALID.",
+        summary: "Export the hash-chain (hashes and DIDs). Not a diploma VALID.",
+        description: LEDGER_DIPLOMA_DISCLAIMER,
         security: [],
         responses: {
-          "200": { description: "matrixly.ledger.v1 + independent chainValid" },
+          "200": {
+            description: "matrixly.ledger.v1. diplomaEvaluated is always false. No credential status field.",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    format: { type: "string", example: "matrixly.ledger.v1" },
+                    chainValid: { type: "boolean" },
+                    merkleRoot: { type: "string" },
+                    diplomaEvaluated: { type: "boolean", enum: [false] },
+                    disclaimer: { type: "string", example: LEDGER_DIPLOMA_DISCLAIMER },
+                  },
+                },
+                example: responseBodies.ledgerChain,
+              },
+            },
+          },
           "503": { description: "Fabric adapter has no independent dump" },
         },
       },
     },
     "/api/v1/ledger/verify": {
       post: {
-        summary: "Recompute block hashes of a ledger export. Never returns credential VALID.",
+        summary: "Recompute block hashes of a ledger export. Never diploma VALID.",
+        description: LEDGER_DIPLOMA_DISCLAIMER,
         security: [],
         requestBody: {
           required: true,
           content: { "application/json": { schema: { type: "object" } } },
         },
-        responses: { "200": { description: "chainValid, length, reason" } },
+        responses: {
+          "200": {
+            description: "chainValid, merkleRoot, diplomaEvaluated=false, disclaimer. No status: VALID.",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    chainValid: { type: "boolean" },
+                    diplomaEvaluated: { type: "boolean", enum: [false] },
+                    disclaimer: { type: "string", example: LEDGER_DIPLOMA_DISCLAIMER },
+                    merkleRoot: { type: "string" },
+                    reason: { type: "string" },
+                  },
+                },
+                example: responseBodies.ledgerVerify,
+              },
+            },
+          },
+          "400": {
+            description: "Not JSON. Does not return credential status INVALID.",
+            content: { "application/json": { example: responseBodies.ledgerVerifyBadJson } },
+          },
+        },
       },
     },
     "/healthz": {

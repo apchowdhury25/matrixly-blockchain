@@ -1,6 +1,6 @@
 {
   "base": "http://127.0.0.1:8080",
-  "when": "2026-08-22T03:48:40.686Z",
+  "when": "2026-08-22T03:50:52.681Z",
   "pass": 75,
   "fail": 0,
   "blocked": 0,
@@ -111,7 +111,7 @@
       "id": "TC-6.1",
       "title": "Signed report exists after verify",
       "status": "PASS",
-      "notes": "reportRef 9XIDYkJ80Cef"
+      "notes": "reportRef 31AfJAQW7_pA"
     },
     {
       "id": "TC-6.2",
@@ -159,7 +159,7 @@
       "id": "TC-8.4",
       "title": "OpenAPI",
       "status": "PASS",
-      "notes": "openapi has /api/v1/verify"
+      "notes": "openapi has /api/v1/verify + ledger disclaimer"
     },
     {
       "id": "TC-9.1",
@@ -417,7 +417,7 @@
       "id": "TC-17.1",
       "title": "Chain export",
       "status": "PASS",
-      "notes": "length 430"
+      "notes": "length 571"
     },
     {
       "id": "TC-17.2",
