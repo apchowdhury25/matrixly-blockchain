@@ -1,6 +1,6 @@
 import { signDocument, verificationMethodId } from "../crypto/ed25519";
 import { sha256Utf8 } from "../crypto/hash";
-import { UNIVERSITY_DEGREE_SCHEMA_ID } from "../schema/university-degree";
+import { UNIVERSITY_DEGREE_SCHEMA_ID, validateCredentialSchema } from "../schema/university-degree";
 import { canonicalize } from "../crypto/jcs";
 import { VC_CONTEXT_V2, type IssuedCredential, type UnsecuredCredential } from "./types";
 
@@ -61,6 +61,10 @@ export function issueCredential(input: IssueInput): IssuedCredential {
     throw new Error("verificationMethod is required when issuer DID is not did:key");
   }
   const unsecured = buildUnsecuredCredential(input);
+  const schemaErrors = validateCredentialSchema(unsecured as unknown as Record<string, unknown>);
+  if (schemaErrors.length) {
+    throw new Error(`Refusing to issue a credential that fails JsonSchema: ${schemaErrors.join("; ")}`);
+  }
   const signed = signDocument(unsecured, input.secretKey, {
     created: input.validFrom,
     verificationMethod: input.verificationMethod ?? verificationMethodId(input.issuerDid),

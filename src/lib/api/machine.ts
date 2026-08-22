@@ -1,5 +1,6 @@
 import type { VerificationResult } from "../verification/pipeline";
 import type { PresentationResult } from "../credentials/presentation";
+import { LEGAL_LIABILITY_SHORT, LEGAL_PATH } from "../legal/liability";
 
 export type MachineChecks = {
   issuerRegistered: boolean;
@@ -8,6 +9,7 @@ export type MachineChecks = {
   ledgerProof: boolean;
   signedStatusList: boolean | null;
   schemaAnchored: boolean | null;
+  schemaValid: boolean | null;
   credentialActive: boolean;
   holderPresentationProof?: boolean;
 };
@@ -23,6 +25,7 @@ export type MachineVerification = {
   reportRef?: string;
   reportHash?: string;
   reasons: string[];
+  notices?: { legal: string; liability: string };
   /** Omitted unless the caller explicitly asks. Never required for authenticity. */
   subject?: { name?: string; credentialTitle?: string };
 };
@@ -47,6 +50,7 @@ export function toMachineResult(
     ledgerProof: result.ledgerProofValid,
     signedStatusList: result.statusListValid ?? null,
     schemaAnchored: result.schemaAnchored ?? null,
+    schemaValid: result.schemaValid ?? null,
     credentialActive: result.credentialActive,
   };
   if (presentation.holderProofValid !== undefined) {
@@ -63,6 +67,7 @@ export function toMachineResult(
     reportRef: extra?.reportRef,
     reportHash: extra?.reportHash,
     reasons: result.reasons,
+    notices: { legal: LEGAL_PATH, liability: LEGAL_LIABILITY_SHORT },
   };
   if (extra?.includeSubject) {
     body.subject = { name: extra.holderName, credentialTitle: extra.degreeName };

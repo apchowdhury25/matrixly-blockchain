@@ -23,6 +23,8 @@ export type VerifyView = {
   issued?: string;
   documentHash?: string;
   ledgerBlockHash?: string;
+  schemaValid?: boolean | null;
+  schemaAnchored?: boolean | null;
   holderName?: string;
   degreeName?: string;
   opaqueRef?: string;
@@ -108,6 +110,11 @@ export function ResultCard({ result }: { result: VerifyView }) {
             skip={result.documentIntegrityValid === null}
           />
           <Flag ok={result.ledgerProofValid} label="Ledger proof" />
+          <Flag
+            ok={result.schemaValid ?? null}
+            label="JsonSchema"
+            skip={result.schemaValid === undefined || result.schemaValid === null}
+          />
           <Flag
             ok={result.statusListValid ?? null}
             label="Signed status list"

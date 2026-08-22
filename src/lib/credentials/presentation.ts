@@ -92,6 +92,7 @@ export async function verifyPresentation(
     ledgerProofValid: false,
     statusListValid: null,
     schemaAnchored: null,
+    schemaValid: null,
     credentialActive: false,
     expired: false,
     revoked: false,

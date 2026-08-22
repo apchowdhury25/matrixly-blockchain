@@ -81,6 +81,20 @@ export const COMPLIANCE_MATRIX: ComplianceControl[] = [
     evidence: "registerSchema; schemaAnchored check; x-schema-hash",
   },
   {
+    id: "SCH-03",
+    area: "Schema",
+    control: "Credential instances are validated against the published JsonSchema at issue and verify; mismatch is INVALID",
+    status: "implemented",
+    evidence: "validateAgainstSchema; schemaValid; issue refuses unknown schema ids",
+  },
+  {
+    id: "LGL-01",
+    area: "Legal",
+    control: "Verification results are not a legal determination; limitation of liability is published",
+    status: "implemented",
+    evidence: "/legal ; notices.liability on verifier API; not attorney-reviewed",
+  },
+  {
     id: "DLT-01",
     area: "Ledger",
     control: "Hashes and DIDs on an append-only ledger; original files stay off-chain",

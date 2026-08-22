@@ -9,6 +9,8 @@ import {
 
 const valid = {
   type: ["VerifiableCredential", "UniversityDegreeCredential"],
+  issuer: { id: "did:key:zTest" },
+  validFrom: "2026-08-20T00:00:00.000Z",
   credentialSchema: { id: UNIVERSITY_DEGREE_SCHEMA_ID, type: "JsonSchema" },
   credentialSubject: {
     name: "Alex Rivera",
@@ -47,6 +49,29 @@ test("unknown schema id is refused, never skipped", () => {
 test("absent schema is not an error (legacy credentials still verify)", () => {
   const { credentialSchema: _omit, ...legacy } = valid;
   assert.deepEqual(validateCredentialSchema(legacy), []);
+});
+
+test("issue refuses a subject that fails the published schema", async () => {
+  const { issueCredential } = await import("../credentials/issue");
+  const { generateEd25519KeyPair, encodeDidKey } = await import("../crypto/ed25519");
+  const keys = generateEd25519KeyPair();
+  try {
+    issueCredential({
+      credentialId: "urn:uuid:bad-schema",
+      issuerDid: encodeDidKey(keys.publicKey),
+      issuerName: "Global University",
+      subjectName: "",
+      degreeName: "Bachelor of Computer Science",
+      validFrom: "2026-08-20T00:00:00.000Z",
+      documentHash: "sha256:" + "ab".repeat(32),
+      statusListCredentialId: "https://trust.matrixly.ai/credentials/status/demo",
+      statusListIndex: 0,
+      secretKey: keys.secretKey,
+    });
+    assert.fail("issued empty name");
+  } catch (err) {
+    assert.match((err as Error).message, /JsonSchema|minLength/);
+  }
 });
 
 test("schema hash is JCS SHA-256 of the published document", () => {

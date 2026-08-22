@@ -19,8 +19,9 @@ function SchemaPage() {
         <p className="mt-4 max-w-2xl text-ink-soft">
           New diplomas include{" "}
           <span className="font-mono text-sm">credentialSchema.type = JsonSchema</span>. The verifier
-          checks claims against this document <em>and</em> that its SHA-256 is on the ledger. Unknown
-          schema ids fail closed. This is not a full JSON Schema 2020-12 processor.
+          checks claims against this document automatically (type, required, minLength, pattern)
+          and that its SHA-256 is on the ledger. Unknown schema ids fail closed. This is not a
+          full JSON Schema 2020-12 processor (`$ref` / `if`/`then` are not implemented).
         </p>
         <p className="mt-4 break-all font-mono text-xs text-stone">{UNIVERSITY_DEGREE_SCHEMA_ID}</p>
         <p className="mt-2 break-all font-mono text-xs text-stone">{meta.schemaHash}</p>

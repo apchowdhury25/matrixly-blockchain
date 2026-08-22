@@ -271,7 +271,10 @@ await liveCase("TC-8.2", "Demo VALID", async () => {
   const { json } = await verifyApi({ ref: "demo-valid-bcs" });
   if (json.status !== "VALID") throw new Error(String(json.status));
   if (checks(json).schemaAnchored !== true) throw new Error("schemaAnchored not true");
-  return "VALID + schemaAnchored";
+  if (checks(json).schemaValid !== true) throw new Error("schemaValid not true");
+  const notices = json.notices as { legal?: string; liability?: string } | undefined;
+  if (!notices?.legal || !/legal/i.test(notices.legal)) throw new Error("missing legal notice");
+  return "VALID + schemaAnchored + schemaValid";
 });
 
 await liveCase("TC-8.3", "Tamper via API", async () => {
@@ -561,6 +564,14 @@ await liveCase("TC-16.6", "Invalid invite URL", async () => {
 unitCase("TC-16.7", "ISSUER cannot manage members", () => {
   if (hasPermission("ISSUER", "manageMembers")) throw new Error("true");
   return "false";
+});
+
+await liveCase("TC-N.5", "Legal liability page", async () => {
+  const { status, text } = await html("/legal");
+  if (status !== 200) throw new Error(`HTTP ${status}`);
+  if (!/not a legal determination/i.test(text)) throw new Error("missing liability clause");
+  if (!/not attorney-reviewed/i.test(text)) throw new Error("missing honesty");
+  return "200";
 });
 
 await liveCase("TC-N.1", "SOC 2 not claimed", async () => {

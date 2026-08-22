@@ -15,6 +15,7 @@ import { Route as ChainRouteImport } from './routes/chain'
 import { Route as ComplianceRouteImport } from './routes/compliance'
 import { Route as DevelopersRouteImport } from './routes/developers'
 import { Route as HealthzRouteImport } from './routes/healthz'
+import { Route as LegalRouteImport } from './routes/legal'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as OpsRouteImport } from './routes/ops'
 import { Route as ReadyzRouteImport } from './routes/readyz'
@@ -97,6 +98,11 @@ const DevelopersRoute = DevelopersRouteImport.update({
 const HealthzRoute = HealthzRouteImport.update({
   id: '/healthz',
   path: '/healthz',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LegalRoute = LegalRouteImport.update({
+  id: '/legal',
+  path: '/legal',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -377,6 +383,7 @@ export interface FileRoutesByFullPath {
   '/compliance': typeof ComplianceRoute
   '/developers': typeof DevelopersRoute
   '/healthz': typeof HealthzRoute
+  '/legal': typeof LegalRoute
   '/login': typeof LoginRoute
   '/ops': typeof OpsRoute
   '/readyz': typeof ReadyzRoute
@@ -436,6 +443,7 @@ export interface FileRoutesByTo {
   '/compliance': typeof ComplianceRoute
   '/developers': typeof DevelopersRoute
   '/healthz': typeof HealthzRoute
+  '/legal': typeof LegalRoute
   '/login': typeof LoginRoute
   '/ops': typeof OpsRoute
   '/readyz': typeof ReadyzRoute
@@ -498,6 +506,7 @@ export interface FileRoutesById {
   '/compliance': typeof ComplianceRoute
   '/developers': typeof DevelopersRoute
   '/healthz': typeof HealthzRoute
+  '/legal': typeof LegalRoute
   '/login': typeof LoginRoute
   '/ops': typeof OpsRoute
   '/readyz': typeof ReadyzRoute
@@ -561,6 +570,7 @@ export interface FileRouteTypes {
     | '/compliance'
     | '/developers'
     | '/healthz'
+    | '/legal'
     | '/login'
     | '/ops'
     | '/readyz'
@@ -620,6 +630,7 @@ export interface FileRouteTypes {
     | '/compliance'
     | '/developers'
     | '/healthz'
+    | '/legal'
     | '/login'
     | '/ops'
     | '/readyz'
@@ -681,6 +692,7 @@ export interface FileRouteTypes {
     | '/compliance'
     | '/developers'
     | '/healthz'
+    | '/legal'
     | '/login'
     | '/ops'
     | '/readyz'
@@ -743,6 +755,7 @@ export interface RootRouteChildren {
   ComplianceRoute: typeof ComplianceRoute
   DevelopersRoute: typeof DevelopersRoute
   HealthzRoute: typeof HealthzRoute
+  LegalRoute: typeof LegalRoute
   LoginRoute: typeof LoginRoute
   OpsRoute: typeof OpsRoute
   ReadyzRoute: typeof ReadyzRoute
@@ -826,6 +839,13 @@ declare module '@tanstack/react-router' {
       path: '/healthz'
       fullPath: '/healthz'
       preLoaderRoute: typeof HealthzRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/legal': {
+      id: '/legal'
+      path: '/legal'
+      fullPath: '/legal'
+      preLoaderRoute: typeof LegalRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -1256,6 +1276,7 @@ const rootRouteChildren: RootRouteChildren = {
   ComplianceRoute: ComplianceRoute,
   DevelopersRoute: DevelopersRoute,
   HealthzRoute: HealthzRoute,
+  LegalRoute: LegalRoute,
   LoginRoute: LoginRoute,
   OpsRoute: OpsRoute,
   ReadyzRoute: ReadyzRoute,

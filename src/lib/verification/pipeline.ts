@@ -30,6 +30,7 @@ export type VerificationResult = {
   ledgerProofValid: boolean;
   statusListValid: boolean | null;
   schemaAnchored: boolean | null;
+  schemaValid: boolean | null;
   credentialActive: boolean;
   expired: boolean;
   revoked: boolean;
@@ -89,6 +90,7 @@ export async function verifyCredential(
     ledgerProofValid: false,
     statusListValid: null,
     schemaAnchored: null,
+    schemaValid: null,
     credentialActive: false,
     expired: false,
     revoked: false,
@@ -106,9 +108,11 @@ export async function verifyCredential(
   }
   const schemaErrors = validateCredentialSchema(input.credential);
   if (schemaErrors.length) {
+    result.schemaValid = false;
     reasons.push(...schemaErrors);
     return result;
   }
+  if (input.credential.credentialSchema) result.schemaValid = true;
 
   const credentialId = String(input.credential.id);
   const issuerDid = issuerDidOf(input.credential);
@@ -313,6 +317,7 @@ function finalize(result: VerificationResult, policy: VerifierPolicy): Verificat
     result.ledgerProofValid &&
     result.documentIntegrityValid !== false &&
     result.schemaAnchored !== false &&
+    result.schemaValid !== false &&
     (result.statusListValid === true || result.statusListValid === null) &&
     result.credentialActive &&
     policyReasons.length === 0
@@ -326,6 +331,7 @@ function finalize(result: VerificationResult, policy: VerifierPolicy): Verificat
     result.ledgerProofValid &&
     result.documentIntegrityValid !== false &&
     result.schemaAnchored !== false &&
+    result.schemaValid !== false &&
     result.statusListValid === true &&
     !result.revoked &&
     !result.superseded &&

@@ -114,7 +114,10 @@ function Home() {
         </section>
       </main>
       <footer className="border-t border-rule py-8 text-center text-sm text-stone">
-        Matrixly Trust · cryptographic evidence over application assertions
+        Matrixly Trust · cryptographic evidence over application assertions ·{" "}
+        <Link to="/legal" className="underline underline-offset-4">
+          Legal
+        </Link>
       </footer>
     </div>
   );

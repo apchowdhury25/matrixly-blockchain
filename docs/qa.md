@@ -36,6 +36,7 @@ Quick index (full procedures in STEPS.md):
 | 15 Schema ledger | Schema page + `x-schema-hash` | Anchored; demo VALID with `schemaAnchored` |
 | 16 Team | `/app/team` | Invite token shown once; last admin cannot be removed |
 | 17 Ledger export | `/chain` + `GET /api/v1/ledger/chain` | Independent `chainValid`; tamper not VALID |
+| Legal | `/legal` | Results are not a legal determination |
 
 Always re-run `npm run test:qa` and the [minimum ship set](CASES.md#minimum-ship-set-every-phase) after a change.
 

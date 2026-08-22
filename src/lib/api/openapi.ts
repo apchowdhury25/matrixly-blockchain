@@ -1,5 +1,6 @@
 import { responseBodies } from "./examples";
 import { LEDGER_DIPLOMA_DISCLAIMER } from "../ledger/disclaimer";
+import { LEGAL_LIABILITY_SHORT } from "../legal/liability";
 
 export const openApiSpec = {
   openapi: "3.0.3",
@@ -7,7 +8,7 @@ export const openApiSpec = {
     title: "Matrixly Trust Verifier API",
     version: "1.0.0",
     description:
-      "Machine verification of W3C Verifiable Credentials. Authenticity is decided by Ed25519, SHA-256, a signed status list, and a ledger anchor — not by a database VALID flag. API keys are hashed at rest; the secret is shown once.",
+      "Machine verification of W3C Verifiable Credentials. Authenticity is decided by Ed25519, SHA-256, a signed status list, and a ledger anchor — not by a database VALID flag. A VALID result is not a legal determination. See /legal. API keys are hashed at rest; the secret is shown once.",
   },
   servers: [{ url: "/", description: "This deployment" }],
   security: [{ bearerAuth: [] }],
@@ -25,6 +26,7 @@ export const openApiSpec = {
     "/api/v1/verify": {
       post: {
         summary: "Verify a credential or presentation",
+        description: `${LEGAL_LIABILITY_SHORT} checks.schemaValid is instance validation against the published JsonSchema.`,
         requestBody: {
           required: true,
           content: {

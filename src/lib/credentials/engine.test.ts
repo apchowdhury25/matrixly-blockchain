@@ -61,6 +61,7 @@ test("TEST A: one-byte document mutation fails integrity", async () => {
   });
   const ok = await verifyCredential({ credential, documentBytes: original, statusListCredential }, ledger);
   assert.equal(ok.status, "VALID");
+  assert.equal(ok.schemaValid, true);
   const mutated = tamperOneByte(original);
   const bad = await verifyCredential({ credential, documentBytes: mutated, statusListCredential }, ledger);
   assert.equal(bad.documentIntegrityValid, false);
@@ -366,32 +367,26 @@ test("status list is resolved from credentialStatus URL via loader", async () =>
   assert.equal(missing.statusListValid, false);
 });
 
-test("unknown credentialSchema id never returns VALID", async () => {
-  const { keys, did, ledger, statusListCredential } = await setupIssuer();
-  await ledger.registerIssuer({
-    issuerId: did,
-    issuerDid: did,
-    name: "Global University",
-    status: "ACTIVE",
-    publicKeyMultibase: did.slice("did:key:".length),
-  });
+test("unknown credentialSchema id is refused at issue and never VALID", async () => {
+  const { keys, did } = await setupIssuer();
   const documentHash = sha256Bytes(new TextEncoder().encode("doc-schema")).prefixed;
-  const credential = issueCredential({
-    credentialId: "urn:uuid:test-schema",
-    issuerDid: did,
-    issuerName: "Global University",
-    subjectName: "Alex Rivera",
-    degreeName: "Bachelor of Computer Science",
-    validFrom: "2026-08-20T00:00:00.000Z",
-    documentHash,
-    statusListCredentialId: "https://trust.matrixly.ai/credentials/status/demo",
-    statusListIndex: 0,
-    secretKey: keys.secretKey,
-    schemaId: "https://evil.example/schema.json",
-  });
-  const result = await verifyCredential({ credential, statusListCredential }, ledger);
-  assert.equal(result.status, "INVALID");
-  assert.match(result.reasons.join(" "), /Unknown credentialSchema/);
+  assert.throws(
+    () =>
+      issueCredential({
+        credentialId: "urn:uuid:test-schema",
+        issuerDid: did,
+        issuerName: "Global University",
+        subjectName: "Alex Rivera",
+        degreeName: "Bachelor of Computer Science",
+        validFrom: "2026-08-20T00:00:00.000Z",
+        documentHash,
+        statusListCredentialId: "https://trust.matrixly.ai/credentials/status/demo",
+        statusListIndex: 0,
+        secretKey: keys.secretKey,
+        schemaId: "https://evil.example/schema.json",
+      }),
+    /JsonSchema|Unknown credentialSchema/,
+  );
 });
 
 test("credentialSchema must be anchored on the ledger with the published hash", async () => {

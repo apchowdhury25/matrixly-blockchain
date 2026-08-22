@@ -1,7 +1,7 @@
 {
   "base": "http://127.0.0.1:8080",
-  "when": "2026-08-22T03:50:52.681Z",
-  "pass": 75,
+  "when": "2026-08-22T03:56:59.616Z",
+  "pass": 76,
   "fail": 0,
   "blocked": 0,
   "rows": [
@@ -45,7 +45,7 @@
       "id": "TC-2.1",
       "title": "Public keys only (DID page)",
       "status": "PASS",
-      "notes": "did:key:z6MksTFUXzwu78R4… public"
+      "notes": "did:key:z6MksxSPBJqvY1Jw… public"
     },
     {
       "id": "TC-2.2",
@@ -111,7 +111,7 @@
       "id": "TC-6.1",
       "title": "Signed report exists after verify",
       "status": "PASS",
-      "notes": "reportRef 31AfJAQW7_pA"
+      "notes": "reportRef h9TmgXidi42V"
     },
     {
       "id": "TC-6.2",
@@ -147,7 +147,7 @@
       "id": "TC-8.2",
       "title": "Demo VALID",
       "status": "PASS",
-      "notes": "VALID + schemaAnchored"
+      "notes": "VALID + schemaAnchored + schemaValid"
     },
     {
       "id": "TC-8.3",
@@ -390,6 +390,12 @@
       "notes": "false"
     },
     {
+      "id": "TC-N.5",
+      "title": "Legal liability page",
+      "status": "PASS",
+      "notes": "200"
+    },
+    {
       "id": "TC-N.1",
       "title": "SOC 2 not claimed",
       "status": "PASS",
@@ -417,7 +423,7 @@
       "id": "TC-17.1",
       "title": "Chain export",
       "status": "PASS",
-      "notes": "length 571"
+      "notes": "length 61"
     },
     {
       "id": "TC-17.2",

@@ -28,6 +28,8 @@ A green badge that skipped a failed cryptographic check is a defect, not a contr
 | STS-02 | Status | Status list is resolved from `credentialStatus.statusListCredential` URL; SSRF blocked | implemented | `GET /credentials/status/{id}` |
 | SCH-01 | Schema | W3C credentialSchema JsonSchema for UniversityDegreeCredential; unknown ids fail closed | implemented | `/schemas/university-degree-credential.json` |
 | SCH-02 | Schema | Published JsonSchema is hashed (JCS SHA-256) and registered on the ledger | implemented | `registerSchema`; `schemaAnchored`; `x-schema-hash` |
+| SCH-03 | Schema | Credential instances validated against the published JsonSchema at issue and verify | implemented | `validateAgainstSchema`; `schemaValid` |
+| LGL-01 | Legal | Verification results are not a legal determination; limitation of liability is published | implemented | `/legal` ; `notices.liability` |
 | DLT-01 | Ledger | Hashes and DIDs on an append-only ledger; original files stay off-chain | implemented | HashChainLedgerAdapter; document bytes in object storage |
 | DLT-02 | Ledger | Hyperledger Fabric is not faked; missing Gateway fails closed | fail-closed | FabricLedgerAdapter throws; never returns a successful submit |
 | DLT-03 | Ledger | Hash-chain can be exported and recomputed independently; export is not a credential VALID | implemented | `GET /api/v1/ledger/chain` ; RFC 6962 `merkleRoot` ; `POST /api/v1/ledger/verify` ; `/chain` |
