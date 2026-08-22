@@ -219,6 +219,20 @@ matrixly-event-id: wh_…
           already-signed W3C VC. Authorization code, SD-JWT, and mdoc are refused. This is not HAIP
           certification.
         </p>
+
+        <h2 className="mt-10 font-display text-2xl">Status lists and schema</h2>
+        <p className="mt-3 leading-relaxed text-ink-soft">
+          Revocation is a signed Bitstring Status List credential at{" "}
+          <span className="font-mono text-sm">credentialStatus.statusListCredential</span>. Fetch{" "}
+          <a href="/credentials/status/demo" className="underline underline-offset-4">
+            /credentials/status/demo
+          </a>
+          . Loopback URLs are refused. New diplomas include{" "}
+          <Link to="/schemas/university-degree" className="underline underline-offset-4">
+            UniversityDegreeCredential JsonSchema
+          </Link>
+          . Unknown schema ids fail closed.
+        </p>
       </article>
     </div>
   );

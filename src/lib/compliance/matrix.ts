@@ -60,6 +60,20 @@ export const COMPLIANCE_MATRIX: ComplianceControl[] = [
     evidence: "Signed status list credential + bit",
   },
   {
+    id: "STS-02",
+    area: "Status",
+    control: "Status list is resolved from credentialStatus.statusListCredential URL; SSRF blocked",
+    status: "implemented",
+    evidence: "GET /credentials/status/{id}; verifier does not use a side-channel issuer_id lookup",
+  },
+  {
+    id: "SCH-01",
+    area: "Schema",
+    control: "W3C credentialSchema JsonSchema for UniversityDegreeCredential; unknown ids fail closed",
+    status: "implemented",
+    evidence: "/schemas/university-degree-credential.json",
+  },
+  {
     id: "DLT-01",
     area: "Ledger",
     control: "Hashes and DIDs on an append-only ledger; original files stay off-chain",

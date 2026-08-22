@@ -1,5 +1,6 @@
 import { signDocument, verificationMethodId } from "../crypto/ed25519";
 import { sha256Utf8 } from "../crypto/hash";
+import { UNIVERSITY_DEGREE_SCHEMA_ID } from "../schema/university-degree";
 import { canonicalize } from "../crypto/jcs";
 import { VC_CONTEXT_V2, type IssuedCredential, type UnsecuredCredential } from "./types";
 
@@ -14,7 +15,7 @@ export type IssueInput = {
   validFrom: string;
   validUntil?: string;
   documentHash: string;
-  schemaId?: string;
+  schemaId?: string | null;
   statusListCredentialId: string;
   statusListIndex: number;
   secretKey: Uint8Array;
@@ -46,8 +47,11 @@ export function buildUnsecuredCredential(input: IssueInput): UnsecuredCredential
     },
   };
   if (input.validUntil) credential.validUntil = input.validUntil;
-  if (input.schemaId) {
-    credential.credentialSchema = { id: input.schemaId, type: "JsonSchema" };
+  if (input.schemaId !== null) {
+    credential.credentialSchema = {
+      id: input.schemaId ?? UNIVERSITY_DEGREE_SCHEMA_ID,
+      type: "JsonSchema",
+    };
   }
   return credential;
 }

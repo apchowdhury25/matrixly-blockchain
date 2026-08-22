@@ -222,5 +222,20 @@ export const openApiSpec = {
         },
       },
     },
+    "/credentials/status/{id}": {
+      get: {
+        summary: "Published Bitstring Status List credential (JSON)",
+        security: [],
+        parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
+        responses: { "200": { description: "W3C BitstringStatusListCredential" }, "404": { description: "Not found" } },
+      },
+    },
+    "/schemas/university-degree-credential.json": {
+      get: {
+        summary: "UniversityDegreeCredential JsonSchema",
+        security: [],
+        responses: { "200": { description: "JSON Schema document" } },
+      },
+    },
   },
 } as const;

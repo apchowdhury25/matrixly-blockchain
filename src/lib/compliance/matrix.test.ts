@@ -21,3 +21,8 @@ test("OpenID4VP is implemented; HAIP is not claimed", () => {
   assert.equal(COMPLIANCE_MATRIX.find((c) => c.id === "OID-02")?.status, "not-claimed");
   assert.equal(COMPLIANCE_MATRIX.find((c) => c.id === "OID-03")?.status, "implemented");
 });
+
+test("status list URL resolution and JsonSchema are implemented", () => {
+  assert.equal(COMPLIANCE_MATRIX.find((c) => c.id === "STS-02")?.status, "implemented");
+  assert.equal(COMPLIANCE_MATRIX.find((c) => c.id === "SCH-01")?.status, "implemented");
+});

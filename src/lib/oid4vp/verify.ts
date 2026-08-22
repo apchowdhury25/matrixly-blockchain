@@ -2,6 +2,7 @@ import { credentialFromPresentation, verifyPresentation, type PresentationResult
 import type { DistributedLedgerAdapter } from "../ledger/adapter";
 import { matchCredentialToDcql, parseDcqlQuery } from "./dcql";
 import type { AuthorizationRequest } from "./request";
+import type { StatusListResolveOptions } from "../status/resolve";
 import { parseVpToken } from "./vp-token";
 
 export type Oid4vpVerifyInput = {
@@ -10,6 +11,7 @@ export type Oid4vpVerifyInput = {
   state?: string;
   documentBytes?: Uint8Array;
   statusListCredential?: Record<string, unknown>;
+  statusListResolve?: StatusListResolveOptions;
   now?: Date;
 };
 
@@ -60,6 +62,7 @@ export async function verifyOid4vpSubmission(
   const result = await verifyPresentation(presentation, ledger, {
     documentBytes: input.documentBytes,
     statusListCredential: input.statusListCredential,
+    statusListResolve: input.statusListResolve,
     now: input.now,
     expectedChallenge: input.request.nonce,
     expectedDomain: input.request.client_id,

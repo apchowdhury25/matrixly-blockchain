@@ -579,6 +579,32 @@ Home playground four outcomes still hold. OpenID4VP still works.
 
 ---
 
+## Phase 13 — Status list URL and JsonSchema
+
+### 13.1 Published status list JSON
+
+Open `/credentials/status/demo` (or the machine-document link on the demo status page).
+
+**PASS if** the JSON `type` includes `BitstringStatusListCredential` and a Data Integrity `proof` is present.
+
+### 13.2 Schema page
+
+Open **Schema** in the header (or `/schemas/university-degree`).
+
+**PASS if** the published `$id` is `https://trust.matrixly.ai/schemas/university-degree-credential.json` and the machine-readable JSON is served.
+
+### 13.3 Verify still independent
+
+Run the home playground **Original PDF**.
+
+**PASS if** VALID. Status was resolved from the credential's status list URL, not from a UI checkbox.
+
+### 13.4 Regression
+
+OpenID4VCI page still loads. Tamper / revoked / expired still fail.
+
+---
+
 ## Traps (do not mis-score)
 
 | Action | Wrong reading | Correct |
@@ -594,5 +620,5 @@ Home playground four outcomes still hold. OpenID4VP still works.
 | Webhook FAILED | “Phase 9 is broken” | Unreachable HTTPS is FAILED; the signature must still exist |
 | did:web 404 | “Skip the DID check” | Fetch failure is INVALID, never VALID |
 | OpenID4VP preview wallet | “We are HAIP certified” | W3C VP + DCQL only; OID-02 is not-claimed |
-| OpenID4VCI preview wallet | “We re-issued the diploma” | Delivery copies the existing signed VC |
+| Schema page | “We run a full JSON Schema 2020-12 processor” | Published university-degree rules only |
 

@@ -35,6 +35,8 @@ import { Route as Oid4vpIndexRouteImport } from './routes/oid4vp/index'
 import { Route as Oid4vpIdRouteImport } from './routes/oid4vp/$id'
 import { Route as PresentRefRouteImport } from './routes/present.$ref'
 import { Route as ReportRefRouteImport } from './routes/report.$ref'
+import { Route as SchemasUniversityDegreeRouteImport } from './routes/schemas/university-degree'
+import { Route as SchemasUniversityDegreeCredentialDotjsonRouteImport } from './routes/schemas/university-degree-credential[.]json'
 import { Route as StatusIdRouteImport } from './routes/status.$id'
 import { Route as VerifyIndexRouteImport } from './routes/verify/index'
 import { Route as VerifyRefRouteImport } from './routes/verify/$ref'
@@ -42,6 +44,7 @@ import { Route as WalletIndexRouteImport } from './routes/wallet/index'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as ApiV1OpenapiDotjsonRouteImport } from './routes/api/v1/openapi[.]json'
 import { Route as ApiV1VerifyRouteImport } from './routes/api/v1/verify'
+import { Route as CredentialsStatusIdRouteImport } from './routes/credentials/status.$id'
 import { Route as WalletClaimTokenRouteImport } from './routes/wallet/claim.$token'
 import { Route as ApiV1DidWebSlugRouteImport } from './routes/api/v1/did-web.$slug'
 import { Route as ApiV1EvidenceRefRouteImport } from './routes/api/v1/evidence.$ref'
@@ -187,6 +190,17 @@ const ReportRefRoute = ReportRefRouteImport.update({
   path: '/report/$ref',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SchemasUniversityDegreeRoute = SchemasUniversityDegreeRouteImport.update({
+  id: '/schemas/university-degree',
+  path: '/schemas/university-degree',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SchemasUniversityDegreeCredentialDotjsonRoute =
+  SchemasUniversityDegreeCredentialDotjsonRouteImport.update({
+    id: '/schemas/university-degree-credential.json',
+    path: '/schemas/university-degree-credential.json',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const StatusIdRoute = StatusIdRouteImport.update({
   id: '/status/$id',
   path: '/status/$id',
@@ -220,6 +234,11 @@ const ApiV1OpenapiDotjsonRoute = ApiV1OpenapiDotjsonRouteImport.update({
 const ApiV1VerifyRoute = ApiV1VerifyRouteImport.update({
   id: '/api/v1/verify',
   path: '/api/v1/verify',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CredentialsStatusIdRoute = CredentialsStatusIdRouteImport.update({
+  id: '/credentials/status/$id',
+  path: '/credentials/status/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
 const WalletClaimTokenRoute = WalletClaimTokenRouteImport.update({
@@ -314,6 +333,8 @@ export interface FileRoutesByFullPath {
   '/oid4vp/$id': typeof Oid4vpIdRoute
   '/present/$ref': typeof PresentRefRoute
   '/report/$ref': typeof ReportRefRoute
+  '/schemas/university-degree': typeof SchemasUniversityDegreeRoute
+  '/schemas/university-degree-credential.json': typeof SchemasUniversityDegreeCredentialDotjsonRoute
   '/status/$id': typeof StatusIdRoute
   '/verify/$ref': typeof VerifyRefRoute
   '/app/': typeof AppIndexRoute
@@ -324,6 +345,7 @@ export interface FileRoutesByFullPath {
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/v1/openapi.json': typeof ApiV1OpenapiDotjsonRoute
   '/api/v1/verify': typeof ApiV1VerifyRoute
+  '/credentials/status/$id': typeof CredentialsStatusIdRoute
   '/wallet/claim/$token': typeof WalletClaimTokenRoute
   '/api/v1/did-web/$slug': typeof ApiV1DidWebSlugRoute
   '/api/v1/evidence/$ref': typeof ApiV1EvidenceRefRoute
@@ -360,6 +382,8 @@ export interface FileRoutesByTo {
   '/oid4vp/$id': typeof Oid4vpIdRoute
   '/present/$ref': typeof PresentRefRoute
   '/report/$ref': typeof ReportRefRoute
+  '/schemas/university-degree': typeof SchemasUniversityDegreeRoute
+  '/schemas/university-degree-credential.json': typeof SchemasUniversityDegreeCredentialDotjsonRoute
   '/status/$id': typeof StatusIdRoute
   '/verify/$ref': typeof VerifyRefRoute
   '/app': typeof AppIndexRoute
@@ -370,6 +394,7 @@ export interface FileRoutesByTo {
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/v1/openapi.json': typeof ApiV1OpenapiDotjsonRoute
   '/api/v1/verify': typeof ApiV1VerifyRoute
+  '/credentials/status/$id': typeof CredentialsStatusIdRoute
   '/wallet/claim/$token': typeof WalletClaimTokenRoute
   '/api/v1/did-web/$slug': typeof ApiV1DidWebSlugRoute
   '/api/v1/evidence/$ref': typeof ApiV1EvidenceRefRoute
@@ -409,6 +434,8 @@ export interface FileRoutesById {
   '/oid4vp/$id': typeof Oid4vpIdRoute
   '/present/$ref': typeof PresentRefRoute
   '/report/$ref': typeof ReportRefRoute
+  '/schemas/university-degree': typeof SchemasUniversityDegreeRoute
+  '/schemas/university-degree-credential.json': typeof SchemasUniversityDegreeCredentialDotjsonRoute
   '/status/$id': typeof StatusIdRoute
   '/verify/$ref': typeof VerifyRefRoute
   '/app/': typeof AppIndexRoute
@@ -419,6 +446,7 @@ export interface FileRoutesById {
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/v1/openapi.json': typeof ApiV1OpenapiDotjsonRoute
   '/api/v1/verify': typeof ApiV1VerifyRoute
+  '/credentials/status/$id': typeof CredentialsStatusIdRoute
   '/wallet/claim/$token': typeof WalletClaimTokenRoute
   '/api/v1/did-web/$slug': typeof ApiV1DidWebSlugRoute
   '/api/v1/evidence/$ref': typeof ApiV1EvidenceRefRoute
@@ -459,6 +487,8 @@ export interface FileRouteTypes {
     | '/oid4vp/$id'
     | '/present/$ref'
     | '/report/$ref'
+    | '/schemas/university-degree'
+    | '/schemas/university-degree-credential.json'
     | '/status/$id'
     | '/verify/$ref'
     | '/app/'
@@ -469,6 +499,7 @@ export interface FileRouteTypes {
     | '/api/auth/$'
     | '/api/v1/openapi.json'
     | '/api/v1/verify'
+    | '/credentials/status/$id'
     | '/wallet/claim/$token'
     | '/api/v1/did-web/$slug'
     | '/api/v1/evidence/$ref'
@@ -505,6 +536,8 @@ export interface FileRouteTypes {
     | '/oid4vp/$id'
     | '/present/$ref'
     | '/report/$ref'
+    | '/schemas/university-degree'
+    | '/schemas/university-degree-credential.json'
     | '/status/$id'
     | '/verify/$ref'
     | '/app'
@@ -515,6 +548,7 @@ export interface FileRouteTypes {
     | '/api/auth/$'
     | '/api/v1/openapi.json'
     | '/api/v1/verify'
+    | '/credentials/status/$id'
     | '/wallet/claim/$token'
     | '/api/v1/did-web/$slug'
     | '/api/v1/evidence/$ref'
@@ -553,6 +587,8 @@ export interface FileRouteTypes {
     | '/oid4vp/$id'
     | '/present/$ref'
     | '/report/$ref'
+    | '/schemas/university-degree'
+    | '/schemas/university-degree-credential.json'
     | '/status/$id'
     | '/verify/$ref'
     | '/app/'
@@ -563,6 +599,7 @@ export interface FileRouteTypes {
     | '/api/auth/$'
     | '/api/v1/openapi.json'
     | '/api/v1/verify'
+    | '/credentials/status/$id'
     | '/wallet/claim/$token'
     | '/api/v1/did-web/$slug'
     | '/api/v1/evidence/$ref'
@@ -593,6 +630,8 @@ export interface RootRouteChildren {
   Oid4vpIdRoute: typeof Oid4vpIdRoute
   PresentRefRoute: typeof PresentRefRoute
   ReportRefRoute: typeof ReportRefRoute
+  SchemasUniversityDegreeRoute: typeof SchemasUniversityDegreeRoute
+  SchemasUniversityDegreeCredentialDotjsonRoute: typeof SchemasUniversityDegreeCredentialDotjsonRoute
   StatusIdRoute: typeof StatusIdRoute
   VerifyRefRoute: typeof VerifyRefRoute
   Oid4vciIndexRoute: typeof Oid4vciIndexRoute
@@ -601,6 +640,7 @@ export interface RootRouteChildren {
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ApiV1OpenapiDotjsonRoute: typeof ApiV1OpenapiDotjsonRoute
   ApiV1VerifyRoute: typeof ApiV1VerifyRoute
+  CredentialsStatusIdRoute: typeof CredentialsStatusIdRoute
   ApiV1DidWebSlugRoute: typeof ApiV1DidWebSlugRoute
   ApiV1EvidenceRefRoute: typeof ApiV1EvidenceRefRoute
   ApiV1Oid4vciCredentialRoute: typeof ApiV1Oid4vciCredentialRoute
@@ -799,6 +839,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ReportRefRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/schemas/university-degree': {
+      id: '/schemas/university-degree'
+      path: '/schemas/university-degree'
+      fullPath: '/schemas/university-degree'
+      preLoaderRoute: typeof SchemasUniversityDegreeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/schemas/university-degree-credential.json': {
+      id: '/schemas/university-degree-credential.json'
+      path: '/schemas/university-degree-credential.json'
+      fullPath: '/schemas/university-degree-credential.json'
+      preLoaderRoute: typeof SchemasUniversityDegreeCredentialDotjsonRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/status/$id': {
       id: '/status/$id'
       path: '/status/$id'
@@ -846,6 +900,13 @@ declare module '@tanstack/react-router' {
       path: '/api/v1/verify'
       fullPath: '/api/v1/verify'
       preLoaderRoute: typeof ApiV1VerifyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/credentials/status/$id': {
+      id: '/credentials/status/$id'
+      path: '/credentials/status/$id'
+      fullPath: '/credentials/status/$id'
+      preLoaderRoute: typeof CredentialsStatusIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/wallet/claim/$token': {
@@ -1002,6 +1063,9 @@ const rootRouteChildren: RootRouteChildren = {
   Oid4vpIdRoute: Oid4vpIdRoute,
   PresentRefRoute: PresentRefRoute,
   ReportRefRoute: ReportRefRoute,
+  SchemasUniversityDegreeRoute: SchemasUniversityDegreeRoute,
+  SchemasUniversityDegreeCredentialDotjsonRoute:
+    SchemasUniversityDegreeCredentialDotjsonRoute,
   StatusIdRoute: StatusIdRoute,
   VerifyRefRoute: VerifyRefRoute,
   Oid4vciIndexRoute: Oid4vciIndexRoute,
@@ -1010,6 +1074,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiV1OpenapiDotjsonRoute: ApiV1OpenapiDotjsonRoute,
   ApiV1VerifyRoute: ApiV1VerifyRoute,
+  CredentialsStatusIdRoute: CredentialsStatusIdRoute,
   ApiV1DidWebSlugRoute: ApiV1DidWebSlugRoute,
   ApiV1EvidenceRefRoute: ApiV1EvidenceRefRoute,
   ApiV1Oid4vciCredentialRoute: ApiV1Oid4vciCredentialRoute,

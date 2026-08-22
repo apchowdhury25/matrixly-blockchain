@@ -25,6 +25,9 @@ export function PublicHeader() {
           <Link to="/developers" className="hidden rounded-sm px-3 py-2 text-ink-soft hover:text-ink sm:inline">
             Developers
           </Link>
+          <Link to="/schemas/university-degree" className="hidden rounded-sm px-3 py-2 text-ink-soft hover:text-ink lg:inline">
+            Schema
+          </Link>
           <Link to="/compliance" className="hidden rounded-sm px-3 py-2 text-ink-soft hover:text-ink sm:inline">
             Compliance
           </Link>

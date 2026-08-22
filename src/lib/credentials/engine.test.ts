@@ -315,3 +315,79 @@ test("verification method id is bound to did:key", () => {
   const did = encodeDidKey(keys.publicKey);
   assert.equal(verificationMethodId(did).startsWith(did + "#z"), true);
 });
+
+test("status list is resolved from credentialStatus URL via loader", async () => {
+  const { keys, did, ledger, statusListCredential } = setupIssuer();
+  await ledger.registerIssuer({
+    issuerId: did,
+    issuerDid: did,
+    name: "Global University",
+    status: "ACTIVE",
+    publicKeyMultibase: did.slice("did:key:".length),
+  });
+  const documentHash = sha256Bytes(new TextEncoder().encode("doc-url")).prefixed;
+  const statusUrl = "https://trust.matrixly.ai/credentials/status/demo";
+  const credential = issueCredential({
+    credentialId: "urn:uuid:test-status-url",
+    issuerDid: did,
+    issuerName: "Global University",
+    subjectName: "Alex Rivera",
+    degreeName: "Bachelor of Computer Science",
+    validFrom: "2026-08-20T00:00:00.000Z",
+    documentHash,
+    statusListCredentialId: statusUrl,
+    statusListIndex: 0,
+    secretKey: keys.secretKey,
+  });
+  await ledger.registerDocumentAnchor({ documentHash, issuerDid: did, credentialId: credential.id });
+  await ledger.registerCredential({
+    credentialId: credential.id,
+    credentialHash: credentialHash(credential),
+    documentHash,
+    issuerId: did,
+    issuerDid: did,
+    status: "ACTIVE",
+    issuedAt: "2026-08-20T00:00:00.000Z",
+    version: 1,
+  });
+  const viaUrl = await verifyCredential(
+    {
+      credential,
+      statusListResolve: { loader: async (url) => (url === statusUrl ? (statusListCredential as Record<string, unknown>) : null) },
+    },
+    ledger,
+  );
+  assert.equal(viaUrl.status, "VALID");
+  assert.equal(viaUrl.statusListValid, true);
+  const missing = await verifyCredential({ credential }, ledger);
+  assert.equal(missing.status, "INVALID");
+  assert.equal(missing.statusListValid, false);
+});
+
+test("unknown credentialSchema id never returns VALID", async () => {
+  const { keys, did, ledger, statusListCredential } = setupIssuer();
+  await ledger.registerIssuer({
+    issuerId: did,
+    issuerDid: did,
+    name: "Global University",
+    status: "ACTIVE",
+    publicKeyMultibase: did.slice("did:key:".length),
+  });
+  const documentHash = sha256Bytes(new TextEncoder().encode("doc-schema")).prefixed;
+  const credential = issueCredential({
+    credentialId: "urn:uuid:test-schema",
+    issuerDid: did,
+    issuerName: "Global University",
+    subjectName: "Alex Rivera",
+    degreeName: "Bachelor of Computer Science",
+    validFrom: "2026-08-20T00:00:00.000Z",
+    documentHash,
+    statusListCredentialId: "https://trust.matrixly.ai/credentials/status/demo",
+    statusListIndex: 0,
+    secretKey: keys.secretKey,
+    schemaId: "https://evil.example/schema.json",
+  });
+  const result = await verifyCredential({ credential, statusListCredential }, ledger);
+  assert.equal(result.status, "INVALID");
+  assert.match(result.reasons.join(" "), /Unknown credentialSchema/);
+});

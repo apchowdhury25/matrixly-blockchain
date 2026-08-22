@@ -11,6 +11,7 @@ export async function getLedger(): Promise<RuntimeLedger> {
 }
 
 export { getStorage } from "@/lib/storage/factory";
+export { publishedStatusResolve } from "@/lib/status/local";
 
 export async function readDocumentBytes(
   objectName: string,

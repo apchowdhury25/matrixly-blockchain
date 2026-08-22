@@ -5,6 +5,8 @@ import { decodeStatusList, getBit } from "../credentials/status-list";
 import { verifyStatusListCredential } from "../credentials/status-list-credential";
 import { resolveDid, type ResolveDidOptions } from "../identity/resolve";
 import type { DistributedLedgerAdapter } from "../ledger/adapter";
+import { validateCredentialSchema } from "../schema/university-degree";
+import { resolveStatusListCredential, type StatusListResolveOptions } from "../status/resolve";
 import { applyPolicyReasons, DEFAULT_POLICY, type VerifierPolicy } from "./policy";
 
 export type VerificationInput = {
@@ -16,6 +18,7 @@ export type VerificationInput = {
   statusListCredential?: Record<string, unknown>;
   policy?: VerifierPolicy;
   resolve?: ResolveDidOptions;
+  statusListResolve?: StatusListResolveOptions;
 };
 
 export type VerificationResult = {
@@ -84,6 +87,11 @@ export async function verifyCredential(
   const structural = validateCredentialStructure(input.credential);
   if (structural.length) {
     reasons.push(...structural);
+    return result;
+  }
+  const schemaErrors = validateCredentialSchema(input.credential);
+  if (schemaErrors.length) {
+    reasons.push(...schemaErrors);
     return result;
   }
 
@@ -182,9 +190,19 @@ export async function verifyCredential(
     | undefined;
   let revoked = ledgerCred.status === "REVOKED";
   if (statusEntry) {
-    if (input.statusListCredential) {
+    let statusListCredential = input.statusListCredential;
+    if (!statusListCredential && statusEntry.statusListCredential) {
+      const fetched = await resolveStatusListCredential(statusEntry.statusListCredential, input.statusListResolve);
+      if (!fetched.ok) {
+        result.statusListValid = false;
+        reasons.push(fetched.reason);
+      } else {
+        statusListCredential = fetched.credential;
+      }
+    }
+    if (statusListCredential) {
       const slc = await verifyStatusListCredential(
-        input.statusListCredential,
+        statusListCredential,
         issuerDid,
         input.resolve,
       );
@@ -214,7 +232,7 @@ export async function verifyCredential(
           reasons.push(`Status list could not be decoded: ${(err as Error).message}`);
         }
       }
-    } else {
+    } else if (result.statusListValid !== false) {
       result.statusListValid = false;
       reasons.push("Signed Bitstring Status List credential was not supplied");
     }

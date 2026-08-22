@@ -25,6 +25,8 @@ A green badge that skipped a failed cryptographic check is a defect, not a contr
 | ID-03 | Identity | `did:web` documents are fetched over HTTPS; private/link-local hosts fail closed | implemented | `/did-web/{slug}` and `GET /api/v1/did-web/{slug}`; `did:ion` remains unsupported |
 | ID-04 | Identity | Universal DID resolver / `did:ion` / `did:pkh` | not-claimed | Unsupported methods return a resolution error, never VALID |
 | STS-01 | Status | Revocation via signed Bitstring Status List 1.0, not a database flag alone | implemented | Signed status list credential + bit |
+| STS-02 | Status | Status list is resolved from `credentialStatus.statusListCredential` URL; SSRF blocked | implemented | `GET /credentials/status/{id}` |
+| SCH-01 | Schema | W3C credentialSchema JsonSchema for UniversityDegreeCredential; unknown ids fail closed | implemented | `/schemas/university-degree-credential.json` |
 | DLT-01 | Ledger | Hashes and DIDs on an append-only ledger; original files stay off-chain | implemented | HashChainLedgerAdapter; document bytes in object storage |
 | DLT-02 | Ledger | Hyperledger Fabric is not faked; missing Gateway fails closed | fail-closed | FabricLedgerAdapter throws; never returns a successful submit |
 | PII-01 | Privacy | Opaque verify links; machine API omits holder names by default | implemented | `includeSubject` is opt-in; reports exclude holder PII |

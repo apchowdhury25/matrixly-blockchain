@@ -1,4 +1,4 @@
-# QA results — 21 August 2026 (Phase 12)
+# QA results — 21 August 2026 (Phase 13)
 
 Executor: Grok-Build.
 
@@ -20,30 +20,29 @@ Score: **PASS** · **FAIL** · **BLOCKED**. A phase is not done if any required 
 | 10 did:web | PASS | included | HTTPS DID documents; fail-closed fetch |
 | 11 OpenID4VP | PASS | included | DCQL + `direct_post`; nonce-bound VP |
 | 12 OpenID4VCI | PASS | included | Pre-authorized `ldp_vc`; auth code refused |
+| 13 Status + schema | PASS | included | Status list URL + published JsonSchema |
 
 ## Gate
 
 | Check | Status | Notes |
 |---|---|---|
-| `npm run test:trust` | PASS | 82 / 82 |
+| `npm run test:trust` | PASS | 95 / 95 |
 | `npm run typecheck` | PASS | |
-| Public pages HTTP 200 | PASS | Home, OpenID4VCI, metadata well-known |
+| Public pages HTTP 200 | PASS | Status JSON, schema JSON, schema page |
 | Browser smoke | PASS | |
 
-## Phase 12 — OpenID4VCI
+## Phase 13 — Status list URL and JsonSchema
 
 | Step | Status | Notes |
 |---|---|---|
-| 12.1 Issuer metadata | PASS | `university_degree_ldp_vc` format `ldp_vc`; no `dc+sd-jwt` |
-| 12.2 Preview wallet | PASS | ISSUED `urn:uuid:demo-valid-bcs`; not re-signed |
-| 12.3 Replay | PASS | Second pull: pre-authorized_code already used |
-| 12.4 Authorization code | PASS | `unsupported_grant_type` |
-| 12.5 SD-JWT | PASS | `unsupported_credential_format` |
-| 12.6 Regression | PASS | `demo-valid-bcs` still VALID; OpenID4VP page 200 |
+| 13.1 Status JSON | PASS | `BitstringStatusListCredential` + proof at `/credentials/status/demo` |
+| 13.2 Schema | PASS | `$id` `https://trust.matrixly.ai/schemas/university-degree-credential.json` |
+| 13.3 Verify | PASS | `demo-valid-bcs` VALID via URL-resolved status list |
+| 13.4 Regression | PASS | OpenID4VCI 200; typecheck/tests green |
 
 ## Verdict
 
 | Item | Status |
 |---|---|
-| Phase 12 | PASS |
-| HAIP / mdoc / authorization code not claimed | PASS |
+| Phase 13 | PASS |
+| Full JSON Schema 2020-12 processor not claimed | PASS |

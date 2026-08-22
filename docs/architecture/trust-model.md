@@ -9,12 +9,13 @@ Verifier determination of authenticity:
 5. SHA-256 of supplied document bytes equals bound `documentHash` (filename is not evidence)
 6. Document hash and credential hash exist as ledger payloads (no original bytes on-chain)
 7. Hash chain recomputes from genesis
-8. Bitstring Status List **credential** (signed) then the revocation bit
+8. Bitstring Status List **credential** fetched from `credentialStatus.statusListCredential` (signed), then the revocation bit
 9. Verifier policy `matrixly.default.v1` (signed status list, issuer on ledger, ledger anchor, unrevoked)
-10. If a presentation is supplied: holder DID resolves, holder `authentication` proof verifies, then the inner credential is verified independently
-11. If `credentialSubject.id` is bound, it must equal the presenting holder DID
-12. A signed VerificationReport is issued; its hash is ledger-anchored. Holder PII is not in the report.
-13. Machine verifiers use `POST /api/v1/verify` with a hashed Bearer key. Missing keys return 401, never VALID.
+10. If `credentialSchema` is present, it must be the published JsonSchema; unknown ids fail closed
+11. If a presentation is supplied: holder DID resolves, holder `authentication` proof verifies, then the inner credential is verified independently
+12. If `credentialSubject.id` is bound, it must equal the presenting holder DID
+13. A signed VerificationReport is issued; its hash is ledger-anchored. Holder PII is not in the report.
+14. Machine verifiers use `POST /api/v1/verify` with a hashed Bearer key. Missing keys return 401, never VALID.
 
 A central `verified = true` column is never the source of truth.
 

@@ -1,7 +1,7 @@
 import { getSql } from "@/lib/db";
 import { verifyOid4vpSubmission, type Oid4vpVerifyResult } from "./verify";
 import { buildAuthorizationRequest, walletAuthorizationUrl, type AuthorizationRequest } from "./request";
-import { getLedger, readDocumentBytes, audit } from "@/lib/trust/runtime";
+import { audit, getLedger, publishedStatusResolve, readDocumentBytes } from "@/lib/trust/runtime";
 import { persistVerificationReport } from "@/lib/verification/persist";
 import { newId } from "@/lib/trust/ids";
 import { inspectBytes } from "@/lib/crypto/inspect";
@@ -112,10 +112,6 @@ export async function submitStoredResponse(input: {
       select content_b64, object_name from documents where id = ${cred.document_id}`;
     if (docs[0]) documentBytes = await readDocumentBytes(docs[0].object_name, docs[0].content_b64);
   }
-  const lists = cred
-    ? await sql<{ credential_json: string | null }>`
-        select credential_json from status_lists where issuer_id = ${cred.issuer_id} order by updated_at desc limit 1`
-    : [];
   const ledger = await getLedger();
   const result = await verifyOid4vpSubmission(
     {
@@ -123,9 +119,7 @@ export async function submitStoredResponse(input: {
       vpToken: input.vpToken,
       state: input.state,
       documentBytes,
-      statusListCredential: lists[0]?.credential_json
-        ? (JSON.parse(lists[0].credential_json) as Record<string, unknown>)
-        : undefined,
+      statusListResolve: publishedStatusResolve(),
     },
     ledger,
   );

@@ -3,6 +3,7 @@ import { resolveDid } from "../identity/resolve";
 import type { DistributedLedgerAdapter } from "../ledger/adapter";
 import { VC_CONTEXT_V2, type IssuedCredential } from "./types";
 import { verifyCredential, type VerificationResult } from "../verification/pipeline";
+import type { StatusListResolveOptions } from "../status/resolve";
 
 export type UnsecuredPresentation = {
   "@context": string[];
@@ -78,6 +79,8 @@ export async function verifyPresentation(
     statusListCredential?: Record<string, unknown>;
     expectedChallenge?: string;
     expectedDomain?: string;
+    resolve?: import("../identity/resolve").ResolveDidOptions;
+    statusListResolve?: StatusListResolveOptions;
   },
 ): Promise<PresentationResult> {
   const reasons: string[] = [];
@@ -162,6 +165,8 @@ export async function verifyPresentation(
       now: options?.now,
       encodedStatusList: options?.encodedStatusList,
       statusListCredential: options?.statusListCredential,
+      statusListResolve: options?.statusListResolve,
+      resolve: options?.resolve,
     },
     ledger,
   );

@@ -4,7 +4,7 @@ import { credentialHash } from "@/lib/credentials/issue";
 import { verifyPresentation } from "@/lib/credentials/presentation";
 import { verifyCredential, type VerificationResult } from "@/lib/verification/pipeline";
 import { persistVerificationReport } from "@/lib/verification/persist";
-import { audit, getLedger, readDocumentBytes } from "@/lib/trust/runtime";
+import { audit, getLedger, publishedStatusResolve, readDocumentBytes } from "@/lib/trust/runtime";
 import { hashesMatch, hashApiKey, parseBearer } from "./keys";
 import { toMachineResult, type MachineVerification } from "./machine";
 
@@ -39,13 +39,6 @@ type CredentialRow = {
   degree_name: string;
   credential_json: string;
 };
-
-async function statusListForIssuer(issuerId: string): Promise<Record<string, unknown> | undefined> {
-  const sql = await getSql();
-  const lists = await sql<{ credential_json: string | null }>`
-    select credential_json from status_lists where issuer_id = ${issuerId} order by updated_at desc limit 1`;
-  return lists[0]?.credential_json ? (JSON.parse(lists[0].credential_json) as Record<string, unknown>) : undefined;
-}
 
 async function documentFor(documentId: string | null, mode: "bound" | "none", uploadB64?: string) {
   if (uploadB64) {
@@ -124,12 +117,12 @@ export async function runApiVerification(input: {
   }
 
   const documentBytes = await documentFor(row?.document_id ?? null, mode, input.documentB64);
-  const statusListCredential = row ? await statusListForIssuer(row.issuer_id) : undefined;
+  const statusListResolve = publishedStatusResolve();
 
   if (input.presentation) {
-    result = await verifyPresentation(input.presentation, ledger, { documentBytes, statusListCredential });
+    result = await verifyPresentation(input.presentation, ledger, { documentBytes, statusListResolve });
   } else {
-    result = await verifyCredential({ credential: credential!, documentBytes, statusListCredential }, ledger);
+    result = await verifyCredential({ credential: credential!, documentBytes, statusListResolve }, ledger);
   }
 
   const persisted = await persistVerificationReport({

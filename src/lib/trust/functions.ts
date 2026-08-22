@@ -26,7 +26,7 @@ import { assertActiveSigningKey, createHolderIdentity, createIssuerIdentity } fr
 import { assertPermission, permissionMap } from "@/lib/identity/roles";
 import { AUDIT_GENESIS, verifyAuditSequence } from "@/lib/audit/chain";
 import { ensureDemoSeed } from "./seed";
-import { audit, getLedger, getStorage, readDocumentBytes, runtimeAdapterStatus } from "./runtime";
+import { audit, getLedger, getStorage, publishedStatusResolve, readDocumentBytes, runtimeAdapterStatus } from "./runtime";
 import { DEMO, newId, opaqueRef } from "./ids";
 import { openSecret, sealSecret } from "./seal";
 
@@ -145,16 +145,12 @@ export const verifyOpaqueRef = createServerFn({ method: "POST" })
       inspectBytes(bytes);
       documentBytes = bytes;
     }
-    const lists = await sql<{ encoded_list: string; credential_json: string | null }>`
-      select encoded_list, credential_json from status_lists where issuer_id = ${row.issuer_id} order by updated_at desc limit 1`;
     const ledger = await getLedger();
     const result = await verifyCredential(
       {
         credential,
         documentBytes,
-        statusListCredential: lists[0]?.credential_json
-          ? (JSON.parse(lists[0].credential_json) as Record<string, unknown>)
-          : undefined,
+        statusListResolve: publishedStatusResolve(),
       },
       ledger,
     );
@@ -219,20 +215,12 @@ export const verifyUploaded = createServerFn({ method: "POST" })
     }
     const sql = await getSql();
     const id = typeof credential.id === "string" ? credential.id : "";
-    const lists = id
-      ? await sql<{ encoded_list: string; credential_json: string | null }>`
-          select s.encoded_list, s.credential_json from credentials c
-          join status_lists s on s.issuer_id = c.issuer_id
-          where c.id = ${id} limit 1`
-      : [];
     const ledger = await getLedger();
     const result = await verifyCredential(
       {
         credential,
         documentBytes,
-        statusListCredential: lists[0]?.credential_json
-          ? (JSON.parse(lists[0].credential_json) as Record<string, unknown>)
-          : undefined,
+        statusListResolve: publishedStatusResolve(),
       },
       ledger,
     );
@@ -1317,16 +1305,10 @@ export const verifyPresentationRef = createServerFn({ method: "POST" })
         select content_b64, object_name from documents where id = ${cred.document_id}`;
       if (docs[0]) documentBytes = await readDocumentBytes(docs[0].object_name, docs[0].content_b64);
     }
-    const lists = cred
-      ? await sql<{ encoded_list: string; credential_json: string | null }>`
-          select encoded_list, credential_json from status_lists where issuer_id = ${cred.issuer_id} order by updated_at desc limit 1`
-      : [];
     const ledger = await getLedger();
     const result = await verifyPresentation(presentation, ledger, {
       documentBytes,
-      statusListCredential: lists[0]?.credential_json
-        ? (JSON.parse(lists[0].credential_json) as Record<string, unknown>)
-        : undefined,
+      statusListResolve: publishedStatusResolve(),
     });
     const persisted = await persistVerificationReport({
       result,

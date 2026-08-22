@@ -47,8 +47,12 @@ function StatusPage() {
             </dd>
           </div>
           <div>
-            <dt className="text-stone">Credential hash</dt>
-            <dd className="break-all font-mono text-xs">{data.credentialHash ?? "—"}</dd>
+            <dt className="text-stone">Machine document</dt>
+            <dd>
+              <a href={`/credentials/status/${data.id.split("/").pop() ?? data.id}`} className="underline">
+                GET /credentials/status/… (JSON)
+              </a>
+            </dd>
           </div>
         </dl>
       </main>
