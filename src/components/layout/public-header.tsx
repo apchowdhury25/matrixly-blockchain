@@ -10,8 +10,8 @@ export function PublicHeader() {
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
         <Wordmark />
         <nav className="flex items-center gap-1 text-sm">
-          <Link to="/verify" className="hidden rounded-sm px-3 py-2 text-ink-soft hover:text-ink sm:inline">
-            Verify
+          <Link to="/oid4vp" className="hidden rounded-sm px-3 py-2 text-ink-soft hover:text-ink sm:inline">
+            OpenID4VP
           </Link>
           <Link to="/wallet" className="hidden rounded-sm px-3 py-2 text-ink-soft hover:text-ink sm:inline">
             Wallet

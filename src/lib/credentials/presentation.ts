@@ -40,11 +40,14 @@ export function signPresentation(
   unsecured: UnsecuredPresentation,
   secretKey: Uint8Array,
   created?: string,
+  binding?: { challenge?: string; domain?: string },
 ): SignedPresentation {
   return signDocument(unsecured as unknown as Record<string, unknown>, secretKey, {
     created,
     verificationMethod: verificationMethodId(unsecured.holder),
     proofPurpose: "authentication",
+    challenge: binding?.challenge,
+    domain: binding?.domain,
   }) as SignedPresentation;
 }
 
@@ -73,6 +76,8 @@ export async function verifyPresentation(
     now?: Date;
     encodedStatusList?: string;
     statusListCredential?: Record<string, unknown>;
+    expectedChallenge?: string;
+    expectedDomain?: string;
   },
 ): Promise<PresentationResult> {
   const reasons: string[] = [];
@@ -117,6 +122,22 @@ export async function verifyPresentation(
   if (!holderProof.valid) {
     reasons.push(holderProof.reason ?? "Holder presentation proof failed");
     return base;
+  }
+
+  const proof = presentation.proof as { challenge?: string; domain?: string } | undefined;
+  if (options?.expectedChallenge) {
+    if (proof?.challenge !== options.expectedChallenge) {
+      reasons.push("Presentation proof challenge does not match the OpenID4VP nonce");
+      base.holderProofValid = false;
+      return base;
+    }
+  }
+  if (options?.expectedDomain) {
+    if (proof?.domain !== options.expectedDomain) {
+      reasons.push("Presentation proof domain does not match the verifier client_id");
+      base.holderProofValid = false;
+      return base;
+    }
   }
 
   const credential = credentialFromPresentation(presentation);

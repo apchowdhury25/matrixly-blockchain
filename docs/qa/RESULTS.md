@@ -1,4 +1,4 @@
-# QA results — 21 August 2026 (Phase 10)
+# QA results — 21 August 2026 (Phase 11)
 
 Executor: Grok-Build.
 
@@ -18,30 +18,30 @@ Score: **PASS** · **FAIL** · **BLOCKED**. A phase is not done if any required 
 | 8 Verifier API | PASS | included | 401 never VALID |
 | 9 Webhooks / evidence | PASS | included | HMAC, evidence pack, matrix |
 | 10 did:web | PASS | included | HTTPS DID documents; fail-closed fetch |
+| 11 OpenID4VP | PASS | included | DCQL + `direct_post`; nonce-bound VP |
 
 ## Gate
 
 | Check | Status | Notes |
 |---|---|---|
-| `npm run test:trust` | PASS | 71 / 71 |
+| `npm run test:trust` | PASS | 76 / 76 |
 | `npm run typecheck` | PASS | |
-| Public pages HTTP 200 | PASS | Home, did:web, Compliance, Developers |
+| Public pages HTTP 200 | PASS | Home, OpenID4VP, Compliance, Developers |
 | Browser smoke | PASS | |
 
-## Phase 10 — did:web
+## Phase 11 — OpenID4VP
 
 | Step | Status | Notes |
 |---|---|---|
-| 10.1 Public DID document | PASS | `id` is `did:web:matrixly.example.test:issuers:global-university`. Multikey. `alsoKnownAs` includes `did:key`. |
-| 10.2 Playground did:web issuer | PASS | Home page 200 (button present). API path used for machine check. |
-| 10.3 API `demo-valid-didweb` | PASS | VALID. `issuerDid` is did:web. All checks true. |
-| 10.4 Fail closed | PASS | `did-web.test.ts`: private hosts, id mismatch, HTTP 404. |
-| 10.5 Regression | PASS | `demo-valid-bcs` still VALID with `did:key`. |
+| 11.1 Create request | PASS | `response_type=vp_token`, `direct_post`, DCQL `ldp_vc`, nonce present |
+| 11.2 Preview wallet | PASS | VALID, `nonceBound=true`, holder proof PASS. Not an EUDI wallet. |
+| 11.3 Replay | PASS | Second submit: request no longer open; `verified: false` |
+| 11.4 SD-JWT refused | PASS | JWT `eyJ…` vp_token → INVALID, never VALID |
+| 11.5 Regression | PASS | `demo-valid-bcs` still VALID |
 
 ## Verdict
 
 | Item | Status |
 |---|---|
-| Phase 10 | PASS |
-| Unknown DID methods never VALID | PASS |
-| did:web is not claimed as a W3C Recommendation | PASS |
+| Phase 11 | PASS |
+| HAIP / OpenID4VCI / mdoc not claimed | PASS |

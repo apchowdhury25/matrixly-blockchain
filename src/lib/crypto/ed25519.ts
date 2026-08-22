@@ -75,6 +75,8 @@ export type DataIntegrityProof = {
   verificationMethod: string;
   proofPurpose: ProofPurpose;
   proofValue: string;
+  challenge?: string;
+  domain?: string;
 };
 
 export type SignedDocument = Record<string, unknown> & { proof: DataIntegrityProof };
@@ -83,14 +85,19 @@ function proofConfig(input: {
   created: string;
   verificationMethod: string;
   proofPurpose?: ProofPurpose;
+  challenge?: string;
+  domain?: string;
 }): Record<string, unknown> {
-  return {
+  const config: Record<string, unknown> = {
     type: DATA_INTEGRITY_PROOF,
     cryptosuite: ED25519_SUITE,
     created: input.created,
     verificationMethod: input.verificationMethod,
     proofPurpose: input.proofPurpose ?? "assertionMethod",
   };
+  if (input.challenge) config.challenge = input.challenge;
+  if (input.domain) config.domain = input.domain;
+  return config;
 }
 
 /** W3C vc-di-eddsa eddsa-jcs-2022 hashData = sha256(jcs(proofConfig)) || sha256(jcs(doc)). */
@@ -108,12 +115,20 @@ export function hashDataForProof(
 export function signDocument(
   unsecuredDocument: Record<string, unknown>,
   secretKey: Uint8Array,
-  options: { created?: string; verificationMethod: string; proofPurpose?: ProofPurpose },
+  options: {
+    created?: string;
+    verificationMethod: string;
+    proofPurpose?: ProofPurpose;
+    challenge?: string;
+    domain?: string;
+  },
 ): SignedDocument {
   const config = proofConfig({
     created: options.created ?? new Date().toISOString(),
     verificationMethod: options.verificationMethod,
     proofPurpose: options.proofPurpose,
+    challenge: options.challenge,
+    domain: options.domain,
   });
   const data = hashDataForProof(unsecuredDocument, config);
   const signature = ed.sign(data, secretKey);
@@ -151,6 +166,8 @@ export function verifyDocumentProof(
     created: proof.created,
     verificationMethod: proof.verificationMethod,
     proofPurpose: proof.proofPurpose === "authentication" ? "authentication" : "assertionMethod",
+    challenge: proof.challenge,
+    domain: proof.domain,
   });
   let signature: Uint8Array;
   try {

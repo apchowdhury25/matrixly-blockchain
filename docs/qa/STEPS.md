@@ -515,6 +515,36 @@ Original / tamper / revoked / expired still hold. `did:key` credentials still VA
 
 ---
 
+## Phase 11 — OpenID4VP
+
+### 11.1 Create request
+
+Open **OpenID4VP** in the header. Create a request.
+
+**PASS if** you see `response_mode` `direct_post`, a DCQL query for `ldp_vc`, a nonce, and a wallet QR.
+
+### 11.2 Preview wallet
+
+Click **This preview wallet**.
+
+**PASS if** status is `VALID`, holder proof PASS, reasons empty. This is a W3C VP with the request nonce, not an EUDI wallet.
+
+### 11.3 Replay
+
+Click the preview wallet again on the same request.
+
+**PASS if** the request is no longer open (nonce is single-use) and nothing new is VALID from a second submit.
+
+### 11.4 SD-JWT refused
+
+Automated: `dc+sd-jwt` and JWT `eyJ…` vp_token never return VALID.
+
+### 11.5 Regression
+
+Home playground four outcomes plus did:web still hold.
+
+---
+
 ## Traps (do not mis-score)
 
 | Action | Wrong reading | Correct |
@@ -529,4 +559,5 @@ Original / tamper / revoked / expired still hold. `did:key` credentials still VA
 | Compliance page | “We are SOC 2 certified” | Matrix is engineering controls; REG-01 is not-claimed |
 | Webhook FAILED | “Phase 9 is broken” | Unreachable HTTPS is FAILED; the signature must still exist |
 | did:web 404 | “Skip the DID check” | Fetch failure is INVALID, never VALID |
+| OpenID4VP preview wallet | “We are HAIP certified” | W3C VP + DCQL only; OID-02 is not-claimed |
 

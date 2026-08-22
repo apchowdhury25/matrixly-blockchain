@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { createPresentation, getHolderWallet } from "@/lib/trust/functions";
+import { createPresentation, fulfillOid4vpFromWallet, getHolderWallet } from "@/lib/trust/functions";
 
 export const Route = createFileRoute("/wallet/")({ component: WalletPage });
 
@@ -9,6 +9,7 @@ function WalletPage() {
   const [data, setData] = useState<Awaited<ReturnType<typeof getHolderWallet>> | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [oid4vpId, setOid4vpId] = useState("");
 
   const load = useCallback(() => {
     getHolderWallet()
@@ -37,8 +38,8 @@ function WalletPage() {
       <h1 className="mt-2 font-display text-4xl">Wallet</h1>
       <p className="mt-2 max-w-2xl text-ink-soft">
         Claimed credentials live here. A presentation is a W3C VP 2.0 signed by your{" "}
-        <span className="font-mono text-sm">did:key</span>. The inner credential still verifies on its
-        own.
+        <span className="font-mono text-sm">did:key</span>. To answer an OpenID4VP request, paste the
+        request id and present — the nonce is bound in the proof.
       </p>
       {data ? (
         <p className="mt-4 break-all font-mono text-xs text-stone">Holder {data.holder.did}</p>
@@ -46,12 +47,28 @@ function WalletPage() {
       {error ? <p className="mt-4 text-invalid">{error}</p> : null}
       {notice ? (
         <p className="mt-4 text-sm">
-          Presentation created.{" "}
-          <Link to="/present/$ref" params={{ ref: notice.replace("/present/", "") }} className="underline">
-            Open public presentation
-          </Link>
+          {notice.startsWith("/present/") ? (
+            <>
+              Presentation created.{" "}
+              <Link to="/present/$ref" params={{ ref: notice.replace("/present/", "") }} className="underline">
+                Open public presentation
+              </Link>
+            </>
+          ) : (
+            notice
+          )}
         </p>
       ) : null}
+
+      <div className="mt-6 rounded-xl border border-rule bg-paper-raised p-4">
+        <label className="text-sm font-medium">OpenID4VP request id</label>
+        <input
+          className="mt-2 h-11 w-full rounded-sm border border-rule bg-paper px-3 font-mono text-sm"
+          placeholder="oid4vp_…"
+          value={oid4vpId}
+          onChange={(e) => setOid4vpId(e.target.value)}
+        />
+      </div>
 
       <div className="mt-8 overflow-x-auto rounded-xl border border-rule bg-paper-raised">
         <table className="w-full min-w-[640px] text-left text-sm">
@@ -80,9 +97,28 @@ function WalletPage() {
                     {item.issuer_did}
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <Button size="sm" onClick={() => present(item.id)}>
-                      Present
-                    </Button>
+                    <div className="flex justify-end gap-2">
+                      <Button size="sm" variant="secondary" onClick={() => present(item.id)}>
+                        Present
+                      </Button>
+                      <Button
+                        size="sm"
+                        disabled={!oid4vpId.trim()}
+                        onClick={async () => {
+                          setError(null);
+                          try {
+                            const res = await fulfillOid4vpFromWallet({
+                              data: { id: oid4vpId.trim(), walletItemId: item.id },
+                            });
+                            setNotice(`OpenID4VP ${res.status}: ${res.result?.status ?? "submitted"}`);
+                          } catch (err) {
+                            setError((err as Error).message);
+                          }
+                        }}
+                      >
+                        To verifier
+                      </Button>
+                    </div>
                   </td>
                 </tr>
               ))

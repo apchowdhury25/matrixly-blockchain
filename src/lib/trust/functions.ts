@@ -3,7 +3,7 @@ import { z } from "zod";
 import { getSql } from "@/lib/db";
 import { authMiddleware } from "@/lib/auth/middleware";
 import { inspectBytes } from "@/lib/crypto/inspect";
-import { decodeSecretKeyHex } from "@/lib/crypto/ed25519";
+import { decodeSecretKeyHex, encodeDidKey, generateEd25519KeyPair } from "@/lib/crypto/ed25519";
 import { credentialHash, issueCredential } from "@/lib/credentials/issue";
 import { buildPresentation, signPresentation, verifyPresentation } from "@/lib/credentials/presentation";
 import type { IssuedCredential } from "@/lib/credentials/types";
@@ -13,6 +13,7 @@ import { renderDiplomaPdf } from "@/lib/documents/diploma";
 import { buildEvidence, parseEvidence, type DocumentEvidence } from "@/lib/documents/evidence";
 import { verifyCredential, type VerificationResult } from "@/lib/verification/pipeline";
 import { persistVerificationReport } from "@/lib/verification/persist";
+import { createStoredRequest, loadStoredRequest, submitStoredResponse } from "@/lib/oid4vp/persist";
 import { verifyVerificationReport } from "@/lib/verification/report";
 import { generateApiKey } from "@/lib/api/keys";
 import { generateWebhookSecret, assertWebhookUrl } from "@/lib/webhooks/hmac";
@@ -1601,5 +1602,107 @@ export const getDidWebDocument = createServerFn({ method: "GET" })
     if (!resolved.ok) throw new Error(resolved.reason);
     const slug = data.slug;
     return { did, slug, method: resolved.method, document: resolved.document };
+  });
+
+export const createOid4vpRequest = createServerFn({ method: "POST" })
+  .validator((raw: unknown) =>
+    z.object({ origin: z.string().min(8).max(200).regex(/^https?:\/\//) }).parse(raw),
+  )
+  .handler(async ({ data }) => {
+    await ensureDemoSeed();
+    return createStoredRequest(data.origin);
+  });
+
+export const getOid4vpRequest = createServerFn({ method: "GET" })
+  .validator((raw: unknown) => z.object({ id: z.string().min(8).max(80) }).parse(raw))
+  .handler(async ({ data }) => {
+    await ensureDemoSeed();
+    const stored = await loadStoredRequest(data.id);
+    if (!stored) throw new Error("OpenID4VP request not found");
+    return stored;
+  });
+
+export const submitOid4vpResponse = createServerFn({ method: "POST" })
+  .validator((raw: unknown) =>
+    z
+      .object({
+        id: z.string().min(8).max(80),
+        vpToken: z.unknown(),
+        state: z.string().max(200).optional(),
+      })
+      .parse(raw),
+  )
+  .handler(async ({ data }) => {
+    await ensureDemoSeed();
+    return submitStoredResponse({ id: data.id, vpToken: data.vpToken, state: data.state });
+  });
+
+export const simulateOid4vpWallet = createServerFn({ method: "POST" })
+  .validator((raw: unknown) => z.object({ id: z.string().min(8).max(80) }).parse(raw))
+  .handler(async ({ data }) => {
+    await ensureDemoSeed();
+    const stored = await loadStoredRequest(data.id);
+    if (!stored) throw new Error("OpenID4VP request not found");
+    const sql = await getSql();
+    const rows = await sql<{ credential_json: string }>`
+      select credential_json from credentials where opaque_ref = ${DEMO.validRef}`;
+    if (!rows[0]) throw new Error("Demo diploma is missing");
+    const credential = JSON.parse(rows[0].credential_json) as IssuedCredential;
+    const holder = generateEd25519KeyPair();
+    const holderDid = encodeDidKey(holder.publicKey);
+    const presentation = signPresentation(
+      buildPresentation({
+        presentationId: `urn:uuid:${crypto.randomUUID()}`,
+        holderDid,
+        credential,
+      }),
+      holder.secretKey,
+      new Date().toISOString(),
+      { challenge: stored.request.nonce, domain: stored.request.client_id },
+    );
+    const queryId = stored.request.dcql_query.credentials[0]?.id ?? "degree";
+    return submitStoredResponse({
+      id: data.id,
+      vpToken: { [queryId]: [presentation] },
+      state: stored.request.state,
+    });
+  });
+
+export const fulfillOid4vpFromWallet = createServerFn({ method: "POST" })
+  .middleware([authMiddleware])
+  .validator((raw: unknown) =>
+    z.object({ id: z.string().min(8).max(80), walletItemId: z.string().min(8) }).parse(raw),
+  )
+  .handler(async ({ context, data }) => {
+    const holder = await holderFor(context.userId);
+    const stored = await loadStoredRequest(data.id);
+    if (!stored) throw new Error("OpenID4VP request not found");
+    const sql = await getSql();
+    const items = await sql<{ credential_json: string }>`
+      select credential_json from wallet_items where id = ${data.walletItemId} and holder_id = ${holder.id}`;
+    const item = items[0];
+    if (!item) throw new Error("Wallet item not found");
+    const keys = await sql<{ secret_key_hex: string; status: string }>`
+      select secret_key_hex, status from holder_keys
+      where holder_id = ${holder.id} and did = ${holder.did} and status = 'ACTIVE'`;
+    const sealed = keys[0]?.secret_key_hex;
+    if (!sealed) throw new Error("Holder signing key is not available");
+    assertActiveSigningKey(keys[0]!.status);
+    const presentation = signPresentation(
+      buildPresentation({
+        presentationId: `urn:uuid:${crypto.randomUUID()}`,
+        holderDid: holder.did,
+        credential: JSON.parse(item.credential_json) as IssuedCredential,
+      }),
+      decodeSecretKeyHex(openSecret(sealed)),
+      new Date().toISOString(),
+      { challenge: stored.request.nonce, domain: stored.request.client_id },
+    );
+    const queryId = stored.request.dcql_query.credentials[0]?.id ?? "degree";
+    return submitStoredResponse({
+      id: data.id,
+      vpToken: { [queryId]: [presentation] },
+      state: stored.request.state,
+    });
   });
 

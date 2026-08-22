@@ -187,6 +187,20 @@ matrixly-event-id: wh_…
           <span className="font-mono text-sm">demo-valid-didweb</span> to see a credential whose
           issuer is the hosted DID.
         </p>
+
+        <h2 className="mt-10 font-display text-2xl">OpenID4VP</h2>
+        <p className="mt-3 leading-relaxed text-ink-soft">
+          Verifiers create a DCQL request at{" "}
+          <Link to="/oid4vp" className="underline underline-offset-4">
+            /oid4vp
+          </Link>
+          . Wallets fetch{" "}
+          <span className="font-mono text-sm">GET /api/v1/oid4vp/request/{"{id}"}</span> and POST{" "}
+          <span className="font-mono text-sm">vp_token</span> to{" "}
+          <span className="font-mono text-sm">/api/v1/oid4vp/direct-post/{"{id}"}</span>. The nonce is
+          the Data Integrity <span className="font-mono text-sm">challenge</span>. JWT SD-JWT and
+          mdoc are refused. This is not HAIP certification.
+        </p>
       </article>
     </div>
   );

@@ -108,4 +108,18 @@ export const COMPLIANCE_MATRIX: ComplianceControl[] = [
     status: "not-claimed",
     evidence: "This matrix is an engineering control list, not an audit opinion",
   },
+  {
+    id: "OID-01",
+    area: "Interop",
+    control: "OpenID4VP 1.0 direct_post + DCQL; nonce bound in Data Integrity challenge",
+    status: "implemented",
+    evidence: "/oid4vp ; vp_token object; SD-JWT/mdoc refused",
+  },
+  {
+    id: "OID-02",
+    area: "Interop",
+    control: "HAIP / OpenID4VCI / SD-JWT VC / ISO mdoc certification",
+    status: "not-claimed",
+    evidence: "Unsupported formats fail closed and never return VALID",
+  },
 ];

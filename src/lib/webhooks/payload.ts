@@ -3,7 +3,7 @@ import type { MachineVerification } from "@/lib/api/machine";
 export function verificationEventPayload(input: {
   eventId: string;
   result: MachineVerification;
-  source: "ui" | "api";
+  source: "ui" | "api" | "oid4vp";
   created?: string;
 }): Record<string, unknown> {
   return {

@@ -155,5 +155,45 @@ export const openApiSpec = {
         responses: { "200": { description: "OpenAPI 3.0" } },
       },
     },
+    "/api/v1/oid4vp/requests": {
+      post: {
+        summary: "Create an OpenID4VP 1.0 authorization request (DCQL + direct_post)",
+        security: [],
+        responses: { "200": { description: "request_uri, wallet_uri, dcql_query, nonce" } },
+      },
+    },
+    "/api/v1/oid4vp/request/{id}": {
+      get: {
+        summary: "Fetch the authorization request object (request_uri)",
+        security: [],
+        parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
+        responses: { "200": { description: "OpenID4VP authorization request JSON" } },
+      },
+    },
+    "/api/v1/oid4vp/direct-post/{id}": {
+      post: {
+        summary: "Wallet direct_post of vp_token",
+        security: [],
+        parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                properties: {
+                  vp_token: { type: "object" },
+                  state: { type: "string" },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          "200": { description: "Verification of the presented VP. Never VALID if nonce mismatches." },
+          "400": { description: "Closed, expired, or unsupported format" },
+        },
+      },
+    },
   },
 } as const;

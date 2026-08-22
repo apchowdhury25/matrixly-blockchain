@@ -50,7 +50,7 @@ These are the ones banks, EUDI wallets, and governments actually ask for next.
 | Standard | Body | What it is | Why it is not Matrixly yet |
 |---|---|---|---|
 | [OpenID4VCI 1.0](https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0.html) | OpenID Foundation (Final, Sep 2025) | OAuth API to **issue** credentials into a wallet | Our issue path is a server function, not OID4VCI |
-| [OpenID4VP 1.0](https://openid.net/specs/openid-4-verifiable-presentations-1_0.html) | OpenID Foundation (Final, Jul 2025) | OAuth flow to **present** a VP to a verifier | Our VP is posted JSON / claim link, not `vp_token` |
+| [OpenID4VP 1.0](https://openid.net/specs/openid-4-verifiable-presentations-1_0.html) | OpenID Foundation (Final, Jul 2025) | OAuth flow to **present** a VP to a verifier | **Implemented** (DCQL + `direct_post`, W3C VP only). Not HAIP certified |
 | [HAIP 1.0](https://openid.net/specs/openid4vc-high-assurance-interoperability-profile-1_0.html) | OpenID Foundation | High-assurance profile of the above | Conformance tests opened 2026; we are not enrolled |
 | SIOPv2 | OpenID Foundation | Self-issued OpenID Provider | Holder DID is not an OIDC OP |
 | IETF SD-JWT VC | IETF (draft) | Selective disclosure JWT credentials | We sign the whole JSON VC; no SD |
@@ -92,8 +92,8 @@ the W3C “keep claims off unnecessary ledgers” guidance.
 
 If interoperability is the next product goal, order of value:
 
-1. **`did:web`** — institutions need a DID they host, not only `did:key`.
-2. **OpenID4VP** — so an EUDI / commercial wallet can present to Matrixly.
+1. **`did:web`** — **done** (Phase 10).
+2. **OpenID4VP** — **done** (Phase 11) for W3C VP; SD-JWT/mdoc still refused.
 3. **OpenID4VCI** — so a wallet can pull a diploma from Matrixly.
 4. **SD-JWT or mdoc** — only if a regulator names that format; do not dual-write by default.
 

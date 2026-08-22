@@ -32,6 +32,8 @@ A green badge that skipped a failed cryptographic check is a defect, not a contr
 | WH-01 | Integrity | Outbound verification events are HMAC-SHA256 signed; unsigned events are refused | implemented | Webhook deliveries; secret sealed at rest |
 | AUD-01 | Audit | Signed verification reports anchored by hash; tenant audit is hash-chained | implemented | VerificationReport + `audit_events.prev_hash` |
 | REG-01 | Regulation | SOC 2 / ISO 27001 / eIDAS / GDPR certification of this deployment | not-claimed | This matrix is an engineering control list, not an audit opinion |
+| OID-01 | Interop | OpenID4VP 1.0 `direct_post` + DCQL; nonce bound in Data Integrity challenge | implemented | `/oid4vp` ; `vp_token` object; SD-JWT/mdoc refused |
+| OID-02 | Interop | HAIP / OpenID4VCI / SD-JWT VC / ISO mdoc certification | not-claimed | Unsupported formats fail closed and never return VALID |
 
 ## How to read REG-01
 

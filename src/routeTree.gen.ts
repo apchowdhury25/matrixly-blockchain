@@ -29,6 +29,8 @@ import { Route as AppWebhooksRouteImport } from './routes/app/webhooks'
 import { Route as DidWebSlugRouteImport } from './routes/did-web.$slug'
 import { Route as DidMultibaseRouteImport } from './routes/did.$multibase'
 import { Route as EvidenceRefRouteImport } from './routes/evidence.$ref'
+import { Route as Oid4vpIndexRouteImport } from './routes/oid4vp/index'
+import { Route as Oid4vpIdRouteImport } from './routes/oid4vp/$id'
 import { Route as PresentRefRouteImport } from './routes/present.$ref'
 import { Route as ReportRefRouteImport } from './routes/report.$ref'
 import { Route as StatusIdRouteImport } from './routes/status.$id'
@@ -41,7 +43,11 @@ import { Route as ApiV1VerifyRouteImport } from './routes/api/v1/verify'
 import { Route as WalletClaimTokenRouteImport } from './routes/wallet/claim.$token'
 import { Route as ApiV1DidWebSlugRouteImport } from './routes/api/v1/did-web.$slug'
 import { Route as ApiV1EvidenceRefRouteImport } from './routes/api/v1/evidence.$ref'
+import { Route as ApiV1Oid4vpRequestsRouteImport } from './routes/api/v1/oid4vp/requests'
 import { Route as ApiV1ReportsRefRouteImport } from './routes/api/v1/reports.$ref'
+import { Route as ApiV1Oid4vpDirectPostIdRouteImport } from './routes/api/v1/oid4vp/direct-post.$id'
+import { Route as ApiV1Oid4vpPreviewWalletIdRouteImport } from './routes/api/v1/oid4vp/preview-wallet.$id'
+import { Route as ApiV1Oid4vpRequestIdRouteImport } from './routes/api/v1/oid4vp/request.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -143,6 +149,16 @@ const EvidenceRefRoute = EvidenceRefRouteImport.update({
   path: '/evidence/$ref',
   getParentRoute: () => rootRouteImport,
 } as any)
+const Oid4vpIndexRoute = Oid4vpIndexRouteImport.update({
+  id: '/oid4vp/',
+  path: '/oid4vp/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const Oid4vpIdRoute = Oid4vpIdRouteImport.update({
+  id: '/oid4vp/$id',
+  path: '/oid4vp/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PresentRefRoute = PresentRefRouteImport.update({
   id: '/present/$ref',
   path: '/present/$ref',
@@ -203,9 +219,30 @@ const ApiV1EvidenceRefRoute = ApiV1EvidenceRefRouteImport.update({
   path: '/api/v1/evidence/$ref',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiV1Oid4vpRequestsRoute = ApiV1Oid4vpRequestsRouteImport.update({
+  id: '/api/v1/oid4vp/requests',
+  path: '/api/v1/oid4vp/requests',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiV1ReportsRefRoute = ApiV1ReportsRefRouteImport.update({
   id: '/api/v1/reports/$ref',
   path: '/api/v1/reports/$ref',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiV1Oid4vpDirectPostIdRoute = ApiV1Oid4vpDirectPostIdRouteImport.update({
+  id: '/api/v1/oid4vp/direct-post/$id',
+  path: '/api/v1/oid4vp/direct-post/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiV1Oid4vpPreviewWalletIdRoute =
+  ApiV1Oid4vpPreviewWalletIdRouteImport.update({
+    id: '/api/v1/oid4vp/preview-wallet/$id',
+    path: '/api/v1/oid4vp/preview-wallet/$id',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiV1Oid4vpRequestIdRoute = ApiV1Oid4vpRequestIdRouteImport.update({
+  id: '/api/v1/oid4vp/request/$id',
+  path: '/api/v1/oid4vp/request/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -229,11 +266,13 @@ export interface FileRoutesByFullPath {
   '/did-web/$slug': typeof DidWebSlugRoute
   '/did/$multibase': typeof DidMultibaseRoute
   '/evidence/$ref': typeof EvidenceRefRoute
+  '/oid4vp/$id': typeof Oid4vpIdRoute
   '/present/$ref': typeof PresentRefRoute
   '/report/$ref': typeof ReportRefRoute
   '/status/$id': typeof StatusIdRoute
   '/verify/$ref': typeof VerifyRefRoute
   '/app/': typeof AppIndexRoute
+  '/oid4vp/': typeof Oid4vpIndexRoute
   '/verify/': typeof VerifyIndexRoute
   '/wallet/': typeof WalletIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -242,7 +281,11 @@ export interface FileRoutesByFullPath {
   '/wallet/claim/$token': typeof WalletClaimTokenRoute
   '/api/v1/did-web/$slug': typeof ApiV1DidWebSlugRoute
   '/api/v1/evidence/$ref': typeof ApiV1EvidenceRefRoute
+  '/api/v1/oid4vp/requests': typeof ApiV1Oid4vpRequestsRoute
   '/api/v1/reports/$ref': typeof ApiV1ReportsRefRoute
+  '/api/v1/oid4vp/direct-post/$id': typeof ApiV1Oid4vpDirectPostIdRoute
+  '/api/v1/oid4vp/preview-wallet/$id': typeof ApiV1Oid4vpPreviewWalletIdRoute
+  '/api/v1/oid4vp/request/$id': typeof ApiV1Oid4vpRequestIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -262,11 +305,13 @@ export interface FileRoutesByTo {
   '/did-web/$slug': typeof DidWebSlugRoute
   '/did/$multibase': typeof DidMultibaseRoute
   '/evidence/$ref': typeof EvidenceRefRoute
+  '/oid4vp/$id': typeof Oid4vpIdRoute
   '/present/$ref': typeof PresentRefRoute
   '/report/$ref': typeof ReportRefRoute
   '/status/$id': typeof StatusIdRoute
   '/verify/$ref': typeof VerifyRefRoute
   '/app': typeof AppIndexRoute
+  '/oid4vp': typeof Oid4vpIndexRoute
   '/verify': typeof VerifyIndexRoute
   '/wallet': typeof WalletIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -275,7 +320,11 @@ export interface FileRoutesByTo {
   '/wallet/claim/$token': typeof WalletClaimTokenRoute
   '/api/v1/did-web/$slug': typeof ApiV1DidWebSlugRoute
   '/api/v1/evidence/$ref': typeof ApiV1EvidenceRefRoute
+  '/api/v1/oid4vp/requests': typeof ApiV1Oid4vpRequestsRoute
   '/api/v1/reports/$ref': typeof ApiV1ReportsRefRoute
+  '/api/v1/oid4vp/direct-post/$id': typeof ApiV1Oid4vpDirectPostIdRoute
+  '/api/v1/oid4vp/preview-wallet/$id': typeof ApiV1Oid4vpPreviewWalletIdRoute
+  '/api/v1/oid4vp/request/$id': typeof ApiV1Oid4vpRequestIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -298,11 +347,13 @@ export interface FileRoutesById {
   '/did-web/$slug': typeof DidWebSlugRoute
   '/did/$multibase': typeof DidMultibaseRoute
   '/evidence/$ref': typeof EvidenceRefRoute
+  '/oid4vp/$id': typeof Oid4vpIdRoute
   '/present/$ref': typeof PresentRefRoute
   '/report/$ref': typeof ReportRefRoute
   '/status/$id': typeof StatusIdRoute
   '/verify/$ref': typeof VerifyRefRoute
   '/app/': typeof AppIndexRoute
+  '/oid4vp/': typeof Oid4vpIndexRoute
   '/verify/': typeof VerifyIndexRoute
   '/wallet/': typeof WalletIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -311,7 +362,11 @@ export interface FileRoutesById {
   '/wallet/claim/$token': typeof WalletClaimTokenRoute
   '/api/v1/did-web/$slug': typeof ApiV1DidWebSlugRoute
   '/api/v1/evidence/$ref': typeof ApiV1EvidenceRefRoute
+  '/api/v1/oid4vp/requests': typeof ApiV1Oid4vpRequestsRoute
   '/api/v1/reports/$ref': typeof ApiV1ReportsRefRoute
+  '/api/v1/oid4vp/direct-post/$id': typeof ApiV1Oid4vpDirectPostIdRoute
+  '/api/v1/oid4vp/preview-wallet/$id': typeof ApiV1Oid4vpPreviewWalletIdRoute
+  '/api/v1/oid4vp/request/$id': typeof ApiV1Oid4vpRequestIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -335,11 +390,13 @@ export interface FileRouteTypes {
     | '/did-web/$slug'
     | '/did/$multibase'
     | '/evidence/$ref'
+    | '/oid4vp/$id'
     | '/present/$ref'
     | '/report/$ref'
     | '/status/$id'
     | '/verify/$ref'
     | '/app/'
+    | '/oid4vp/'
     | '/verify/'
     | '/wallet/'
     | '/api/auth/$'
@@ -348,7 +405,11 @@ export interface FileRouteTypes {
     | '/wallet/claim/$token'
     | '/api/v1/did-web/$slug'
     | '/api/v1/evidence/$ref'
+    | '/api/v1/oid4vp/requests'
     | '/api/v1/reports/$ref'
+    | '/api/v1/oid4vp/direct-post/$id'
+    | '/api/v1/oid4vp/preview-wallet/$id'
+    | '/api/v1/oid4vp/request/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -368,11 +429,13 @@ export interface FileRouteTypes {
     | '/did-web/$slug'
     | '/did/$multibase'
     | '/evidence/$ref'
+    | '/oid4vp/$id'
     | '/present/$ref'
     | '/report/$ref'
     | '/status/$id'
     | '/verify/$ref'
     | '/app'
+    | '/oid4vp'
     | '/verify'
     | '/wallet'
     | '/api/auth/$'
@@ -381,7 +444,11 @@ export interface FileRouteTypes {
     | '/wallet/claim/$token'
     | '/api/v1/did-web/$slug'
     | '/api/v1/evidence/$ref'
+    | '/api/v1/oid4vp/requests'
     | '/api/v1/reports/$ref'
+    | '/api/v1/oid4vp/direct-post/$id'
+    | '/api/v1/oid4vp/preview-wallet/$id'
+    | '/api/v1/oid4vp/request/$id'
   id:
     | '__root__'
     | '/'
@@ -403,11 +470,13 @@ export interface FileRouteTypes {
     | '/did-web/$slug'
     | '/did/$multibase'
     | '/evidence/$ref'
+    | '/oid4vp/$id'
     | '/present/$ref'
     | '/report/$ref'
     | '/status/$id'
     | '/verify/$ref'
     | '/app/'
+    | '/oid4vp/'
     | '/verify/'
     | '/wallet/'
     | '/api/auth/$'
@@ -416,7 +485,11 @@ export interface FileRouteTypes {
     | '/wallet/claim/$token'
     | '/api/v1/did-web/$slug'
     | '/api/v1/evidence/$ref'
+    | '/api/v1/oid4vp/requests'
     | '/api/v1/reports/$ref'
+    | '/api/v1/oid4vp/direct-post/$id'
+    | '/api/v1/oid4vp/preview-wallet/$id'
+    | '/api/v1/oid4vp/request/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -430,17 +503,23 @@ export interface RootRouteChildren {
   DidWebSlugRoute: typeof DidWebSlugRoute
   DidMultibaseRoute: typeof DidMultibaseRoute
   EvidenceRefRoute: typeof EvidenceRefRoute
+  Oid4vpIdRoute: typeof Oid4vpIdRoute
   PresentRefRoute: typeof PresentRefRoute
   ReportRefRoute: typeof ReportRefRoute
   StatusIdRoute: typeof StatusIdRoute
   VerifyRefRoute: typeof VerifyRefRoute
+  Oid4vpIndexRoute: typeof Oid4vpIndexRoute
   VerifyIndexRoute: typeof VerifyIndexRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ApiV1OpenapiDotjsonRoute: typeof ApiV1OpenapiDotjsonRoute
   ApiV1VerifyRoute: typeof ApiV1VerifyRoute
   ApiV1DidWebSlugRoute: typeof ApiV1DidWebSlugRoute
   ApiV1EvidenceRefRoute: typeof ApiV1EvidenceRefRoute
+  ApiV1Oid4vpRequestsRoute: typeof ApiV1Oid4vpRequestsRoute
   ApiV1ReportsRefRoute: typeof ApiV1ReportsRefRoute
+  ApiV1Oid4vpDirectPostIdRoute: typeof ApiV1Oid4vpDirectPostIdRoute
+  ApiV1Oid4vpPreviewWalletIdRoute: typeof ApiV1Oid4vpPreviewWalletIdRoute
+  ApiV1Oid4vpRequestIdRoute: typeof ApiV1Oid4vpRequestIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -585,6 +664,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EvidenceRefRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/oid4vp/': {
+      id: '/oid4vp/'
+      path: '/oid4vp'
+      fullPath: '/oid4vp/'
+      preLoaderRoute: typeof Oid4vpIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/oid4vp/$id': {
+      id: '/oid4vp/$id'
+      path: '/oid4vp/$id'
+      fullPath: '/oid4vp/$id'
+      preLoaderRoute: typeof Oid4vpIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/present/$ref': {
       id: '/present/$ref'
       path: '/present/$ref'
@@ -669,11 +762,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiV1EvidenceRefRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/v1/oid4vp/requests': {
+      id: '/api/v1/oid4vp/requests'
+      path: '/api/v1/oid4vp/requests'
+      fullPath: '/api/v1/oid4vp/requests'
+      preLoaderRoute: typeof ApiV1Oid4vpRequestsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/v1/reports/$ref': {
       id: '/api/v1/reports/$ref'
       path: '/api/v1/reports/$ref'
       fullPath: '/api/v1/reports/$ref'
       preLoaderRoute: typeof ApiV1ReportsRefRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/v1/oid4vp/direct-post/$id': {
+      id: '/api/v1/oid4vp/direct-post/$id'
+      path: '/api/v1/oid4vp/direct-post/$id'
+      fullPath: '/api/v1/oid4vp/direct-post/$id'
+      preLoaderRoute: typeof ApiV1Oid4vpDirectPostIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/v1/oid4vp/preview-wallet/$id': {
+      id: '/api/v1/oid4vp/preview-wallet/$id'
+      path: '/api/v1/oid4vp/preview-wallet/$id'
+      fullPath: '/api/v1/oid4vp/preview-wallet/$id'
+      preLoaderRoute: typeof ApiV1Oid4vpPreviewWalletIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/v1/oid4vp/request/$id': {
+      id: '/api/v1/oid4vp/request/$id'
+      path: '/api/v1/oid4vp/request/$id'
+      fullPath: '/api/v1/oid4vp/request/$id'
+      preLoaderRoute: typeof ApiV1Oid4vpRequestIdRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -734,17 +855,23 @@ const rootRouteChildren: RootRouteChildren = {
   DidWebSlugRoute: DidWebSlugRoute,
   DidMultibaseRoute: DidMultibaseRoute,
   EvidenceRefRoute: EvidenceRefRoute,
+  Oid4vpIdRoute: Oid4vpIdRoute,
   PresentRefRoute: PresentRefRoute,
   ReportRefRoute: ReportRefRoute,
   StatusIdRoute: StatusIdRoute,
   VerifyRefRoute: VerifyRefRoute,
+  Oid4vpIndexRoute: Oid4vpIndexRoute,
   VerifyIndexRoute: VerifyIndexRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiV1OpenapiDotjsonRoute: ApiV1OpenapiDotjsonRoute,
   ApiV1VerifyRoute: ApiV1VerifyRoute,
   ApiV1DidWebSlugRoute: ApiV1DidWebSlugRoute,
   ApiV1EvidenceRefRoute: ApiV1EvidenceRefRoute,
+  ApiV1Oid4vpRequestsRoute: ApiV1Oid4vpRequestsRoute,
   ApiV1ReportsRefRoute: ApiV1ReportsRefRoute,
+  ApiV1Oid4vpDirectPostIdRoute: ApiV1Oid4vpDirectPostIdRoute,
+  ApiV1Oid4vpPreviewWalletIdRoute: ApiV1Oid4vpPreviewWalletIdRoute,
+  ApiV1Oid4vpRequestIdRoute: ApiV1Oid4vpRequestIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -24,7 +24,7 @@ const defaultTransport: WebhookTransport = async ({ url, headers, body }) => {
 export async function dispatchVerificationWebhooks(input: {
   tenantId: string;
   result: MachineVerification;
-  source: "ui" | "api";
+  source: "ui" | "api" | "oid4vp";
   transport?: WebhookTransport;
 }): Promise<number> {
   const sql = await getSql();

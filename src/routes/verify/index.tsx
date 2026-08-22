@@ -66,7 +66,12 @@ function VerifyPage() {
         <h1 className="mt-3 font-display text-4xl">Check a document</h1>
         <p className="mt-3 text-ink-soft">
           No account required. Paste a verification ID, scan a QR destination, or upload a credential
-          plus the original PDF. Each cryptographic check is evaluated independently.
+          plus the original PDF. Each cryptographic check is evaluated independently. Wallets can
+          also present over{" "}
+          <a href="/oid4vp" className="underline underline-offset-4">
+            OpenID4VP
+          </a>
+          .
         </p>
 
         <form className="mt-8 space-y-3 rounded-xl border border-rule bg-paper-raised p-6" onSubmit={onRef}>

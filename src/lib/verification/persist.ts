@@ -18,7 +18,7 @@ export async function persistVerificationReport(input: {
   credentialRowId?: string | null;
   tenantId?: string | null;
   apiKeyId?: string | null;
-  source?: "ui" | "api";
+  source?: "ui" | "api" | "oid4vp";
 }): Promise<{ reportRef: string; reportHash: string }> {
   const verifier = await getPlatformVerifier();
   const secretKey = decodeSecretKeyHex(openSecret(verifier.secretKeyHex));

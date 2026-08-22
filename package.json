@@ -15,7 +15,7 @@
     "typecheck": "tsc --noEmit",
     "check:auth": "node scripts/check-auth-invariant.mjs",
     "test": "node --test 'scripts/**/*.test.mjs' && npm run test:trust",
-    "test:trust": "tsx --test src/lib/crypto/hash.test.ts src/lib/crypto/kms.test.ts src/lib/credentials/engine.test.ts src/lib/ledger/hash-chain.test.ts src/lib/ledger/fabric.test.ts src/lib/ledger/factory.test.ts src/lib/identity/identity.test.ts src/lib/identity/did-web.test.ts src/lib/documents/evidence.test.ts src/lib/credentials/presentation.test.ts src/lib/verification/policy.test.ts src/lib/verification/report.test.ts src/lib/audit/chain.test.ts src/lib/storage/storage.test.ts src/lib/api/keys.test.ts src/lib/webhooks/hmac.test.ts src/lib/webhooks/deliver.test.ts src/lib/evidence/pack.test.ts src/lib/compliance/matrix.test.ts",
+    "test:trust": "tsx --test src/lib/crypto/hash.test.ts src/lib/crypto/kms.test.ts src/lib/credentials/engine.test.ts src/lib/ledger/hash-chain.test.ts src/lib/ledger/fabric.test.ts src/lib/ledger/factory.test.ts src/lib/identity/identity.test.ts src/lib/identity/did-web.test.ts src/lib/documents/evidence.test.ts src/lib/credentials/presentation.test.ts src/lib/verification/policy.test.ts src/lib/verification/report.test.ts src/lib/audit/chain.test.ts src/lib/storage/storage.test.ts src/lib/api/keys.test.ts src/lib/webhooks/hmac.test.ts src/lib/webhooks/deliver.test.ts src/lib/evidence/pack.test.ts src/lib/compliance/matrix.test.ts src/lib/oid4vp/oid4vp.test.ts",
     "lint": "eslint .",
     "format": "prettier --write ."
   },
