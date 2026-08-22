@@ -775,7 +775,7 @@ Open **Chain** in the header (`/chain`).
 curl -s http://127.0.0.1:8080/api/v1/ledger/chain
 ```
 
-**PASS if** `format` is `matrixly.ledger.v1`, `chainValid` is true, there is no top-level `"status":"VALID"`, and the JSON does not contain `Alex Rivera`.
+**PASS if** `format` is `matrixly.ledger.v1`, `chainValid` is true, `merkleRoot` starts with `sha256:`, there is no top-level `"status":"VALID"`, and the JSON does not contain `Alex Rivera`.
 
 ### 17.3 Independent recompute
 
@@ -792,6 +792,12 @@ Flip a field inside `blocks[0].payload.record` and POST again.
 ### 17.5 Regression
 
 API verify of `demo-valid-bcs` is still VALID.
+
+### 17.6 Wrong Merkle root
+
+Copy the export, set `merkleRoot` to `sha256:` + 64 zeros, POST `/api/v1/ledger/verify`.
+
+**PASS if** `chainValid` is false. Must not be treated as a valid diploma.
 
 ---
 

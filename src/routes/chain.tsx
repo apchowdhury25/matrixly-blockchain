@@ -37,9 +37,9 @@ function ChainPage() {
         <p className="font-mono text-xs tracking-[0.22em] text-pine uppercase">Independent ledger</p>
         <h1 className="mt-3 font-display text-4xl">Hash-chain export</h1>
         <p className="mt-4 text-ink-soft">
-          Download the append-only log and recompute block hashes yourself. A green application badge
-          is not this check. This export is hashes and DIDs — not PDFs. Fabric dumps are refused
-          without Gateway block data.
+          Download the append-only log and recompute block hashes yourself. The Merkle root is
+          RFC 6962 over those hashes — not a Bitcoin tree and not a diploma VALID. Fabric dumps
+          are refused without Gateway block data.
         </p>
         <dl className="mt-8 grid gap-4 sm:grid-cols-2">
           <div className="rounded-xl border border-rule bg-paper-raised p-5">
@@ -54,6 +54,9 @@ function ChainPage() {
           </div>
         </dl>
         <p className="mt-4 break-all font-mono text-xs text-stone">Head {data.head?.blockHash ?? "—"}</p>
+        <p className="mt-2 break-all font-mono text-xs text-stone">
+          Merkle {data.merkleRoot ?? "—"} ({data.merkleAlgorithm ?? "rfc6962-sha256"})
+        </p>
         <p className="mt-6 text-sm">
           <a href="/api/v1/ledger/chain" className="underline underline-offset-4">
             GET /api/v1/ledger/chain

@@ -595,6 +595,9 @@ await liveCase("TC-17.1", "Chain export", async () => {
   if (json.format !== "matrixly.ledger.v1") throw new Error("format");
   if (json.chainValid !== true) throw new Error(String(json.reason));
   if (json.status === "VALID") throw new Error("export used credential VALID");
+  if (typeof json.merkleRoot !== "string" || !json.merkleRoot.startsWith("sha256:")) {
+    throw new Error("missing merkleRoot");
+  }
   const blob = JSON.stringify(json);
   if (blob.includes("Alex Rivera")) throw new Error("holder PII");
   return `length ${String(json.length)}`;
@@ -633,7 +636,7 @@ await liveCase("TC-17.3", "Tampered export fails", async () => {
 await liveCase("TC-17.4", "Chain page", async () => {
   const { status, text } = await html("/chain");
   if (status !== 200) throw new Error(`HTTP ${status}`);
-  if (!/hash-chain|Independent/i.test(text)) throw new Error("copy");
+  if (!/hash-chain|Independent|Merkle/i.test(text)) throw new Error("copy");
   return "200";
 });
 
@@ -641,6 +644,20 @@ await liveCase("TC-17.5", "Diploma still VALID", async () => {
   const { json } = await verifyApi({ ref: "demo-valid-bcs" });
   if (json.status !== "VALID") throw new Error(String(json.status));
   return "VALID";
+});
+
+await liveCase("TC-17.6", "Wrong Merkle root", async () => {
+  const exported = (await (await fetchOk("/api/v1/ledger/chain")).json()) as Record<string, unknown>;
+  exported.merkleRoot = "sha256:" + "00".repeat(32);
+  const res = await fetchOk("/api/v1/ledger/verify", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(exported),
+  });
+  const json = (await res.json()) as Record<string, unknown>;
+  if (json.chainValid !== false) throw new Error("wrong root accepted");
+  if (json.status === "VALID") throw new Error("VALID");
+  return String(json.reason);
 });
 
 unitCase("TC-AUTO.meta", "OID4VCI metadata helper", () => {

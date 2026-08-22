@@ -211,11 +211,12 @@ Expect `x-schema-hash: sha256:` + 64 hex and `content-type: application/schema+j
 
 | ID | Title | Steps | Expected |
 |---|---|---|---|
-| TC-17.1 | Chain export | `GET /api/v1/ledger/chain` | `matrixly.ledger.v1`, `chainValid` true, no credential VALID, no holder PII |
+| TC-17.1 | Chain export | `GET /api/v1/ledger/chain` | `matrixly.ledger.v1`, `chainValid` true, `merkleRoot`, no credential VALID, no holder PII |
 | TC-17.2 | Recompute | POST export to `/api/v1/ledger/verify` | `chainValid` true; not `verified: true` |
 | TC-17.3 | Tampered export | Mutate a payload field, POST again | `chainValid` false |
 | TC-17.4 | Chain page | `/chain` | Intact copy; not a diploma VALID |
 | TC-17.5 | Regression | TC-8.2 | Demo still VALID |
+| TC-17.6 | Wrong Merkle root | Flip `merkleRoot`, POST verify | `chainValid` false |
 
 ---
 

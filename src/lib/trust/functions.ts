@@ -1900,6 +1900,8 @@ export const getPublicLedgerExport = createServerFn({ method: "GET" }).handler(a
     format: exported.format,
     model: exported.model,
     genesis: exported.genesis,
+    merkleAlgorithm: exported.merkleAlgorithm,
+    merkleRoot: exported.merkleRoot,
     chainValid: check.chainValid,
     length: check.length,
     head: check.head,

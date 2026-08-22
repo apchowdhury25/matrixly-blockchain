@@ -1,7 +1,7 @@
 {
   "base": "http://127.0.0.1:8080",
-  "when": "2026-08-22T03:42:43.119Z",
-  "pass": 74,
+  "when": "2026-08-22T03:46:10.531Z",
+  "pass": 75,
   "fail": 0,
   "blocked": 0,
   "rows": [
@@ -111,7 +111,7 @@
       "id": "TC-6.1",
       "title": "Signed report exists after verify",
       "status": "PASS",
-      "notes": "reportRef 9JuXrycj_8OV"
+      "notes": "reportRef bpeo3GIa18lE"
     },
     {
       "id": "TC-6.2",
@@ -417,7 +417,7 @@
       "id": "TC-17.1",
       "title": "Chain export",
       "status": "PASS",
-      "notes": "length 44"
+      "notes": "length 265"
     },
     {
       "id": "TC-17.2",
@@ -442,6 +442,12 @@
       "title": "Diploma still VALID",
       "status": "PASS",
       "notes": "VALID"
+    },
+    {
+      "id": "TC-17.6",
+      "title": "Wrong Merkle root",
+      "status": "PASS",
+      "notes": "Merkle root does not match the recomputed RFC 6962 tree of block hashes"
     },
     {
       "id": "TC-AUTO.meta",

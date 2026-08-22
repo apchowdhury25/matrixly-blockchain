@@ -17,8 +17,8 @@ Score: **PASS** · **FAIL** · **BLOCKED**. A phase is not done if any required 
 
 | Check | Status | Notes |
 |---|---|---|
-| `npm run test:qa` | PASS | 74 / 74 |
-| `npm run test:trust` | PASS | 115 / 115 |
+| `npm run test:qa` | PASS | 75 / 75 |
+| `npm run test:trust` | PASS | 119 / 119 |
 | `npm run typecheck` | PASS | |
 | Chain export | PASS | `matrixly.ledger.v1`, no holder PII |
 | Tampered export | PASS | chainValid false |
@@ -32,7 +32,7 @@ Score: **PASS** · **FAIL** · **BLOCKED**. A phase is not done if any required 
 | 17.2 Machine export | PASS | format + chainValid |
 | 17.3 Independent recompute | PASS | POST verify |
 | 17.4 Tamper | PASS | payload hash mismatch |
-| 17.5 Regression | PASS | demo VALID |
+| 17.6 Wrong Merkle root | PASS | chainValid false |
 
 ## Verdict
 

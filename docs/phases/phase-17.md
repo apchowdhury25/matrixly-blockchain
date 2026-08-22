@@ -4,7 +4,7 @@
 
 ## What shipped
 
-- Public `GET /api/v1/ledger/chain` dumps the hash-chain (`matrixly.ledger.v1`).
+- Public `GET /api/v1/ledger/chain` dumps the hash-chain (`matrixly.ledger.v1`) including an RFC 6962 Merkle root over block hashes.
 - `POST /api/v1/ledger/verify` recomputes previous-hash, payload hash, and block hash. Result is `chainValid`, **not** credential `VALID`.
 - `/chain` page to download and paste an export.
 - Tampered payload fails independent check.

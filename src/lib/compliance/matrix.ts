@@ -99,7 +99,7 @@ export const COMPLIANCE_MATRIX: ComplianceControl[] = [
     area: "Ledger",
     control: "Hash-chain can be exported and recomputed independently; export is not a credential VALID",
     status: "implemented",
-    evidence: "GET /api/v1/ledger/chain ; POST /api/v1/ledger/verify ; /chain",
+    evidence: "GET /api/v1/ledger/chain ; POST /api/v1/ledger/verify ; RFC 6962 merkleRoot ; /chain",
   },
   {
     id: "PII-01",

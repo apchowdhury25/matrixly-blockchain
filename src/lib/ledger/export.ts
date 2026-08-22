@@ -1,6 +1,7 @@
 /** Independent hash-chain export. A third party recomputes hashes; this is not a VALID badge. */
 
 import { GENESIS_PREV, verifyBlockSequence, type LedgerBlock } from "./hash-chain";
+import { MERKLE_ALG, merkleRootFromBlockHashes, merkleRootsEqual } from "./merkle";
 
 export const LEDGER_EXPORT_FORMAT = "matrixly.ledger.v1";
 
@@ -8,6 +9,8 @@ export type LedgerExport = {
   format: typeof LEDGER_EXPORT_FORMAT;
   model: "hash-chain" | "fabric-endorsement";
   genesis: string;
+  merkleAlgorithm: typeof MERKLE_ALG;
+  merkleRoot: string;
   blocks: LedgerBlock[];
 };
 
@@ -16,15 +19,20 @@ export type IndependentChainCheck = {
   length: number;
   model: "hash-chain" | "fabric-endorsement";
   genesis: string;
+  merkleAlgorithm?: typeof MERKLE_ALG;
+  merkleRoot?: string;
   head?: { seq: number; blockHash: string };
   reason?: string;
 };
 
 export function buildLedgerExport(blocks: LedgerBlock[], model: LedgerExport["model"] = "hash-chain"): LedgerExport {
+  const merkle = merkleRootFromBlockHashes(blocks.map((b) => b.blockHash));
   return {
     format: LEDGER_EXPORT_FORMAT,
     model,
     genesis: GENESIS_PREV,
+    merkleAlgorithm: merkle.algorithm,
+    merkleRoot: merkle.merkleRoot,
     blocks,
   };
 }
@@ -39,12 +47,17 @@ export function parseLedgerExport(raw: unknown): { ok: true; export: LedgerExpor
     return { ok: false, reason: "Unknown integrity model" };
   }
   if (!Array.isArray(rec.blocks)) return { ok: false, reason: "blocks must be an array" };
+  if (typeof rec.merkleRoot !== "string" || !rec.merkleRoot.startsWith("sha256:")) {
+    return { ok: false, reason: "Export must include merkleRoot (sha256:…)" };
+  }
   return {
     ok: true,
     export: {
       format: LEDGER_EXPORT_FORMAT,
       model: rec.model,
       genesis: typeof rec.genesis === "string" ? rec.genesis : GENESIS_PREV,
+      merkleAlgorithm: MERKLE_ALG,
+      merkleRoot: rec.merkleRoot,
       blocks: rec.blocks as LedgerBlock[],
     },
   };
@@ -61,6 +74,7 @@ export function verifyExportedChain(raw: unknown): IndependentChainCheck {
       length: parsed.export.blocks.length,
       model: "fabric-endorsement",
       genesis: parsed.export.genesis,
+      merkleRoot: parsed.export.merkleRoot,
       reason: "Fabric endorsement export is not independently verifiable without Gateway block data",
     };
   }
@@ -74,12 +88,26 @@ export function verifyExportedChain(raw: unknown): IndependentChainCheck {
     };
   }
   const chain = verifyBlockSequence(parsed.export.blocks);
+  const merkle = merkleRootFromBlockHashes(parsed.export.blocks.map((b) => b.blockHash));
+  if (chain.valid && !merkleRootsEqual(parsed.export.merkleRoot, merkle.merkleRoot)) {
+    return {
+      chainValid: false,
+      length: chain.length,
+      model: "hash-chain",
+      genesis: parsed.export.genesis,
+      merkleAlgorithm: merkle.algorithm,
+      merkleRoot: merkle.merkleRoot,
+      reason: "Merkle root does not match the recomputed RFC 6962 tree of block hashes",
+    };
+  }
   const last = parsed.export.blocks[parsed.export.blocks.length - 1];
   return {
     chainValid: chain.valid,
     length: chain.length,
     model: "hash-chain",
     genesis: parsed.export.genesis,
+    merkleAlgorithm: merkle.algorithm,
+    merkleRoot: merkle.merkleRoot,
     head: last ? { seq: last.seq, blockHash: last.blockHash } : undefined,
     reason: chain.reason,
   };

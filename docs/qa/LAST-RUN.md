@@ -1,8 +1,8 @@
 # QA last run
 
 Base: `http://127.0.0.1:8080`
-When: 2026-08-22T03:42:43.118Z
-Result: **PASS** · 74 pass · 0 fail · 0 blocked
+When: 2026-08-22T03:46:10.531Z
+Result: **PASS** · 75 pass · 0 fail · 0 blocked
 
 | ID | Title | Status | Notes |
 |---|---|---|---|
@@ -23,7 +23,7 @@ Result: **PASS** · 74 pass · 0 fail · 0 blocked
 | TC-4.3 | Claim is not re-issuance | PASS | Covered by presentation tests (inner VC issuer proof) |
 | TC-5.1 | Signed status list JSON | PASS | signed BitstringStatusListCredential |
 | TC-5.2 | Revoke outcome via API | PASS | REVOKED |
-| TC-6.1 | Signed report exists after verify | PASS | reportRef 9JuXrycj_8OV |
+| TC-6.1 | Signed report exists after verify | PASS | reportRef bpeo3GIa18lE |
 | TC-6.2 | Audit hash-chain | PASS | Covered by src/lib/audit/chain.test.ts |
 | TC-7.1 | Preview ledger is hash-chain | PASS | hashchain |
 | TC-7.2 | Fabric refuse | PASS | unconfigured Fabric throws |
@@ -74,9 +74,10 @@ Result: **PASS** · 74 pass · 0 fail · 0 blocked
 | TC-N.2 | SD-JWT notes | PASS | refused |
 | TC-N.3 | HAIP not claimed | PASS | not HAIP |
 | TC-N.4 | No fake Fabric | PASS | hashchain |
-| TC-17.1 | Chain export | PASS | length 44 |
+| TC-17.1 | Chain export | PASS | length 265 |
 | TC-17.2 | Independent recompute | PASS | chainValid |
 | TC-17.3 | Tampered export fails | PASS | Payload hash mismatch at seq 1 |
 | TC-17.4 | Chain page | PASS | 200 |
 | TC-17.5 | Diploma still VALID | PASS | VALID |
+| TC-17.6 | Wrong Merkle root | PASS | Merkle root does not match the recomputed RFC 6962 tree of block hashes |
 | TC-AUTO.meta | OID4VCI metadata helper | PASS | ldp_vc |
