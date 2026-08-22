@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppRouteRouteImport } from './routes/app/route'
+import { Route as ChainRouteImport } from './routes/chain'
 import { Route as ComplianceRouteImport } from './routes/compliance'
 import { Route as DevelopersRouteImport } from './routes/developers'
 import { Route as HealthzRouteImport } from './routes/healthz'
@@ -55,6 +56,8 @@ import { Route as CredentialsStatusIdRouteImport } from './routes/credentials/st
 import { Route as WalletClaimTokenRouteImport } from './routes/wallet/claim.$token'
 import { Route as ApiV1DidWebSlugRouteImport } from './routes/api/v1/did-web.$slug'
 import { Route as ApiV1EvidenceRefRouteImport } from './routes/api/v1/evidence.$ref'
+import { Route as ApiV1LedgerChainRouteImport } from './routes/api/v1/ledger.chain'
+import { Route as ApiV1LedgerVerifyRouteImport } from './routes/api/v1/ledger.verify'
 import { Route as ApiV1Oid4vciCredentialRouteImport } from './routes/api/v1/oid4vci/credential'
 import { Route as ApiV1Oid4vciMetadataRouteImport } from './routes/api/v1/oid4vci/metadata'
 import { Route as ApiV1Oid4vciPreviewWalletRouteImport } from './routes/api/v1/oid4vci/preview-wallet'
@@ -74,6 +77,11 @@ const IndexRoute = IndexRouteImport.update({
 const AppRouteRoute = AppRouteRouteImport.update({
   id: '/app',
   path: '/app',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ChainRoute = ChainRouteImport.update({
+  id: '/chain',
+  path: '/chain',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ComplianceRoute = ComplianceRouteImport.update({
@@ -298,6 +306,16 @@ const ApiV1EvidenceRefRoute = ApiV1EvidenceRefRouteImport.update({
   path: '/api/v1/evidence/$ref',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiV1LedgerChainRoute = ApiV1LedgerChainRouteImport.update({
+  id: '/api/v1/ledger/chain',
+  path: '/api/v1/ledger/chain',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiV1LedgerVerifyRoute = ApiV1LedgerVerifyRouteImport.update({
+  id: '/api/v1/ledger/verify',
+  path: '/api/v1/ledger/verify',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiV1Oid4vciCredentialRoute = ApiV1Oid4vciCredentialRouteImport.update({
   id: '/api/v1/oid4vci/credential',
   path: '/api/v1/oid4vci/credential',
@@ -355,6 +373,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/app': typeof AppRouteRouteWithChildren
   '/wallet': typeof WalletRouteRouteWithChildren
+  '/chain': typeof ChainRoute
   '/compliance': typeof ComplianceRoute
   '/developers': typeof DevelopersRoute
   '/healthz': typeof HealthzRoute
@@ -398,6 +417,8 @@ export interface FileRoutesByFullPath {
   '/wallet/claim/$token': typeof WalletClaimTokenRoute
   '/api/v1/did-web/$slug': typeof ApiV1DidWebSlugRoute
   '/api/v1/evidence/$ref': typeof ApiV1EvidenceRefRoute
+  '/api/v1/ledger/chain': typeof ApiV1LedgerChainRoute
+  '/api/v1/ledger/verify': typeof ApiV1LedgerVerifyRoute
   '/api/v1/oid4vci/credential': typeof ApiV1Oid4vciCredentialRoute
   '/api/v1/oid4vci/metadata': typeof ApiV1Oid4vciMetadataRoute
   '/api/v1/oid4vci/preview-wallet': typeof ApiV1Oid4vciPreviewWalletRoute
@@ -411,6 +432,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/chain': typeof ChainRoute
   '/compliance': typeof ComplianceRoute
   '/developers': typeof DevelopersRoute
   '/healthz': typeof HealthzRoute
@@ -454,6 +476,8 @@ export interface FileRoutesByTo {
   '/wallet/claim/$token': typeof WalletClaimTokenRoute
   '/api/v1/did-web/$slug': typeof ApiV1DidWebSlugRoute
   '/api/v1/evidence/$ref': typeof ApiV1EvidenceRefRoute
+  '/api/v1/ledger/chain': typeof ApiV1LedgerChainRoute
+  '/api/v1/ledger/verify': typeof ApiV1LedgerVerifyRoute
   '/api/v1/oid4vci/credential': typeof ApiV1Oid4vciCredentialRoute
   '/api/v1/oid4vci/metadata': typeof ApiV1Oid4vciMetadataRoute
   '/api/v1/oid4vci/preview-wallet': typeof ApiV1Oid4vciPreviewWalletRoute
@@ -470,6 +494,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/app': typeof AppRouteRouteWithChildren
   '/wallet': typeof WalletRouteRouteWithChildren
+  '/chain': typeof ChainRoute
   '/compliance': typeof ComplianceRoute
   '/developers': typeof DevelopersRoute
   '/healthz': typeof HealthzRoute
@@ -513,6 +538,8 @@ export interface FileRoutesById {
   '/wallet/claim/$token': typeof WalletClaimTokenRoute
   '/api/v1/did-web/$slug': typeof ApiV1DidWebSlugRoute
   '/api/v1/evidence/$ref': typeof ApiV1EvidenceRefRoute
+  '/api/v1/ledger/chain': typeof ApiV1LedgerChainRoute
+  '/api/v1/ledger/verify': typeof ApiV1LedgerVerifyRoute
   '/api/v1/oid4vci/credential': typeof ApiV1Oid4vciCredentialRoute
   '/api/v1/oid4vci/metadata': typeof ApiV1Oid4vciMetadataRoute
   '/api/v1/oid4vci/preview-wallet': typeof ApiV1Oid4vciPreviewWalletRoute
@@ -530,6 +557,7 @@ export interface FileRouteTypes {
     | '/'
     | '/app'
     | '/wallet'
+    | '/chain'
     | '/compliance'
     | '/developers'
     | '/healthz'
@@ -573,6 +601,8 @@ export interface FileRouteTypes {
     | '/wallet/claim/$token'
     | '/api/v1/did-web/$slug'
     | '/api/v1/evidence/$ref'
+    | '/api/v1/ledger/chain'
+    | '/api/v1/ledger/verify'
     | '/api/v1/oid4vci/credential'
     | '/api/v1/oid4vci/metadata'
     | '/api/v1/oid4vci/preview-wallet'
@@ -586,6 +616,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/chain'
     | '/compliance'
     | '/developers'
     | '/healthz'
@@ -629,6 +660,8 @@ export interface FileRouteTypes {
     | '/wallet/claim/$token'
     | '/api/v1/did-web/$slug'
     | '/api/v1/evidence/$ref'
+    | '/api/v1/ledger/chain'
+    | '/api/v1/ledger/verify'
     | '/api/v1/oid4vci/credential'
     | '/api/v1/oid4vci/metadata'
     | '/api/v1/oid4vci/preview-wallet'
@@ -644,6 +677,7 @@ export interface FileRouteTypes {
     | '/'
     | '/app'
     | '/wallet'
+    | '/chain'
     | '/compliance'
     | '/developers'
     | '/healthz'
@@ -687,6 +721,8 @@ export interface FileRouteTypes {
     | '/wallet/claim/$token'
     | '/api/v1/did-web/$slug'
     | '/api/v1/evidence/$ref'
+    | '/api/v1/ledger/chain'
+    | '/api/v1/ledger/verify'
     | '/api/v1/oid4vci/credential'
     | '/api/v1/oid4vci/metadata'
     | '/api/v1/oid4vci/preview-wallet'
@@ -703,6 +739,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRouteRoute: typeof AppRouteRouteWithChildren
   WalletRouteRoute: typeof WalletRouteRouteWithChildren
+  ChainRoute: typeof ChainRoute
   ComplianceRoute: typeof ComplianceRoute
   DevelopersRoute: typeof DevelopersRoute
   HealthzRoute: typeof HealthzRoute
@@ -733,6 +770,8 @@ export interface RootRouteChildren {
   CredentialsStatusIdRoute: typeof CredentialsStatusIdRoute
   ApiV1DidWebSlugRoute: typeof ApiV1DidWebSlugRoute
   ApiV1EvidenceRefRoute: typeof ApiV1EvidenceRefRoute
+  ApiV1LedgerChainRoute: typeof ApiV1LedgerChainRoute
+  ApiV1LedgerVerifyRoute: typeof ApiV1LedgerVerifyRoute
   ApiV1Oid4vciCredentialRoute: typeof ApiV1Oid4vciCredentialRoute
   ApiV1Oid4vciMetadataRoute: typeof ApiV1Oid4vciMetadataRoute
   ApiV1Oid4vciPreviewWalletRoute: typeof ApiV1Oid4vciPreviewWalletRoute
@@ -759,6 +798,13 @@ declare module '@tanstack/react-router' {
       path: '/app'
       fullPath: '/app'
       preLoaderRoute: typeof AppRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/chain': {
+      id: '/chain'
+      path: '/chain'
+      fullPath: '/chain'
+      preLoaderRoute: typeof ChainRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/compliance': {
@@ -1069,6 +1115,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiV1EvidenceRefRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/v1/ledger/chain': {
+      id: '/api/v1/ledger/chain'
+      path: '/api/v1/ledger/chain'
+      fullPath: '/api/v1/ledger/chain'
+      preLoaderRoute: typeof ApiV1LedgerChainRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/v1/ledger/verify': {
+      id: '/api/v1/ledger/verify'
+      path: '/api/v1/ledger/verify'
+      fullPath: '/api/v1/ledger/verify'
+      preLoaderRoute: typeof ApiV1LedgerVerifyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/v1/oid4vci/credential': {
       id: '/api/v1/oid4vci/credential'
       path: '/api/v1/oid4vci/credential'
@@ -1192,6 +1252,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRouteRoute: AppRouteRouteWithChildren,
   WalletRouteRoute: WalletRouteRouteWithChildren,
+  ChainRoute: ChainRoute,
   ComplianceRoute: ComplianceRoute,
   DevelopersRoute: DevelopersRoute,
   HealthzRoute: HealthzRoute,
@@ -1224,6 +1285,8 @@ const rootRouteChildren: RootRouteChildren = {
   CredentialsStatusIdRoute: CredentialsStatusIdRoute,
   ApiV1DidWebSlugRoute: ApiV1DidWebSlugRoute,
   ApiV1EvidenceRefRoute: ApiV1EvidenceRefRoute,
+  ApiV1LedgerChainRoute: ApiV1LedgerChainRoute,
+  ApiV1LedgerVerifyRoute: ApiV1LedgerVerifyRoute,
   ApiV1Oid4vciCredentialRoute: ApiV1Oid4vciCredentialRoute,
   ApiV1Oid4vciMetadataRoute: ApiV1Oid4vciMetadataRoute,
   ApiV1Oid4vciPreviewWalletRoute: ApiV1Oid4vciPreviewWalletRoute,

@@ -256,6 +256,16 @@ matrixly-event-id: wh_…
           VALID. Evidence and report APIs are tenant-scoped. Tenant admins manage members at{" "}
           <span className="font-mono text-sm">/app/team</span>; invite tokens are hashed.
         </p>
+
+        <h2 className="mt-10 font-display text-2xl">Independent ledger</h2>
+        <p className="mt-3 leading-relaxed text-ink-soft">
+          <Link to="/chain" className="underline underline-offset-4">
+            Hash-chain export
+          </Link>{" "}
+          · <span className="font-mono text-sm">GET /api/v1/ledger/chain</span> ·{" "}
+          <span className="font-mono text-sm">POST /api/v1/ledger/verify</span> recomputes hashes and
+          never returns credential VALID. Fabric dumps are refused without Gateway data.
+        </p>
       </article>
     </div>
   );

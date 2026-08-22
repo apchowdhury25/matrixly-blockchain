@@ -588,6 +588,61 @@ await liveCase("TC-N.4", "No fake Fabric", async () => {
   return String(ready.ledger);
 });
 
+await liveCase("TC-17.1", "Chain export", async () => {
+  const res = await fetchOk("/api/v1/ledger/chain");
+  const json = (await res.json()) as Record<string, unknown>;
+  if (res.status !== 200) throw new Error(`HTTP ${res.status}`);
+  if (json.format !== "matrixly.ledger.v1") throw new Error("format");
+  if (json.chainValid !== true) throw new Error(String(json.reason));
+  if (json.status === "VALID") throw new Error("export used credential VALID");
+  const blob = JSON.stringify(json);
+  if (blob.includes("Alex Rivera")) throw new Error("holder PII");
+  return `length ${String(json.length)}`;
+});
+
+await liveCase("TC-17.2", "Independent recompute", async () => {
+  const exported = (await (await fetchOk("/api/v1/ledger/chain")).json()) as Record<string, unknown>;
+  const res = await fetchOk("/api/v1/ledger/verify", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(exported),
+  });
+  const json = (await res.json()) as Record<string, unknown>;
+  if (json.chainValid !== true) throw new Error(JSON.stringify(json));
+  if (json.status === "VALID" || json.verified === true) throw new Error("credential VALID");
+  return "chainValid";
+});
+
+await liveCase("TC-17.3", "Tampered export fails", async () => {
+  const exported = (await (await fetchOk("/api/v1/ledger/chain")).json()) as {
+    blocks: Array<{ payload: { record: Record<string, unknown> } }>;
+  };
+  if (!exported.blocks[0]) throw new Error("empty chain");
+  exported.blocks[0]!.payload.record = { ...exported.blocks[0]!.payload.record, tampered: true };
+  const res = await fetchOk("/api/v1/ledger/verify", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(exported),
+  });
+  const json = (await res.json()) as Record<string, unknown>;
+  if (json.chainValid !== false) throw new Error("tamper accepted");
+  if (json.status === "VALID") throw new Error("VALID");
+  return String(json.reason);
+});
+
+await liveCase("TC-17.4", "Chain page", async () => {
+  const { status, text } = await html("/chain");
+  if (status !== 200) throw new Error(`HTTP ${status}`);
+  if (!/hash-chain|Independent/i.test(text)) throw new Error("copy");
+  return "200";
+});
+
+await liveCase("TC-17.5", "Diploma still VALID", async () => {
+  const { json } = await verifyApi({ ref: "demo-valid-bcs" });
+  if (json.status !== "VALID") throw new Error(String(json.status));
+  return "VALID";
+});
+
 unitCase("TC-AUTO.meta", "OID4VCI metadata helper", () => {
   const meta = credentialIssuerMetadata("https://issuer.example.test");
   if (meta.credential_configurations_supported.university_degree_ldp_vc?.format !== "ldp_vc") {

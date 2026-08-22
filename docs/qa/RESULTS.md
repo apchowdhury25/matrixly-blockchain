@@ -1,4 +1,4 @@
-# QA results — 21 August 2026 (Phases 15–16)
+# QA results — 21 August 2026 (Phase 17)
 
 Catalog: [CASES.md](CASES.md). Procedures: [STEPS.md](STEPS.md). Last automated run: [LAST-RUN.md](LAST-RUN.md).
 
@@ -10,47 +10,34 @@ Score: **PASS** · **FAIL** · **BLOCKED**. A phase is not done if any required 
 
 | Phase | Verdict | Tests | Notes |
 |---|---|---|---|
-| 1–14 | PASS | included | Prior phases |
-| 15 Schema ledger | PASS | included | JCS hash on ledger; mismatch INVALID |
-| 16 Team | PASS | included | Hashed invites; last-admin guard |
+| 1–16 | PASS | included | Prior phases |
+| 17 Ledger export | PASS | included | Independent chainValid; tamper fails |
 
 ## Gate
 
 | Check | Status | Notes |
 |---|---|---|
-| `npm run test:qa` | PASS | 69 / 69 (catalog TC-1.1 … TC-N.4) |
-| `npm run test:trust` | PASS | 110 / 110 |
+| `npm run test:qa` | PASS | 74 / 74 |
+| `npm run test:trust` | PASS | 115 / 115 |
 | `npm run typecheck` | PASS | |
-| Schema page | PASS | Anchored; `sha256:` shown; not a full 2020-12 processor |
-| `GET /schemas/university-degree-credential.json` | PASS | `application/schema+json` + `x-schema-hash` |
-| Demo verify | PASS | VALID; `checks.schemaAnchored` true |
-| `/readyz` | PASS | `schemaAnchored: true` |
-| `/app/team` | PASS | HTTP 200 (console; invite rules unit-tested) |
-| Verify API 401 | PASS | UNAUTHORIZED, not VALID |
-| Browser smoke | PASS | |
+| Chain export | PASS | `matrixly.ledger.v1`, no holder PII |
+| Tampered export | PASS | chainValid false |
+| Demo verify | PASS | still VALID |
 
-## Phase 15
+## Phase 17
 
 | Step | Status | Notes |
 |---|---|---|
-| 15.1 Schema page | PASS | Anchored on the ledger |
-| 15.2 Machine schema | PASS | Hash header matches |
-| 15.3 Demo still verifies | PASS | VALID + schemaAnchored |
-| 15.4 Wrong hash | PASS | Engine test never VALID |
-
-## Phase 16
-
-| Step | Status | Notes |
-|---|---|---|
-| 16.1 Team page | PASS | Route loads; copy-once copy in UI |
-| 16.2 Invite hashed | PASS | Token ≠ hash unit test |
-| 16.3 Last admin | PASS | Demote/deactivate throws |
-| 16.4 AUDITOR cannot issue | PASS | RBAC |
+| 17.1 Chain page | PASS | `/chain` 200 |
+| 17.2 Machine export | PASS | format + chainValid |
+| 17.3 Independent recompute | PASS | POST verify |
+| 17.4 Tamper | PASS | payload hash mismatch |
+| 17.5 Regression | PASS | demo VALID |
 
 ## Verdict
 
 | Item | Status |
 |---|---|
-| Phase 15 | PASS |
-| Phase 16 | PASS |
-| SOC 2 / SMTP / SCIM not claimed | PASS |
+| Phase 17 | PASS |
+| Export is not credential VALID | PASS |
+| Fabric dump not faked | PASS |

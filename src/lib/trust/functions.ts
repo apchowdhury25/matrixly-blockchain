@@ -40,6 +40,11 @@ import { DEMO, newId, opaqueRef } from "./ids";
 import { readiness } from "@/lib/ops/health";
 import { UNIVERSITY_DEGREE_SCHEMA_ID } from "@/lib/schema/university-degree";
 import { schemaDocumentHash, registerPublishedSchema } from "@/lib/schema/anchor";
+import {
+  assertExportHasNoHolderPii,
+  buildLedgerExport,
+  verifyExportedChain,
+} from "@/lib/ledger/export";
 import { openSecret, sealSecret } from "./seal";
 
 type CredentialRow = {
@@ -1873,6 +1878,46 @@ export const getPublishedSchemaMeta = createServerFn({ method: "GET" }).handler(
     ledgerAnchored: Boolean(rec && rec.schemaHash === hash && rec.status === "ACTIVE"),
   };
 });
+
+export const getPublicLedgerExport = createServerFn({ method: "GET" }).handler(async () => {
+  await ensureDemoSeed();
+  const ledger = await getLedger();
+  if (ledger.name === "FabricLedgerAdapter") {
+    return {
+      format: "matrixly.ledger.v1" as const,
+      model: "fabric-endorsement" as const,
+      genesis: "",
+      chainValid: false,
+      length: 0,
+      reason: "Fabric chain export requires Gateway block data",
+    };
+  }
+  const blocks = await ledger.listBlocks();
+  assertExportHasNoHolderPii(blocks);
+  const exported = buildLedgerExport(blocks);
+  const check = verifyExportedChain(exported);
+  return {
+    format: exported.format,
+    model: exported.model,
+    genesis: exported.genesis,
+    chainValid: check.chainValid,
+    length: check.length,
+    head: check.head,
+    reason: check.reason,
+  };
+});
+
+export const verifyPublicLedgerExport = createServerFn({ method: "POST" })
+  .validator((raw: unknown) => z.object({ exportJson: z.string().min(2).max(2_000_000) }).parse(raw))
+  .handler(async ({ data }) => {
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(data.exportJson);
+    } catch {
+      return { chainValid: false, length: 0, model: "hash-chain" as const, genesis: "", reason: "Export is not JSON" };
+    }
+    return verifyExportedChain(parsed);
+  });
 
 export const getDidWebDocument = createServerFn({ method: "GET" })
   .validator((raw: unknown) => z.object({ slug: z.string().min(2).max(80) }).parse(raw ?? { slug: "global-university" }))

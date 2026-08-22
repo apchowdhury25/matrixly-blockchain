@@ -35,6 +35,7 @@ Quick index (full procedures in STEPS.md):
 | 14 Tenancy + ops | `/ops` + `/healthz` + `/readyz` | Ready; 401 still not VALID; cross-tenant export 404 |
 | 15 Schema ledger | Schema page + `x-schema-hash` | Anchored; demo VALID with `schemaAnchored` |
 | 16 Team | `/app/team` | Invite token shown once; last admin cannot be removed |
+| 17 Ledger export | `/chain` + `GET /api/v1/ledger/chain` | Independent `chainValid`; tamper not VALID |
 
 Always re-run `npm run test:qa` and the [minimum ship set](CASES.md#minimum-ship-set-every-phase) after a change.
 

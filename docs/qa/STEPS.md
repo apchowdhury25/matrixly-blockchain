@@ -761,6 +761,40 @@ Open **SD-JWT**.
 
 ---
 
+## Phase 17 — Independent ledger export
+
+### 17.1 Chain page
+
+Open **Chain** in the header (`/chain`).
+
+**PASS if** it shows an intact chain, a block count, and says this is not a credential VALID badge. Fabric is not claimed live.
+
+### 17.2 Machine export
+
+```bash
+curl -s http://127.0.0.1:8080/api/v1/ledger/chain
+```
+
+**PASS if** `format` is `matrixly.ledger.v1`, `chainValid` is true, there is no top-level `"status":"VALID"`, and the JSON does not contain `Alex Rivera`.
+
+### 17.3 Independent recompute
+
+POST the export to `/api/v1/ledger/verify`.
+
+**PASS if** `chainValid` is true and `verified` is not true.
+
+### 17.4 Tamper
+
+Flip a field inside `blocks[0].payload.record` and POST again.
+
+**PASS if** `chainValid` is false. Must not be treated as a valid diploma.
+
+### 17.5 Regression
+
+API verify of `demo-valid-bcs` is still VALID.
+
+---
+
 ## Traps (do not mis-score)
 
 | Action | Wrong reading | Correct |
@@ -779,6 +813,7 @@ Open **SD-JWT**.
 | Schema page | “We run a full JSON Schema 2020-12 processor” | Published university-degree rules only |
 | Ops Ready | “Fabric is live” | Preview ledger is hash-chain unless Gateway env is set |
 | Schema anchored | “Tamper should pass now” | Schema hash is independent of PDF SHA-256 |
+| Chain intact | “The diploma is VALID” | Chain integrity is necessary, not sufficient |
 | Team invite | “Email was sent” | No SMTP; you must copy the URL |
 | SOC 2 page | “We passed the audit” | Mapping is readiness notes; REG-01 stays not-claimed |
 

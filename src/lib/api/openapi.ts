@@ -195,6 +195,27 @@ export const openApiSpec = {
         },
       },
     },
+    "/api/v1/ledger/chain": {
+      get: {
+        summary: "Export the hash-chain (hashes and DIDs). Not a credential VALID.",
+        security: [],
+        responses: {
+          "200": { description: "matrixly.ledger.v1 + independent chainValid" },
+          "503": { description: "Fabric adapter has no independent dump" },
+        },
+      },
+    },
+    "/api/v1/ledger/verify": {
+      post: {
+        summary: "Recompute block hashes of a ledger export. Never returns credential VALID.",
+        security: [],
+        requestBody: {
+          required: true,
+          content: { "application/json": { schema: { type: "object" } } },
+        },
+        responses: { "200": { description: "chainValid, length, reason" } },
+      },
+    },
     "/healthz": {
       get: {
         summary: "Liveness. Does not imply the ledger is reachable.",

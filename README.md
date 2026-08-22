@@ -46,8 +46,9 @@ Issuer → Identity → Document → SHA-256 → VC 2.0 → Ed25519
 | 14 Tenancy + ops | Shipped | Tenant-scoped exports, 429 never VALID, `/healthz` vs `/readyz` |
 | 15 Schema ledger | Shipped | JsonSchema JCS hash registered on the ledger; mismatch is INVALID |
 | 16 Team | Shipped | Hashed email invites, last-admin guard, AUDITOR still cannot issue |
+| 17 Ledger export | Shipped | Independent hash-chain dump; recompute is not credential VALID |
 
-Phase write-ups: [docs/phases/](docs/phases/). Architecture: [docs/architecture/trust-model.md](docs/architecture/trust-model.md). Fabric Gateway mapping: [docs/architecture/fabric-gateway.md](docs/architecture/fabric-gateway.md). Protocol standards: [docs/architecture/protocol-standards.md](docs/architecture/protocol-standards.md). SD-JWT (not supported): [docs/architecture/sd-jwt.md](docs/architecture/sd-jwt.md). Compliance matrix: [docs/compliance/matrix.md](docs/compliance/matrix.md). SOC 2 (not claimed): [docs/compliance/soc2.md](docs/compliance/soc2.md). QA cases: [docs/qa/CASES.md](docs/qa/CASES.md). Steps: [docs/qa/STEPS.md](docs/qa/STEPS.md).
+Phase write-ups: [docs/phases/](docs/phases/). Architecture: [docs/architecture/trust-model.md](docs/architecture/trust-model.md). Fabric Gateway mapping: [docs/architecture/fabric-gateway.md](docs/architecture/fabric-gateway.md). Protocol standards: [docs/architecture/protocol-standards.md](docs/architecture/protocol-standards.md). SD-JWT (not supported): [docs/architecture/sd-jwt.md](docs/architecture/sd-jwt.md). Compliance matrix: [docs/compliance/matrix.md](docs/compliance/matrix.md). SOC 2 (not claimed): [docs/compliance/soc2.md](docs/compliance/soc2.md). QA cases: [docs/qa/CASES.md](docs/qa/CASES.md). Steps: [docs/qa/STEPS.md](docs/qa/STEPS.md). Independent ledger: `/chain`.
 
 ## Prerequisites
 

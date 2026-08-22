@@ -95,6 +95,13 @@ export const COMPLIANCE_MATRIX: ComplianceControl[] = [
     evidence: "FabricLedgerAdapter throws; never returns a successful submit",
   },
   {
+    id: "DLT-03",
+    area: "Ledger",
+    control: "Hash-chain can be exported and recomputed independently; export is not a credential VALID",
+    status: "implemented",
+    evidence: "GET /api/v1/ledger/chain ; POST /api/v1/ledger/verify ; /chain",
+  },
+  {
     id: "PII-01",
     area: "Privacy",
     control: "Opaque verify links; machine API omits holder names by default",

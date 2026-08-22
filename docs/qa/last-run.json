@@ -1,7 +1,7 @@
 {
   "base": "http://127.0.0.1:8080",
-  "when": "2026-08-22T03:36:58.532Z",
-  "pass": 69,
+  "when": "2026-08-22T03:42:43.119Z",
+  "pass": 74,
   "fail": 0,
   "blocked": 0,
   "rows": [
@@ -45,7 +45,7 @@
       "id": "TC-2.1",
       "title": "Public keys only (DID page)",
       "status": "PASS",
-      "notes": "did:key:z6MkgD1oQXGujBuF… public"
+      "notes": "did:key:z6MksTFUXzwu78R4… public"
     },
     {
       "id": "TC-2.2",
@@ -111,7 +111,7 @@
       "id": "TC-6.1",
       "title": "Signed report exists after verify",
       "status": "PASS",
-      "notes": "reportRef tgdq43vtC5vj"
+      "notes": "reportRef 9JuXrycj_8OV"
     },
     {
       "id": "TC-6.2",
@@ -412,6 +412,36 @@
       "title": "No fake Fabric",
       "status": "PASS",
       "notes": "hashchain"
+    },
+    {
+      "id": "TC-17.1",
+      "title": "Chain export",
+      "status": "PASS",
+      "notes": "length 44"
+    },
+    {
+      "id": "TC-17.2",
+      "title": "Independent recompute",
+      "status": "PASS",
+      "notes": "chainValid"
+    },
+    {
+      "id": "TC-17.3",
+      "title": "Tampered export fails",
+      "status": "PASS",
+      "notes": "Payload hash mismatch at seq 1"
+    },
+    {
+      "id": "TC-17.4",
+      "title": "Chain page",
+      "status": "PASS",
+      "notes": "200"
+    },
+    {
+      "id": "TC-17.5",
+      "title": "Diploma still VALID",
+      "status": "PASS",
+      "notes": "VALID"
     },
     {
       "id": "TC-AUTO.meta",

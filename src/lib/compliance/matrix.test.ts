@@ -34,3 +34,7 @@ test("tenant isolation, rate limit, and readiness are implemented", () => {
   assert.equal(COMPLIANCE_MATRIX.find((c) => c.id === "API-02")?.status, "implemented");
   assert.equal(COMPLIANCE_MATRIX.find((c) => c.id === "OPS-01")?.status, "implemented");
 });
+
+test("independent ledger export is implemented and is not a certification", () => {
+  assert.equal(COMPLIANCE_MATRIX.find((c) => c.id === "DLT-03")?.status, "implemented");
+});
