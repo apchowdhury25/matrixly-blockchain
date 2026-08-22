@@ -6,7 +6,19 @@ import { acceptInvite, peekInvite } from "@/lib/trust/functions";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
 
 export const Route = createFileRoute("/invite/$token")({
-  loader: ({ params }) => peekInvite({ data: { token: params.token } }),
+  loader: async ({ params }) => {
+    try {
+      return await peekInvite({ data: { token: params.token } });
+    } catch {
+      return {
+        email: "",
+        role: "",
+        status: "INVALID",
+        expiresAt: "",
+        orgName: "this organization",
+      };
+    }
+  },
   component: InvitePage,
 });
 
