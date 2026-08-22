@@ -631,31 +631,71 @@ Automated: `canExportVerification` is false for a foreign tenant + foreign key.
 
 **PASS if** that case is not treated as VALID.
 
+### 14.5 Rate limit
+
+Automated: more hits than the window allows on the same API key.
+
+**PASS if** the limiter returns not-ok and a 429 body would be `RATE_LIMITED` with `verified: false`. Never VALID.
+
+### 14.6 healthz is not a ledger proof
+
+`GET /healthz` vs `GET /readyz`.
+
+**PASS if** healthz is only `{ status: "ok", service: "matrixly-trust" }` and readyz includes `db` / `ledger` / `schemaAnchored`.
+
 ---
 
 ## Phase 15 — Ledger-anchored schema
 
 ### 15.1 Schema page
 
-Open **Schema**. Hash starts with `sha256:`. Status is **Anchored on the ledger**.
+1. Open **Schema** in the header (`/schemas/university-degree`).
+2. Read the hash line and the anchored line.
 
-**PASS if** the page does not claim a full JSON Schema 2020-12 processor.
+**PASS if:**
+
+- Hash starts with `sha256:` and is 64 hex characters after the prefix
+- Status text is **Anchored on the ledger** (valid green), not “Not anchored”
+- Copy says this is **not** a full JSON Schema 2020-12 processor
+
+**FAIL if** the page claims a general-purpose schema engine, or shows anchored when `/readyz` has `schemaAnchored: false`.
 
 ### 15.2 Machine schema
 
-`GET /schemas/university-degree-credential.json` includes `x-schema-hash` matching the page.
+```bash
+curl -sI http://127.0.0.1:8080/schemas/university-degree-credential.json
+```
 
-**PASS if** content-type is `application/schema+json` (or JSON) and the hash header is present.
+**PASS if** `content-type` is `application/schema+json` (or JSON) and `x-schema-hash` equals the hash on the Schema page.
 
-### 15.3 Demo still verifies
+### 15.3 Demo still verifies with schemaAnchored
 
-Public verifier / API verify of the demo diploma.
+```bash
+curl -s -X POST http://127.0.0.1:8080/api/v1/verify \
+  -H 'content-type: application/json' \
+  -H 'authorization: Bearer mtx_live_demo_verifier_qa_only' \
+  -d '{"ref":"demo-valid-bcs"}'
+```
 
-**PASS if** VALID and `checks.schemaAnchored` is true.
+**PASS if** `"status":"VALID"` and `"schemaAnchored":true`.
+
+**FAIL if** VALID while `schemaAnchored` is false (the diploma includes `credentialSchema`).
 
 ### 15.4 Wrong hash
 
-Automated: a SCHEMA record with a different hash never returns VALID.
+Automated: `src/lib/credentials/engine.test.ts` — SCHEMA record with a different hash.
+
+**PASS if** status is INVALID and `schemaAnchored` is false.
+
+### 15.5 Tamper is still independent
+
+Home → **One-byte tamper**.
+
+**PASS if** INVALID because SHA-256 failed, even though the schema is anchored. An anchored schema must not wash out a file change.
+
+### 15.6 Readyz
+
+`GET /readyz` includes `"schemaAnchored":true` in this preview.
 
 ---
 
@@ -663,25 +703,61 @@ Automated: a SCHEMA record with a different hash never returns VALID.
 
 ### 16.1 Team page
 
-Sign in → **Team**.
+1. Sign in (create-account if needed).
+2. Open **Team** in the issuer console.
 
-**PASS if** the page loads for a tenant admin and explains that invite tokens are shown once.
+**PASS if** the page loads, says invite tokens are shown once, and says this preview does not send email.
 
-### 16.2 Invite token hashed
+### 16.2 Create invite (token shown once)
 
-Create an invite. Copy the `mtx_inv_` URL. Reload Team — the plaintext token is gone; the invite row remains PENDING.
+1. Email: a second address you control (or `auditor@example.edu`).
+2. Role: **AUDITOR** (so they cannot issue).
+3. **Create invite**.
+4. Copy `/invite/mtx_inv_…` immediately.
 
-**PASS if** the token is not listed again.
+**PASS if** the token starts with `mtx_inv_` and the banner says it cannot be retrieved again.
 
-### 16.3 Last admin
+### 16.3 Reload — plaintext gone
 
-Automated: demoting the only TENANT_ADMIN throws.
+Reload **Team**.
 
-**PASS if** the last admin remains.
+**PASS if** a PENDING row remains for that email and the full `mtx_inv_` secret is **not** listed. Prefix-only metadata is acceptable.
 
-### 16.4 AUDITOR still cannot issue
+### 16.4 Last admin
 
-**PASS if** `hasPermission("AUDITOR", "issue")` is false.
+On the only TENANT_ADMIN row, set role to ISSUER (or Deactivate).
+
+**PASS if** an error appears: last TENANT_ADMIN cannot be demoted or deactivated. You still have admin access after reload.
+
+### 16.5 AUDITOR cannot issue
+
+Automated: `hasPermission("AUDITOR", "issue") === false`. If you accept the AUDITOR invite in a second browser, **Issue** must refuse.
+
+### 16.6 Invalid invite URL
+
+Open `/invite/mtx_inv_notarealtoken`.
+
+**PASS if** the page says the invite is invalid (not a blank 500 crash).
+
+### 16.7 ISSUER cannot manage members
+
+Automated: `hasPermission("ISSUER", "manageMembers") === false`.
+
+---
+
+## Honesty pages (not a phase)
+
+### H.1 SOC 2
+
+Open **SOC 2** and **Compliance**.
+
+**PASS if** both say the product is not SOC 2 Type I/II certified and REG-01 is `not-claimed`.
+
+### H.2 SD-JWT
+
+Open **SD-JWT**.
+
+**PASS if** `dc+sd-jwt` is refused and dual-write is refused. Not HAIP.
 
 ---
 
@@ -702,4 +778,7 @@ Automated: demoting the only TENANT_ADMIN throws.
 | OpenID4VP preview wallet | “We are HAIP certified” | W3C VP + DCQL only; OID-02 is not-claimed |
 | Schema page | “We run a full JSON Schema 2020-12 processor” | Published university-degree rules only |
 | Ops Ready | “Fabric is live” | Preview ledger is hash-chain unless Gateway env is set |
+| Schema anchored | “Tamper should pass now” | Schema hash is independent of PDF SHA-256 |
+| Team invite | “Email was sent” | No SMTP; you must copy the URL |
+| SOC 2 page | “We passed the audit” | Mapping is readiness notes; REG-01 stays not-claimed |
 

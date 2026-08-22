@@ -1,6 +1,7 @@
 # QA module
 
 - **Click-by-click procedures:** [STEPS.md](STEPS.md)
+- **Numbered test cases:** [CASES.md](CASES.md)
 - **Latest automated results:** [RESULTS.md](RESULTS.md)
 - **API examples:** [api-examples.md](../api-examples.md)
 - **Compliance matrix:** [compliance/matrix.md](../compliance/matrix.md)
@@ -33,6 +34,8 @@ Quick index (full procedures in STEPS.md):
 | 14 Tenancy + ops | `/ops` + `/healthz` + `/readyz` | Ready; 401 still not VALID; cross-tenant export 404 |
 | 15 Schema ledger | Schema page + `x-schema-hash` | Anchored; demo VALID with `schemaAnchored` |
 | 16 Team | `/app/team` | Invite token shown once; last admin cannot be removed |
+
+Always re-run the [minimum ship set](CASES.md#minimum-ship-set-every-phase) after a change: original VALID, tamper INVALID, API 401, demo VALID + schemaAnchored, SOC 2 not claimed.
 
 ## Out of scope
 

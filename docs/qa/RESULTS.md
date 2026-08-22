@@ -1,5 +1,7 @@
 # QA results — 21 August 2026 (Phases 15–16)
 
+Catalog: [CASES.md](CASES.md). Procedures: [STEPS.md](STEPS.md).
+
 Executor: Grok-Build.
 
 Score: **PASS** · **FAIL** · **BLOCKED**. A phase is not done if any required row is FAIL.
