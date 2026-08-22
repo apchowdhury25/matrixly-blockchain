@@ -59,6 +59,7 @@ import { Route as ApiV1DidWebSlugRouteImport } from './routes/api/v1/did-web.$sl
 import { Route as ApiV1EvidenceRefRouteImport } from './routes/api/v1/evidence.$ref'
 import { Route as ApiV1LedgerChainRouteImport } from './routes/api/v1/ledger.chain'
 import { Route as ApiV1LedgerProofRouteImport } from './routes/api/v1/ledger.proof'
+import { Route as ApiV1LedgerReceiptRouteImport } from './routes/api/v1/ledger.receipt'
 import { Route as ApiV1LedgerSthRouteImport } from './routes/api/v1/ledger.sth'
 import { Route as ApiV1LedgerVerifyRouteImport } from './routes/api/v1/ledger.verify'
 import { Route as ApiV1Oid4vciCredentialRouteImport } from './routes/api/v1/oid4vci/credential'
@@ -68,6 +69,7 @@ import { Route as ApiV1Oid4vciTokenRouteImport } from './routes/api/v1/oid4vci/t
 import { Route as ApiV1Oid4vpRequestsRouteImport } from './routes/api/v1/oid4vp/requests'
 import { Route as ApiV1ReportsRefRouteImport } from './routes/api/v1/reports.$ref'
 import { Route as ApiV1LedgerProofVerifyRouteImport } from './routes/api/v1/ledger.proof.verify'
+import { Route as ApiV1LedgerReceiptVerifyRouteImport } from './routes/api/v1/ledger.receipt.verify'
 import { Route as ApiV1LedgerSthVerifyRouteImport } from './routes/api/v1/ledger.sth.verify'
 import { Route as ApiV1Oid4vciOfferTokenRouteImport } from './routes/api/v1/oid4vci/offer.$token'
 import { Route as ApiV1Oid4vpDirectPostIdRouteImport } from './routes/api/v1/oid4vp/direct-post.$id'
@@ -326,6 +328,11 @@ const ApiV1LedgerProofRoute = ApiV1LedgerProofRouteImport.update({
   path: '/api/v1/ledger/proof',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiV1LedgerReceiptRoute = ApiV1LedgerReceiptRouteImport.update({
+  id: '/api/v1/ledger/receipt',
+  path: '/api/v1/ledger/receipt',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiV1LedgerSthRoute = ApiV1LedgerSthRouteImport.update({
   id: '/api/v1/ledger/sth',
   path: '/api/v1/ledger/sth',
@@ -372,6 +379,12 @@ const ApiV1LedgerProofVerifyRoute = ApiV1LedgerProofVerifyRouteImport.update({
   path: '/verify',
   getParentRoute: () => ApiV1LedgerProofRoute,
 } as any)
+const ApiV1LedgerReceiptVerifyRoute =
+  ApiV1LedgerReceiptVerifyRouteImport.update({
+    id: '/verify',
+    path: '/verify',
+    getParentRoute: () => ApiV1LedgerReceiptRoute,
+  } as any)
 const ApiV1LedgerSthVerifyRoute = ApiV1LedgerSthVerifyRouteImport.update({
   id: '/verify',
   path: '/verify',
@@ -450,6 +463,7 @@ export interface FileRoutesByFullPath {
   '/api/v1/evidence/$ref': typeof ApiV1EvidenceRefRoute
   '/api/v1/ledger/chain': typeof ApiV1LedgerChainRoute
   '/api/v1/ledger/proof': typeof ApiV1LedgerProofRouteWithChildren
+  '/api/v1/ledger/receipt': typeof ApiV1LedgerReceiptRouteWithChildren
   '/api/v1/ledger/sth': typeof ApiV1LedgerSthRouteWithChildren
   '/api/v1/ledger/verify': typeof ApiV1LedgerVerifyRoute
   '/api/v1/oid4vci/credential': typeof ApiV1Oid4vciCredentialRoute
@@ -459,6 +473,7 @@ export interface FileRoutesByFullPath {
   '/api/v1/oid4vp/requests': typeof ApiV1Oid4vpRequestsRoute
   '/api/v1/reports/$ref': typeof ApiV1ReportsRefRoute
   '/api/v1/ledger/proof/verify': typeof ApiV1LedgerProofVerifyRoute
+  '/api/v1/ledger/receipt/verify': typeof ApiV1LedgerReceiptVerifyRoute
   '/api/v1/ledger/sth/verify': typeof ApiV1LedgerSthVerifyRoute
   '/api/v1/oid4vci/offer/$token': typeof ApiV1Oid4vciOfferTokenRoute
   '/api/v1/oid4vp/direct-post/$id': typeof ApiV1Oid4vpDirectPostIdRoute
@@ -514,6 +529,7 @@ export interface FileRoutesByTo {
   '/api/v1/evidence/$ref': typeof ApiV1EvidenceRefRoute
   '/api/v1/ledger/chain': typeof ApiV1LedgerChainRoute
   '/api/v1/ledger/proof': typeof ApiV1LedgerProofRouteWithChildren
+  '/api/v1/ledger/receipt': typeof ApiV1LedgerReceiptRouteWithChildren
   '/api/v1/ledger/sth': typeof ApiV1LedgerSthRouteWithChildren
   '/api/v1/ledger/verify': typeof ApiV1LedgerVerifyRoute
   '/api/v1/oid4vci/credential': typeof ApiV1Oid4vciCredentialRoute
@@ -523,6 +539,7 @@ export interface FileRoutesByTo {
   '/api/v1/oid4vp/requests': typeof ApiV1Oid4vpRequestsRoute
   '/api/v1/reports/$ref': typeof ApiV1ReportsRefRoute
   '/api/v1/ledger/proof/verify': typeof ApiV1LedgerProofVerifyRoute
+  '/api/v1/ledger/receipt/verify': typeof ApiV1LedgerReceiptVerifyRoute
   '/api/v1/ledger/sth/verify': typeof ApiV1LedgerSthVerifyRoute
   '/api/v1/oid4vci/offer/$token': typeof ApiV1Oid4vciOfferTokenRoute
   '/api/v1/oid4vp/direct-post/$id': typeof ApiV1Oid4vpDirectPostIdRoute
@@ -581,6 +598,7 @@ export interface FileRoutesById {
   '/api/v1/evidence/$ref': typeof ApiV1EvidenceRefRoute
   '/api/v1/ledger/chain': typeof ApiV1LedgerChainRoute
   '/api/v1/ledger/proof': typeof ApiV1LedgerProofRouteWithChildren
+  '/api/v1/ledger/receipt': typeof ApiV1LedgerReceiptRouteWithChildren
   '/api/v1/ledger/sth': typeof ApiV1LedgerSthRouteWithChildren
   '/api/v1/ledger/verify': typeof ApiV1LedgerVerifyRoute
   '/api/v1/oid4vci/credential': typeof ApiV1Oid4vciCredentialRoute
@@ -590,6 +608,7 @@ export interface FileRoutesById {
   '/api/v1/oid4vp/requests': typeof ApiV1Oid4vpRequestsRoute
   '/api/v1/reports/$ref': typeof ApiV1ReportsRefRoute
   '/api/v1/ledger/proof/verify': typeof ApiV1LedgerProofVerifyRoute
+  '/api/v1/ledger/receipt/verify': typeof ApiV1LedgerReceiptVerifyRoute
   '/api/v1/ledger/sth/verify': typeof ApiV1LedgerSthVerifyRoute
   '/api/v1/oid4vci/offer/$token': typeof ApiV1Oid4vciOfferTokenRoute
   '/api/v1/oid4vp/direct-post/$id': typeof ApiV1Oid4vpDirectPostIdRoute
@@ -649,6 +668,7 @@ export interface FileRouteTypes {
     | '/api/v1/evidence/$ref'
     | '/api/v1/ledger/chain'
     | '/api/v1/ledger/proof'
+    | '/api/v1/ledger/receipt'
     | '/api/v1/ledger/sth'
     | '/api/v1/ledger/verify'
     | '/api/v1/oid4vci/credential'
@@ -658,6 +678,7 @@ export interface FileRouteTypes {
     | '/api/v1/oid4vp/requests'
     | '/api/v1/reports/$ref'
     | '/api/v1/ledger/proof/verify'
+    | '/api/v1/ledger/receipt/verify'
     | '/api/v1/ledger/sth/verify'
     | '/api/v1/oid4vci/offer/$token'
     | '/api/v1/oid4vp/direct-post/$id'
@@ -713,6 +734,7 @@ export interface FileRouteTypes {
     | '/api/v1/evidence/$ref'
     | '/api/v1/ledger/chain'
     | '/api/v1/ledger/proof'
+    | '/api/v1/ledger/receipt'
     | '/api/v1/ledger/sth'
     | '/api/v1/ledger/verify'
     | '/api/v1/oid4vci/credential'
@@ -722,6 +744,7 @@ export interface FileRouteTypes {
     | '/api/v1/oid4vp/requests'
     | '/api/v1/reports/$ref'
     | '/api/v1/ledger/proof/verify'
+    | '/api/v1/ledger/receipt/verify'
     | '/api/v1/ledger/sth/verify'
     | '/api/v1/oid4vci/offer/$token'
     | '/api/v1/oid4vp/direct-post/$id'
@@ -779,6 +802,7 @@ export interface FileRouteTypes {
     | '/api/v1/evidence/$ref'
     | '/api/v1/ledger/chain'
     | '/api/v1/ledger/proof'
+    | '/api/v1/ledger/receipt'
     | '/api/v1/ledger/sth'
     | '/api/v1/ledger/verify'
     | '/api/v1/oid4vci/credential'
@@ -788,6 +812,7 @@ export interface FileRouteTypes {
     | '/api/v1/oid4vp/requests'
     | '/api/v1/reports/$ref'
     | '/api/v1/ledger/proof/verify'
+    | '/api/v1/ledger/receipt/verify'
     | '/api/v1/ledger/sth/verify'
     | '/api/v1/oid4vci/offer/$token'
     | '/api/v1/oid4vp/direct-post/$id'
@@ -833,6 +858,7 @@ export interface RootRouteChildren {
   ApiV1EvidenceRefRoute: typeof ApiV1EvidenceRefRoute
   ApiV1LedgerChainRoute: typeof ApiV1LedgerChainRoute
   ApiV1LedgerProofRoute: typeof ApiV1LedgerProofRouteWithChildren
+  ApiV1LedgerReceiptRoute: typeof ApiV1LedgerReceiptRouteWithChildren
   ApiV1LedgerSthRoute: typeof ApiV1LedgerSthRouteWithChildren
   ApiV1LedgerVerifyRoute: typeof ApiV1LedgerVerifyRoute
   ApiV1Oid4vciCredentialRoute: typeof ApiV1Oid4vciCredentialRoute
@@ -1199,6 +1225,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiV1LedgerProofRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/v1/ledger/receipt': {
+      id: '/api/v1/ledger/receipt'
+      path: '/api/v1/ledger/receipt'
+      fullPath: '/api/v1/ledger/receipt'
+      preLoaderRoute: typeof ApiV1LedgerReceiptRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/v1/ledger/sth': {
       id: '/api/v1/ledger/sth'
       path: '/api/v1/ledger/sth'
@@ -1261,6 +1294,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/v1/ledger/proof/verify'
       preLoaderRoute: typeof ApiV1LedgerProofVerifyRouteImport
       parentRoute: typeof ApiV1LedgerProofRoute
+    }
+    '/api/v1/ledger/receipt/verify': {
+      id: '/api/v1/ledger/receipt/verify'
+      path: '/verify'
+      fullPath: '/api/v1/ledger/receipt/verify'
+      preLoaderRoute: typeof ApiV1LedgerReceiptVerifyRouteImport
+      parentRoute: typeof ApiV1LedgerReceiptRoute
     }
     '/api/v1/ledger/sth/verify': {
       id: '/api/v1/ledger/sth/verify'
@@ -1357,6 +1397,17 @@ const ApiV1LedgerProofRouteChildren: ApiV1LedgerProofRouteChildren = {
 const ApiV1LedgerProofRouteWithChildren =
   ApiV1LedgerProofRoute._addFileChildren(ApiV1LedgerProofRouteChildren)
 
+interface ApiV1LedgerReceiptRouteChildren {
+  ApiV1LedgerReceiptVerifyRoute: typeof ApiV1LedgerReceiptVerifyRoute
+}
+
+const ApiV1LedgerReceiptRouteChildren: ApiV1LedgerReceiptRouteChildren = {
+  ApiV1LedgerReceiptVerifyRoute: ApiV1LedgerReceiptVerifyRoute,
+}
+
+const ApiV1LedgerReceiptRouteWithChildren =
+  ApiV1LedgerReceiptRoute._addFileChildren(ApiV1LedgerReceiptRouteChildren)
+
 interface ApiV1LedgerSthRouteChildren {
   ApiV1LedgerSthVerifyRoute: typeof ApiV1LedgerSthVerifyRoute
 }
@@ -1409,6 +1460,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiV1EvidenceRefRoute: ApiV1EvidenceRefRoute,
   ApiV1LedgerChainRoute: ApiV1LedgerChainRoute,
   ApiV1LedgerProofRoute: ApiV1LedgerProofRouteWithChildren,
+  ApiV1LedgerReceiptRoute: ApiV1LedgerReceiptRouteWithChildren,
   ApiV1LedgerSthRoute: ApiV1LedgerSthRouteWithChildren,
   ApiV1LedgerVerifyRoute: ApiV1LedgerVerifyRoute,
   ApiV1Oid4vciCredentialRoute: ApiV1Oid4vciCredentialRoute,

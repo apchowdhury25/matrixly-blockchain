@@ -857,6 +857,32 @@ Demo diploma still VALID.
 
 ---
 
+## Phase 20 — Ledger receipt
+
+### 20.1 Fetch
+
+Take `credentialHash` from a demo VALID verify. `GET /api/v1/ledger/receipt?credentialHash=…`
+
+**PASS if** `format` is `matrixly.receipt.v1`, both `proof` and `sth` are present, `diplomaEvaluated` is false, and there is no `status: VALID`.
+
+### 20.2 Recompute
+
+POST that JSON to `/api/v1/ledger/receipt/verify`.
+
+**PASS if** `receiptValid`, `included`, `signatureValid`, and `rootsMatch` are true, and `diplomaEvaluated` is false.
+
+### 20.3 Cross-tree
+
+Change `sth.tree.merkleRoot` and POST again.
+
+**PASS if** `receiptValid` is false.
+
+### 20.4 Regression
+
+Demo diploma still VALID.
+
+---
+
 ## Traps (do not mis-score)
 
 | Action | Wrong reading | Correct |
@@ -878,6 +904,7 @@ Demo diploma still VALID.
 | Chain intact | “The diploma is VALID” | Chain integrity is necessary, not sufficient. `diplomaEvaluated` is always false on `/api/v1/ledger/*` |
 | included: true | “The diploma is VALID” | Membership in the Merkle tree is not signature, hash, or status |
 | STH signatureValid | “This is Certificate Transparency” | Matrixly log signature only; not a Chrome CT log |
+| receiptValid | “The diploma is VALID” | Receipt is log membership + signed root, not the diploma checks |
 | Team invite | “Email was sent” | No SMTP; you must copy the URL |
 | SOC 2 page | “We passed the audit” | Mapping is readiness notes; REG-01 stays not-claimed |
 

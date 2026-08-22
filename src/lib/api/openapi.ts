@@ -301,6 +301,21 @@ export const openApiSpec = {
         responses: { "200": { description: "signatureValid, diplomaEvaluated=false" } },
       },
     },
+    "/api/v1/ledger/receipt": {
+      get: {
+        summary: "Inclusion proof bound to a signed tree head. Not diploma VALID.",
+        security: [],
+        parameters: [{ name: "credentialHash", in: "query", required: true, schema: { type: "string" } }],
+        responses: { "200": { description: "matrixly.receipt.v1" } },
+      },
+    },
+    "/api/v1/ledger/receipt/verify": {
+      post: {
+        summary: "Verify a ledger receipt. receiptValid is not diploma VALID.",
+        security: [],
+        responses: { "200": { description: "receiptValid, diplomaEvaluated=false" } },
+      },
+    },
     "/healthz": {
       get: {
         summary: "Liveness. Does not imply the ledger is reachable.",

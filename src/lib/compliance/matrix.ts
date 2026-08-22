@@ -130,6 +130,13 @@ export const COMPLIANCE_MATRIX: ComplianceControl[] = [
     evidence: "GET /api/v1/ledger/sth ; POST /api/v1/ledger/sth/verify",
   },
   {
+    id: "DLT-06",
+    area: "Ledger",
+    control: "Ledger receipt binds inclusion proof to signed tree head; receiptValid is not diploma VALID",
+    status: "implemented",
+    evidence: "GET /api/v1/ledger/receipt ; POST /api/v1/ledger/receipt/verify",
+  },
+  {
     id: "PII-01",
     area: "Privacy",
     control: "Opaque verify links; machine API omits holder names by default",

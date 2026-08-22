@@ -1,8 +1,8 @@
 # QA last run
 
 Base: `http://127.0.0.1:8080`
-When: 2026-08-22T04:12:36.216Z
-Result: **PASS** · 86 pass · 0 fail · 0 blocked
+When: 2026-08-22T04:16:40.076Z
+Result: **PASS** · 91 pass · 0 fail · 0 blocked
 
 | ID | Title | Status | Notes |
 |---|---|---|---|
@@ -12,7 +12,7 @@ Result: **PASS** · 86 pass · 0 fail · 0 blocked
 | TC-1.4 | Expired | PASS | EXPIRED |
 | TC-1.5 | Opaque link | PASS | /verify/demo-valid-bcs has no holder PII in the URL |
 | TC-1.6 | Trust model | PASS | Trust model mentions ledger and hash |
-| TC-2.1 | Public keys only (DID page) | PASS | did:key:z6MkhE9dwJ1tTifn… public |
+| TC-2.1 | Public keys only (DID page) | PASS | did:key:z6Mkhgj3AwDY9Ww5… public |
 | TC-2.2 | Public DID document | PASS | DID page, no secret |
 | TC-2.3 | Rotation preserves old VCs | PASS | Covered by src/lib/identity/identity.test.ts (historical signatures) |
 | TC-3.1 | PDF magic bytes accepted | PASS | PDF magic accepted |
@@ -23,7 +23,7 @@ Result: **PASS** · 86 pass · 0 fail · 0 blocked
 | TC-4.3 | Claim is not re-issuance | PASS | Covered by presentation tests (inner VC issuer proof) |
 | TC-5.1 | Signed status list JSON | PASS | signed BitstringStatusListCredential |
 | TC-5.2 | Revoke outcome via API | PASS | REVOKED |
-| TC-6.1 | Signed report exists after verify | PASS | reportRef wOxilMN73D2O |
+| TC-6.1 | Signed report exists after verify | PASS | reportRef CquYXkvr5N7K |
 | TC-6.2 | Audit hash-chain | PASS | Covered by src/lib/audit/chain.test.ts |
 | TC-7.1 | Preview ledger is hash-chain | PASS | hashchain |
 | TC-7.2 | Fabric refuse | PASS | unconfigured Fabric throws |
@@ -81,14 +81,19 @@ Result: **PASS** · 86 pass · 0 fail · 0 blocked
 | TC-17.4 | Chain page | PASS | 200 |
 | TC-17.5 | Diploma still VALID | PASS | VALID |
 | TC-17.6 | Wrong Merkle root | PASS | Merkle root does not match the recomputed RFC 6962 tree of block hashes |
-| TC-18.1 | Inclusion proof | PASS | sha256:933d6ef8dac |
+| TC-18.1 | Inclusion proof | PASS | sha256:1e7e8904704 |
 | TC-18.2 | Recompute inclusion | PASS | included |
 | TC-18.3 | Tampered proof path | PASS | Merkle audit path does not recompute the stated root |
 | TC-18.4 | Proof without query | PASS | 400 |
 | TC-18.5 | Diploma still VALID | PASS | VALID |
-| TC-19.1 | Signed tree head | PASS | sha256:40cd951eca0 |
+| TC-19.1 | Signed tree head | PASS | sha256:f3c93333377 |
 | TC-19.2 | Recompute STH | PASS | signatureValid |
 | TC-19.3 | Tampered STH root | PASS | Ed25519 signature does not match |
 | TC-19.4 | Chain page shows STH | PASS | 200 |
 | TC-19.5 | Diploma still VALID | PASS | VALID |
+| TC-20.1 | Ledger receipt | PASS | sha256:1e7e8904704 |
+| TC-20.2 | Recompute receipt | PASS | receiptValid |
+| TC-20.3 | Cross-tree receipt fails | PASS | Ed25519 signature does not match |
+| TC-20.4 | Receipt without hash | PASS | 400 |
+| TC-20.5 | Diploma still VALID | PASS | VALID |
 | TC-AUTO.meta | OID4VCI metadata helper | PASS | ldp_vc |

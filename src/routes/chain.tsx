@@ -4,6 +4,7 @@ import { PublicHeader } from "@/components/layout/public-header";
 import { Button } from "@/components/ui/button";
 import {
   getDemoInclusionProof,
+  getDemoLedgerReceipt,
   getPublicLedgerExport,
   getPublicTreeHead,
   verifyPublicInclusionProof,
@@ -13,18 +14,19 @@ import { LEDGER_DIPLOMA_DISCLAIMER } from "@/lib/ledger/disclaimer";
 
 export const Route = createFileRoute("/chain")({
   loader: async () => {
-    const [chain, proof, sth] = await Promise.all([
+    const [chain, proof, sth, receipt] = await Promise.all([
       getPublicLedgerExport(),
       getDemoInclusionProof(),
       getPublicTreeHead(),
+      getDemoLedgerReceipt(),
     ]);
-    return { chain, proof, sth };
+    return { chain, proof, sth, receipt };
   },
   component: ChainPage,
 });
 
 function ChainPage() {
-  const { chain: data, proof, sth } = Route.useLoaderData();
+  const { chain: data, proof, sth, receipt } = Route.useLoaderData();
   const [paste, setPaste] = useState("");
   const [proofPaste, setProofPaste] = useState(proof.proofJson);
   const [independent, setIndependent] = useState<Awaited<ReturnType<typeof verifyPublicLedgerExport>> | null>(null);
@@ -110,6 +112,29 @@ function ChainPage() {
             </a>
             {" · "}
             POST /api/v1/ledger/sth/verify
+          </p>
+        </div>
+        <div className="mt-6 rounded-xl border border-rule bg-paper-raised p-5 text-sm">
+          <p className="font-medium">Ledger receipt</p>
+          <p className="mt-2 text-ink-soft">
+            {receipt.receiptValid
+              ? "Inclusion proof matches the signed tree head"
+              : receipt.reason ?? "Incomplete"}
+            . Not diploma VALID.
+          </p>
+          <p className="mt-3">
+            <a
+              href={
+                receipt.credentialHash
+                  ? `/api/v1/ledger/receipt?credentialHash=${encodeURIComponent(receipt.credentialHash)}`
+                  : "/api/v1/ledger/receipt"
+              }
+              className="underline underline-offset-4"
+            >
+              GET /api/v1/ledger/receipt
+            </a>
+            {" · "}
+            POST /api/v1/ledger/receipt/verify
           </p>
         </div>
         <p className="mt-6 text-sm">

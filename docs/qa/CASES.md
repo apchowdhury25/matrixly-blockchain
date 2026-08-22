@@ -238,6 +238,16 @@ Expect `x-schema-hash: sha256:` + 64 hex and `content-type: application/schema+j
 | TC-19.4 | Chain copy | `/chain` | Says not Certificate Transparency |
 | TC-19.5 | Regression | TC-8.2 | Demo still VALID |
 
+## Phase 20 — Ledger receipt
+
+| ID | Title | Steps | Expected |
+|---|---|---|---|
+| TC-20.1 | Fetch receipt | GET `/api/v1/ledger/receipt?credentialHash=` | `matrixly.receipt.v1`, `diplomaEvaluated` false |
+| TC-20.2 | Recompute | POST `/api/v1/ledger/receipt/verify` | `receiptValid` true, not VALID |
+| TC-20.3 | Cross-tree | Swap STH merkleRoot | `receiptValid` false |
+| TC-20.4 | Missing hash | GET without query | 400 |
+| TC-20.5 | Regression | TC-8.2 | Demo still VALID |
+
 ---
 
 ## Automated gate

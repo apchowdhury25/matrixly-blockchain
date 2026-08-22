@@ -1,7 +1,7 @@
 {
   "base": "http://127.0.0.1:8080",
-  "when": "2026-08-22T04:12:36.217Z",
-  "pass": 86,
+  "when": "2026-08-22T04:16:40.077Z",
+  "pass": 91,
   "fail": 0,
   "blocked": 0,
   "rows": [
@@ -45,7 +45,7 @@
       "id": "TC-2.1",
       "title": "Public keys only (DID page)",
       "status": "PASS",
-      "notes": "did:key:z6MkhE9dwJ1tTifn… public"
+      "notes": "did:key:z6Mkhgj3AwDY9Ww5… public"
     },
     {
       "id": "TC-2.2",
@@ -111,7 +111,7 @@
       "id": "TC-6.1",
       "title": "Signed report exists after verify",
       "status": "PASS",
-      "notes": "reportRef wOxilMN73D2O"
+      "notes": "reportRef CquYXkvr5N7K"
     },
     {
       "id": "TC-6.2",
@@ -459,7 +459,7 @@
       "id": "TC-18.1",
       "title": "Inclusion proof",
       "status": "PASS",
-      "notes": "sha256:933d6ef8dac"
+      "notes": "sha256:1e7e8904704"
     },
     {
       "id": "TC-18.2",
@@ -489,7 +489,7 @@
       "id": "TC-19.1",
       "title": "Signed tree head",
       "status": "PASS",
-      "notes": "sha256:40cd951eca0"
+      "notes": "sha256:f3c93333377"
     },
     {
       "id": "TC-19.2",
@@ -511,6 +511,36 @@
     },
     {
       "id": "TC-19.5",
+      "title": "Diploma still VALID",
+      "status": "PASS",
+      "notes": "VALID"
+    },
+    {
+      "id": "TC-20.1",
+      "title": "Ledger receipt",
+      "status": "PASS",
+      "notes": "sha256:1e7e8904704"
+    },
+    {
+      "id": "TC-20.2",
+      "title": "Recompute receipt",
+      "status": "PASS",
+      "notes": "receiptValid"
+    },
+    {
+      "id": "TC-20.3",
+      "title": "Cross-tree receipt fails",
+      "status": "PASS",
+      "notes": "Ed25519 signature does not match"
+    },
+    {
+      "id": "TC-20.4",
+      "title": "Receipt without hash",
+      "status": "PASS",
+      "notes": "400"
+    },
+    {
+      "id": "TC-20.5",
       "title": "Diploma still VALID",
       "status": "PASS",
       "notes": "VALID"

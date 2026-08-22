@@ -52,6 +52,7 @@ import {
   verifyCredentialInclusionProof,
 } from "@/lib/ledger/proof";
 import { STH_DISCLAIMER, treeHeadFromBlocks, verifyTreeHead } from "@/lib/ledger/sth";
+import { RECEIPT_DISCLAIMER, buildLedgerReceipt, verifyLedgerReceipt } from "@/lib/ledger/receipt";
 import { openSecret, sealSecret } from "./seal";
 
 type CredentialRow = {
@@ -2054,6 +2055,84 @@ export const verifyPublicTreeHead = createServerFn({ method: "POST" })
       };
     }
     return verifyTreeHead(parsed, data.expectedMerkleRoot);
+  });
+
+export const getDemoLedgerReceipt = createServerFn({ method: "GET" }).handler(async () => {
+  await ensureDemoSeed();
+  const ledger = await getLedger();
+  if (ledger.name === "FabricLedgerAdapter") {
+    return {
+      receiptValid: false,
+      diplomaEvaluated: false as const,
+      disclaimer: RECEIPT_DISCLAIMER,
+      reason: "Fabric receipts require Gateway block data",
+      receiptJson: "",
+    };
+  }
+  const sql = await getSql();
+  const rows = await sql<{ credential_hash: string }>`
+    select credential_hash from credentials where opaque_ref = ${DEMO.validRef}`;
+  const credentialHash = rows[0]?.credential_hash;
+  if (!credentialHash) {
+    return {
+      receiptValid: false,
+      diplomaEvaluated: false as const,
+      disclaimer: RECEIPT_DISCLAIMER,
+      reason: "Demo diploma is not registered",
+      receiptJson: "",
+    };
+  }
+  const blocks = await ledger.listBlocks();
+  const index = findCredentialBlockIndex(blocks, credentialHash);
+  const built = index >= 0 ? buildBlockInclusionProof(blocks, index, credentialHash) : { ok: false as const, reason: "No CREDENTIAL block" };
+  if (!built.ok) {
+    return {
+      receiptValid: false,
+      diplomaEvaluated: false as const,
+      disclaimer: RECEIPT_DISCLAIMER,
+      reason: built.reason,
+      credentialHash,
+      receiptJson: "",
+    };
+  }
+  const verifier = await getPlatformVerifier();
+  const secretKey = decodeSecretKeyHex(openSecret(verifier.secretKeyHex));
+  const sth = treeHeadFromBlocks(blocks, verifier.did, secretKey);
+  const receipt = buildLedgerReceipt(built.proof, sth, credentialHash);
+  const check = verifyLedgerReceipt(receipt);
+  return {
+    receiptValid: check.receiptValid,
+    diplomaEvaluated: false as const,
+    disclaimer: RECEIPT_DISCLAIMER,
+    credentialHash,
+    merkleRoot: check.merkleRoot,
+    logDid: check.logDid,
+    included: check.included,
+    signatureValid: check.signatureValid,
+    rootsMatch: check.rootsMatch,
+    receiptJson: JSON.stringify(receipt),
+    reason: check.reason,
+  };
+});
+
+export const verifyPublicLedgerReceipt = createServerFn({ method: "POST" })
+  .validator((raw: unknown) => z.object({ receiptJson: z.string().min(2).max(2_000_000) }).parse(raw))
+  .handler(async ({ data }) => {
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(data.receiptJson);
+    } catch {
+      return {
+        receiptValid: false,
+        diplomaEvaluated: false as const,
+        disclaimer: RECEIPT_DISCLAIMER,
+        included: false,
+        signatureValid: false,
+        rootsMatch: false,
+        reason: "Receipt is not JSON",
+      };
+    }
+    return verifyLedgerReceipt(parsed);
   });
 
 export const getDidWebDocument = createServerFn({ method: "GET" })

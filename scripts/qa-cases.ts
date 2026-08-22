@@ -800,6 +800,71 @@ await liveCase("TC-19.5", "Diploma still VALID", async () => {
   return "VALID";
 });
 
+await liveCase("TC-20.1", "Ledger receipt", async () => {
+  const { json: verified } = await verifyApi({ ref: "demo-valid-bcs" });
+  const hash = String(verified.credentialHash ?? "");
+  const res = await fetchOk(`/api/v1/ledger/receipt?credentialHash=${encodeURIComponent(hash)}`);
+  const json = (await res.json()) as Record<string, unknown>;
+  if (res.status !== 200) throw new Error(`HTTP ${res.status}`);
+  if (json.format !== "matrixly.receipt.v1") throw new Error("format");
+  if (json.diplomaEvaluated !== false) throw new Error("diplomaEvaluated");
+  if (json.status === "VALID") throw new Error("VALID");
+  return hash.slice(0, 18);
+});
+
+await liveCase("TC-20.2", "Recompute receipt", async () => {
+  const { json: verified } = await verifyApi({ ref: "demo-valid-bcs" });
+  const hash = String(verified.credentialHash ?? "");
+  const receipt = await (await fetchOk(`/api/v1/ledger/receipt?credentialHash=${encodeURIComponent(hash)}`)).json();
+  const json = (await (
+    await fetchOk("/api/v1/ledger/receipt/verify", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(receipt),
+    })
+  ).json()) as Record<string, unknown>;
+  if (json.receiptValid !== true) throw new Error(JSON.stringify(json));
+  if (json.included !== true || json.signatureValid !== true || json.rootsMatch !== true) {
+    throw new Error("flags");
+  }
+  if (json.diplomaEvaluated !== false) throw new Error("diplomaEvaluated");
+  if (json.status === "VALID" || json.verified === true) throw new Error("credential VALID");
+  return "receiptValid";
+});
+
+await liveCase("TC-20.3", "Cross-tree receipt fails", async () => {
+  const { json: verified } = await verifyApi({ ref: "demo-valid-bcs" });
+  const hash = String(verified.credentialHash ?? "");
+  const receipt = (await (
+    await fetchOk(`/api/v1/ledger/receipt?credentialHash=${encodeURIComponent(hash)}`)
+  ).json()) as { proof: { merkle: { merkleRoot: string } }; sth: { tree: { merkleRoot: string } } };
+  receipt.sth.tree.merkleRoot = "sha256:" + "11".repeat(32);
+  const json = (await (
+    await fetchOk("/api/v1/ledger/receipt/verify", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(receipt),
+    })
+  ).json()) as Record<string, unknown>;
+  if (json.receiptValid !== false) throw new Error("cross-tree accepted");
+  if (json.status === "VALID") throw new Error("VALID");
+  return String(json.reason);
+});
+
+await liveCase("TC-20.4", "Receipt without hash", async () => {
+  const res = await fetchOk("/api/v1/ledger/receipt");
+  const json = (await res.json()) as Record<string, unknown>;
+  if (res.status !== 400) throw new Error(`HTTP ${res.status}`);
+  if (json.receiptValid !== false) throw new Error("missing hash");
+  return "400";
+});
+
+await liveCase("TC-20.5", "Diploma still VALID", async () => {
+  const { json } = await verifyApi({ ref: "demo-valid-bcs" });
+  if (json.status !== "VALID") throw new Error(String(json.status));
+  return "VALID";
+});
+
 unitCase("TC-AUTO.meta", "OID4VCI metadata helper", () => {
   const meta = credentialIssuerMetadata("https://issuer.example.test");
   if (meta.credential_configurations_supported.university_degree_ldp_vc?.format !== "ldp_vc") {
