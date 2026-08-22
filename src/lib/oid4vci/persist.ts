@@ -1,5 +1,5 @@
 import { getSql } from "@/lib/db";
-import { newId } from "@/lib/trust/ids";
+import { DEMO, newId } from "@/lib/trust/ids";
 import { audit } from "@/lib/trust/runtime";
 import { CONFIG_ID } from "./constants";
 import { credentialResponse, parseCredentialRequest, parseTokenRequest } from "./protocol";
@@ -26,6 +26,18 @@ async function deliveryForCode(code: string): Promise<DeliveryRow | null> {
     join credentials c on c.id = d.credential_id
     where d.claim_token = ${code}`;
   return rows[0] ?? null;
+}
+
+/** Demo playground only. Production codes stay single-use. */
+export async function resetDemoPreAuthorizedCode(code: string): Promise<void> {
+  if (code !== DEMO.claimToken) return;
+  const delivery = await deliveryForCode(code);
+  if (!delivery || delivery.status === "CLAIMED") return;
+  const sql = await getSql();
+  await sql`update oid4vci_access_tokens set status = ${"EXPIRED"} where delivery_id = ${delivery.id}`;
+  if (delivery.status === "DELIVERED") {
+    await sql`update credential_deliveries set status = ${"PENDING"} where id = ${delivery.id} and status = ${"DELIVERED"}`;
+  }
 }
 
 export async function exchangePreAuthorizedCode(form: Record<string, string>): Promise<

@@ -40,16 +40,22 @@ function Home() {
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Link
-              to="/verify"
+              to="/oid4vci"
               className="inline-flex h-12 items-center rounded-sm bg-pine px-6 text-sm font-medium text-pine-fg hover:bg-pine-deep"
             >
-              Open public verifier
+              OpenID4VCI — pull a diploma
+            </Link>
+            <Link
+              to="/verify"
+              className="inline-flex h-12 items-center rounded-sm border border-rule px-6 text-sm font-medium text-ink hover:bg-paper-raised"
+            >
+              Public verifier
             </Link>
             <Link
               to="/trust"
               className="inline-flex h-12 items-center rounded-sm border border-rule px-6 text-sm font-medium text-ink hover:bg-paper-raised"
             >
-              Read the trust model
+              Trust model
             </Link>
           </div>
         </section>
