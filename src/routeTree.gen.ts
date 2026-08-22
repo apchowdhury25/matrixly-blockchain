@@ -13,7 +13,10 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppRouteRouteImport } from './routes/app/route'
 import { Route as ComplianceRouteImport } from './routes/compliance'
 import { Route as DevelopersRouteImport } from './routes/developers'
+import { Route as HealthzRouteImport } from './routes/healthz'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as OpsRouteImport } from './routes/ops'
+import { Route as ReadyzRouteImport } from './routes/readyz'
 import { Route as SdJwtRouteImport } from './routes/sd-jwt'
 import { Route as TrustRouteImport } from './routes/trust'
 import { Route as WalletRouteRouteImport } from './routes/wallet/route'
@@ -80,9 +83,24 @@ const DevelopersRoute = DevelopersRouteImport.update({
   path: '/developers',
   getParentRoute: () => rootRouteImport,
 } as any)
+const HealthzRoute = HealthzRouteImport.update({
+  id: '/healthz',
+  path: '/healthz',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OpsRoute = OpsRouteImport.update({
+  id: '/ops',
+  path: '/ops',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReadyzRoute = ReadyzRouteImport.update({
+  id: '/readyz',
+  path: '/readyz',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SdJwtRoute = SdJwtRouteImport.update({
@@ -321,7 +339,10 @@ export interface FileRoutesByFullPath {
   '/wallet': typeof WalletRouteRouteWithChildren
   '/compliance': typeof ComplianceRoute
   '/developers': typeof DevelopersRoute
+  '/healthz': typeof HealthzRoute
   '/login': typeof LoginRoute
+  '/ops': typeof OpsRoute
+  '/readyz': typeof ReadyzRoute
   '/sd-jwt': typeof SdJwtRoute
   '/trust': typeof TrustRoute
   '/.well-known/openid-credential-issuer': typeof DotwellKnownOpenidCredentialIssuerRoute
@@ -371,7 +392,10 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/compliance': typeof ComplianceRoute
   '/developers': typeof DevelopersRoute
+  '/healthz': typeof HealthzRoute
   '/login': typeof LoginRoute
+  '/ops': typeof OpsRoute
+  '/readyz': typeof ReadyzRoute
   '/sd-jwt': typeof SdJwtRoute
   '/trust': typeof TrustRoute
   '/.well-known/openid-credential-issuer': typeof DotwellKnownOpenidCredentialIssuerRoute
@@ -424,7 +448,10 @@ export interface FileRoutesById {
   '/wallet': typeof WalletRouteRouteWithChildren
   '/compliance': typeof ComplianceRoute
   '/developers': typeof DevelopersRoute
+  '/healthz': typeof HealthzRoute
   '/login': typeof LoginRoute
+  '/ops': typeof OpsRoute
+  '/readyz': typeof ReadyzRoute
   '/sd-jwt': typeof SdJwtRoute
   '/trust': typeof TrustRoute
   '/.well-known/openid-credential-issuer': typeof DotwellKnownOpenidCredentialIssuerRoute
@@ -478,7 +505,10 @@ export interface FileRouteTypes {
     | '/wallet'
     | '/compliance'
     | '/developers'
+    | '/healthz'
     | '/login'
+    | '/ops'
+    | '/readyz'
     | '/sd-jwt'
     | '/trust'
     | '/.well-known/openid-credential-issuer'
@@ -528,7 +558,10 @@ export interface FileRouteTypes {
     | '/'
     | '/compliance'
     | '/developers'
+    | '/healthz'
     | '/login'
+    | '/ops'
+    | '/readyz'
     | '/sd-jwt'
     | '/trust'
     | '/.well-known/openid-credential-issuer'
@@ -580,7 +613,10 @@ export interface FileRouteTypes {
     | '/wallet'
     | '/compliance'
     | '/developers'
+    | '/healthz'
     | '/login'
+    | '/ops'
+    | '/readyz'
     | '/sd-jwt'
     | '/trust'
     | '/.well-known/openid-credential-issuer'
@@ -633,7 +669,10 @@ export interface RootRouteChildren {
   WalletRouteRoute: typeof WalletRouteRouteWithChildren
   ComplianceRoute: typeof ComplianceRoute
   DevelopersRoute: typeof DevelopersRoute
+  HealthzRoute: typeof HealthzRoute
   LoginRoute: typeof LoginRoute
+  OpsRoute: typeof OpsRoute
+  ReadyzRoute: typeof ReadyzRoute
   SdJwtRoute: typeof SdJwtRoute
   TrustRoute: typeof TrustRoute
   DotwellKnownOpenidCredentialIssuerRoute: typeof DotwellKnownOpenidCredentialIssuerRoute
@@ -698,11 +737,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DevelopersRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/healthz': {
+      id: '/healthz'
+      path: '/healthz'
+      fullPath: '/healthz'
+      preLoaderRoute: typeof HealthzRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/login': {
       id: '/login'
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ops': {
+      id: '/ops'
+      path: '/ops'
+      fullPath: '/ops'
+      preLoaderRoute: typeof OpsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/readyz': {
+      id: '/readyz'
+      path: '/readyz'
+      fullPath: '/readyz'
+      preLoaderRoute: typeof ReadyzRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/sd-jwt': {
@@ -1073,7 +1133,10 @@ const rootRouteChildren: RootRouteChildren = {
   WalletRouteRoute: WalletRouteRouteWithChildren,
   ComplianceRoute: ComplianceRoute,
   DevelopersRoute: DevelopersRoute,
+  HealthzRoute: HealthzRoute,
   LoginRoute: LoginRoute,
+  OpsRoute: OpsRoute,
+  ReadyzRoute: ReadyzRoute,
   SdJwtRoute: SdJwtRoute,
   TrustRoute: TrustRoute,
   DotwellKnownOpenidCredentialIssuerRoute:

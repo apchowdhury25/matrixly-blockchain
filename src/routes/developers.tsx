@@ -244,6 +244,17 @@ matrixly-event-id: wh_…
           </Link>
           . Unknown schema ids fail closed.
         </p>
+
+        <h2 className="mt-10 font-display text-2xl">Operations</h2>
+        <p className="mt-3 leading-relaxed text-ink-soft">
+          <Link to="/ops" className="underline underline-offset-4">
+            Ops
+          </Link>{" "}
+          · <span className="font-mono text-sm">GET /healthz</span> (liveness) ·{" "}
+          <span className="font-mono text-sm">GET /readyz</span> (database + ledger adapter). A 429
+          from the verifier API is <span className="font-mono text-sm">RATE_LIMITED</span>, never
+          VALID. Evidence and report APIs are tenant-scoped.
+        </p>
       </article>
     </div>
   );

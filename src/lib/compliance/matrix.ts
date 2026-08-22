@@ -102,6 +102,27 @@ export const COMPLIANCE_MATRIX: ComplianceControl[] = [
     evidence: "POST /api/v1/verify",
   },
   {
+    id: "API-02",
+    area: "Access",
+    control: "Verifier API rate limits return 429 RATE_LIMITED, never VALID",
+    status: "implemented",
+    evidence: "Per-key sliding window; Retry-After",
+  },
+  {
+    id: "TEN-01",
+    area: "Tenancy",
+    control: "Issuer data and verification exports are tenant-scoped; AUDITOR cannot issue",
+    status: "implemented",
+    evidence: "canExportVerification; RBAC; 404 not 200 across tenants",
+  },
+  {
+    id: "OPS-01",
+    area: "Operations",
+    control: "Liveness and readiness are distinct; missing Fabric Gateway is not ready",
+    status: "implemented",
+    evidence: "GET /healthz ; GET /readyz ; /ops",
+  },
+  {
     id: "WH-01",
     area: "Integrity",
     control: "Outbound verification events are HMAC-SHA256 signed; unsigned events are refused",

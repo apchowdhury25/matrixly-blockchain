@@ -30,6 +30,7 @@ Quick index (full procedures in STEPS.md):
 | 11 OpenID4VP | `/oid4vp` + This preview wallet | VALID with nonce; replay INVALID; SD-JWT refused |
 | 12 OpenID4VCI | `/oid4vci` + This preview wallet | ISSUED `ldp_vc`; replay refused; authorization_code refused |
 | 13 Status + schema | `/credentials/status/demo` + `/schemas/university-degree` | JSON status list + schema; verify still VALID |
+| 14 Tenancy + ops | `/ops` + `/healthz` + `/readyz` | Ready; 401 still not VALID; cross-tenant export 404 |
 
 ## Out of scope
 

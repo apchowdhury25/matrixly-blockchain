@@ -50,12 +50,12 @@ export async function persistVerificationReport(input: {
     insert into verification_requests (
       id, opaque_ref, credential_id, result_status, result_json,
       report_json, report_hash, opaque_report_ref, verifier_did, ledger_block_hash,
-      api_key_id, source
+      api_key_id, source, tenant_id
     ) values (
       ${newId("vrf")}, ${input.opaqueRef ?? null}, ${input.credentialRowId ?? null}, ${input.result.status},
       ${JSON.stringify(input.result)}, ${JSON.stringify(report)}, ${reportHashValue}, ${reportRef},
       ${verifier.did}, ${anchored.blockHash},
-      ${input.apiKeyId ?? null}, ${input.source ?? "ui"}
+      ${input.apiKeyId ?? null}, ${input.source ?? "ui"}, ${input.tenantId ?? null}
     )`;
   if (input.tenantId) {
     try {

@@ -195,6 +195,23 @@ export const openApiSpec = {
         },
       },
     },
+    "/healthz": {
+      get: {
+        summary: "Liveness. Does not imply the ledger is reachable.",
+        security: [],
+        responses: { "200": { description: "{ status: ok }" } },
+      },
+    },
+    "/readyz": {
+      get: {
+        summary: "Readiness. 503 if the database or configured ledger adapter is down.",
+        security: [],
+        responses: {
+          "200": { description: "ready" },
+          "503": { description: "Not ready. Fabric without Gateway is not ready." },
+        },
+      },
+    },
     "/.well-known/openid-credential-issuer": {
       get: {
         summary: "OpenID4VCI 1.0 Credential Issuer metadata",

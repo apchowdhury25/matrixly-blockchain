@@ -31,6 +31,9 @@ A green badge that skipped a failed cryptographic check is a defect, not a contr
 | DLT-02 | Ledger | Hyperledger Fabric is not faked; missing Gateway fails closed | fail-closed | FabricLedgerAdapter throws; never returns a successful submit |
 | PII-01 | Privacy | Opaque verify links; machine API omits holder names by default | implemented | `includeSubject` is opt-in; reports exclude holder PII |
 | API-01 | Access | Verifier API requires hashed Bearer keys; 401 never returns VALID | implemented | `POST /api/v1/verify` |
+| API-02 | Access | Verifier API rate limits return 429 RATE_LIMITED, never VALID | implemented | Per-key sliding window; Retry-After |
+| TEN-01 | Tenancy | Issuer data and verification exports are tenant-scoped; AUDITOR cannot issue | implemented | `canExportVerification`; RBAC; 404 across tenants |
+| OPS-01 | Operations | Liveness and readiness are distinct; missing Fabric Gateway is not ready | implemented | `GET /healthz` ; `GET /readyz` ; `/ops` |
 | WH-01 | Integrity | Outbound verification events are HMAC-SHA256 signed; unsigned events are refused | implemented | Webhook deliveries; secret sealed at rest |
 | AUD-01 | Audit | Signed verification reports anchored by hash; tenant audit is hash-chained | implemented | VerificationReport + `audit_events.prev_hash` |
 | REG-01 | Regulation | SOC 2 / ISO 27001 / eIDAS / GDPR certification of this deployment | not-claimed | This matrix is an engineering control list, not an audit opinion |

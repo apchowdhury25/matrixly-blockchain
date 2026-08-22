@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { corsHeaders, json, unauthorized } from "@/lib/api/http";
+import { corsHeaders, json, rateLimited, unauthorized } from "@/lib/api/http";
+import { verifierRateLimiter } from "@/lib/api/rate-limit";
 import { authenticateApiKey, runApiVerification } from "@/lib/api/service";
 import { ensureDemoSeed } from "@/lib/trust/seed";
 
@@ -11,6 +12,8 @@ export const Route = createFileRoute("/api/v1/verify")({
         await ensureDemoSeed();
         const key = await authenticateApiKey(request.headers.get("authorization"));
         if (!key) return unauthorized();
+        const limited = verifierRateLimiter.allow(key.id);
+        if (!limited.ok) return rateLimited(limited.retryAfterSec);
         let body: Record<string, unknown>;
         try {
           body = (await request.json()) as Record<string, unknown>;

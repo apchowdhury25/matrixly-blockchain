@@ -31,6 +31,9 @@ export function PublicHeader() {
           <Link to="/compliance" className="hidden rounded-sm px-3 py-2 text-ink-soft hover:text-ink sm:inline">
             Compliance
           </Link>
+          <Link to="/ops" className="hidden rounded-sm px-3 py-2 text-ink-soft hover:text-ink lg:inline">
+            Ops
+          </Link>
           <Link to="/sd-jwt" className="hidden rounded-sm px-3 py-2 text-ink-soft hover:text-ink xl:inline">
             SD-JWT
           </Link>

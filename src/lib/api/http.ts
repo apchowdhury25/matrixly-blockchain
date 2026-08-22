@@ -28,3 +28,15 @@ export function unauthorized(): Response {
     401,
   );
 }
+
+export function rateLimited(retryAfterSec: number): Response {
+  return json(
+    {
+      error: "Rate limit exceeded",
+      status: "RATE_LIMITED",
+      verified: false,
+    },
+    429,
+    { "retry-after": String(retryAfterSec) },
+  );
+}

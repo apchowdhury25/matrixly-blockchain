@@ -28,6 +28,7 @@ import { AUDIT_GENESIS, verifyAuditSequence } from "@/lib/audit/chain";
 import { ensureDemoSeed } from "./seed";
 import { audit, getLedger, getStorage, publishedStatusResolve, readDocumentBytes, runtimeAdapterStatus } from "./runtime";
 import { DEMO, newId, opaqueRef } from "./ids";
+import { readiness } from "@/lib/ops/health";
 import { openSecret, sealSecret } from "./seal";
 
 type CredentialRow = {
@@ -1574,6 +1575,8 @@ export const getComplianceMatrix = createServerFn({ method: "GET" }).handler(asy
     "This is an engineering control matrix, not a SOC 2, ISO 27001, eIDAS, or GDPR certification.",
   controls: COMPLIANCE_MATRIX,
 }));
+
+export const getRuntimeOps = createServerFn({ method: "GET" }).handler(async () => readiness());
 
 export const getDidWebDocument = createServerFn({ method: "GET" })
   .validator((raw: unknown) => z.object({ slug: z.string().min(2).max(80) }).parse(raw ?? { slug: "global-university" }))

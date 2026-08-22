@@ -605,6 +605,34 @@ OpenID4VCI page still loads. Tamper / revoked / expired still fail.
 
 ---
 
+## Phase 14 — Tenancy, rate limits, readiness
+
+### 14.1 Ops page
+
+Open **Ops** in the header.
+
+**PASS if** Ready is Yes, ledger adapter is named (hash-chain in this preview), and the page does not say Fabric submitted a block.
+
+### 14.2 Liveness vs readiness
+
+`GET /healthz` → `{ status: "ok" }`. `GET /readyz` → `ready: true` in this preview.
+
+**PASS if** healthz does not include a ledger proof, and readyz includes `db` and `ledger`.
+
+### 14.3 Verify still works
+
+Public verifier / API verify of the demo diploma.
+
+**PASS if** VALID. 401 without a key is still not VALID.
+
+### 14.4 Cross-tenant export
+
+Automated: `canExportVerification` is false for a foreign tenant + foreign key.
+
+**PASS if** that case is not treated as VALID.
+
+---
+
 ## Traps (do not mis-score)
 
 | Action | Wrong reading | Correct |
@@ -621,4 +649,5 @@ OpenID4VCI page still loads. Tamper / revoked / expired still fail.
 | did:web 404 | “Skip the DID check” | Fetch failure is INVALID, never VALID |
 | OpenID4VP preview wallet | “We are HAIP certified” | W3C VP + DCQL only; OID-02 is not-claimed |
 | Schema page | “We run a full JSON Schema 2020-12 processor” | Published university-degree rules only |
+| Ops Ready | “Fabric is live” | Preview ledger is hash-chain unless Gateway env is set |
 

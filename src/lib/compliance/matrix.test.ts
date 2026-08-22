@@ -26,3 +26,9 @@ test("status list URL resolution and JsonSchema are implemented", () => {
   assert.equal(COMPLIANCE_MATRIX.find((c) => c.id === "STS-02")?.status, "implemented");
   assert.equal(COMPLIANCE_MATRIX.find((c) => c.id === "SCH-01")?.status, "implemented");
 });
+
+test("tenant isolation, rate limit, and readiness are implemented", () => {
+  assert.equal(COMPLIANCE_MATRIX.find((c) => c.id === "TEN-01")?.status, "implemented");
+  assert.equal(COMPLIANCE_MATRIX.find((c) => c.id === "API-02")?.status, "implemented");
+  assert.equal(COMPLIANCE_MATRIX.find((c) => c.id === "OPS-01")?.status, "implemented");
+});
