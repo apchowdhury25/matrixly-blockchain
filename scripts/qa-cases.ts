@@ -742,6 +742,64 @@ await liveCase("TC-18.5", "Diploma still VALID", async () => {
   return "VALID";
 });
 
+await liveCase("TC-19.1", "Signed tree head", async () => {
+  const res = await fetchOk("/api/v1/ledger/sth");
+  const json = (await res.json()) as Record<string, unknown>;
+  if (res.status !== 200) throw new Error(`HTTP ${res.status}`);
+  const types = json.type as string[] | undefined;
+  if (!types?.includes("SignedTreeHead")) throw new Error("type");
+  if (json.format !== "matrixly.sth.v1") throw new Error("format");
+  if (json.diplomaEvaluated !== false) throw new Error("diplomaEvaluated");
+  if (!json.proof) throw new Error("unsigned");
+  if (json.status === "VALID") throw new Error("VALID");
+  return String((json.tree as { merkleRoot?: string } | undefined)?.merkleRoot)?.slice(0, 18) ?? "sth";
+});
+
+await liveCase("TC-19.2", "Recompute STH", async () => {
+  const sth = await (await fetchOk("/api/v1/ledger/sth")).json();
+  const res = await fetchOk("/api/v1/ledger/sth/verify", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(sth),
+  });
+  const json = (await res.json()) as Record<string, unknown>;
+  if (json.signatureValid !== true) throw new Error(JSON.stringify(json));
+  if (json.diplomaEvaluated !== false) throw new Error("diplomaEvaluated");
+  if (json.verified === true || json.status === "VALID") throw new Error("credential VALID");
+  return "signatureValid";
+});
+
+await liveCase("TC-19.3", "Tampered STH root", async () => {
+  const sth = (await (await fetchOk("/api/v1/ledger/sth")).json()) as { tree: { merkleRoot: string } };
+  sth.tree.merkleRoot = "sha256:" + "00".repeat(32);
+  const json = (await (
+    await fetchOk("/api/v1/ledger/sth/verify", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(sth),
+    })
+  ).json()) as Record<string, unknown>;
+  if (json.signatureValid !== false) throw new Error("tamper accepted");
+  if (json.status === "VALID") throw new Error("VALID");
+  return String(json.reason);
+});
+
+await liveCase("TC-19.4", "Chain page shows STH", async () => {
+  const { text } = await html("/chain");
+  if (!/Signed tree head|tree head/i.test(text)) throw new Error("copy");
+  if (!/Certificate Transparency/i.test(text) && !/not Certificate/i.test(text)) {
+    /* page says Not Certificate Transparency */
+  }
+  if (!/Not Certificate Transparency/i.test(text)) throw new Error("must deny CT");
+  return "200";
+});
+
+await liveCase("TC-19.5", "Diploma still VALID", async () => {
+  const { json } = await verifyApi({ ref: "demo-valid-bcs" });
+  if (json.status !== "VALID") throw new Error(String(json.status));
+  return "VALID";
+});
+
 unitCase("TC-AUTO.meta", "OID4VCI metadata helper", () => {
   const meta = credentialIssuerMetadata("https://issuer.example.test");
   if (meta.credential_configurations_supported.university_degree_ldp_vc?.format !== "ldp_vc") {

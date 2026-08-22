@@ -35,7 +35,7 @@ import {
 } from "@/lib/identity/members";
 import { AUDIT_GENESIS, verifyAuditSequence } from "@/lib/audit/chain";
 import { ensureDemoSeed } from "./seed";
-import { audit, getLedger, getStorage, publishedStatusResolve, readDocumentBytes, runtimeAdapterStatus } from "./runtime";
+import { audit, getLedger, getPlatformVerifier, getStorage, publishedStatusResolve, readDocumentBytes, runtimeAdapterStatus } from "./runtime";
 import { DEMO, newId, opaqueRef } from "./ids";
 import { readiness } from "@/lib/ops/health";
 import { UNIVERSITY_DEGREE_SCHEMA_ID } from "@/lib/schema/university-degree";
@@ -51,6 +51,7 @@ import {
   findCredentialBlockIndex,
   verifyCredentialInclusionProof,
 } from "@/lib/ledger/proof";
+import { STH_DISCLAIMER, treeHeadFromBlocks, verifyTreeHead } from "@/lib/ledger/sth";
 import { openSecret, sealSecret } from "./seal";
 
 type CredentialRow = {
@@ -2005,6 +2006,54 @@ export const verifyPublicInclusionProof = createServerFn({ method: "POST" })
       };
     }
     return verifyCredentialInclusionProof(parsed);
+  });
+
+export const getPublicTreeHead = createServerFn({ method: "GET" }).handler(async () => {
+  await ensureDemoSeed();
+  const ledger = await getLedger();
+  if (ledger.name === "FabricLedgerAdapter") {
+    return {
+      signatureValid: false,
+      diplomaEvaluated: false as const,
+      disclaimer: STH_DISCLAIMER,
+      reason: "Fabric signed tree heads require Gateway block data",
+      sthJson: "",
+    };
+  }
+  const blocks = await ledger.listBlocks();
+  const verifier = await getPlatformVerifier();
+  const secretKey = decodeSecretKeyHex(openSecret(verifier.secretKeyHex));
+  const sth = treeHeadFromBlocks(blocks, verifier.did, secretKey);
+  const check = verifyTreeHead(sth);
+  return {
+    signatureValid: check.signatureValid,
+    diplomaEvaluated: false as const,
+    disclaimer: STH_DISCLAIMER,
+    logDid: check.logDid,
+    merkleRoot: check.merkleRoot,
+    length: check.length,
+    sthJson: JSON.stringify(sth),
+    reason: check.reason,
+  };
+});
+
+export const verifyPublicTreeHead = createServerFn({ method: "POST" })
+  .validator((raw: unknown) =>
+    z.object({ sthJson: z.string().min(2).max(2_000_000), expectedMerkleRoot: z.string().optional() }).parse(raw),
+  )
+  .handler(async ({ data }) => {
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(data.sthJson);
+    } catch {
+      return {
+        signatureValid: false,
+        diplomaEvaluated: false as const,
+        disclaimer: STH_DISCLAIMER,
+        reason: "Tree head is not JSON",
+      };
+    }
+    return verifyTreeHead(parsed, data.expectedMerkleRoot);
   });
 
 export const getDidWebDocument = createServerFn({ method: "GET" })

@@ -123,6 +123,13 @@ export const COMPLIANCE_MATRIX: ComplianceControl[] = [
     evidence: "GET /api/v1/ledger/proof ; POST /api/v1/ledger/proof/verify",
   },
   {
+    id: "DLT-05",
+    area: "Ledger",
+    control: "Merkle root is signed as a tree head (eddsa-jcs-2022); not Certificate Transparency; not diploma VALID",
+    status: "implemented",
+    evidence: "GET /api/v1/ledger/sth ; POST /api/v1/ledger/sth/verify",
+  },
+  {
     id: "PII-01",
     area: "Privacy",
     control: "Opaque verify links; machine API omits holder names by default",

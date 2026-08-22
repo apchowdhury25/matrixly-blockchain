@@ -37,6 +37,7 @@ Quick index (full procedures in STEPS.md):
 | 16 Team | `/app/team` | Invite token shown once; last admin cannot be removed |
 | 17 Ledger export | `/chain` + `GET /api/v1/ledger/chain` | Independent `chainValid`; tamper not VALID |
 | 18 Merkle proofs | `/chain` + `GET /api/v1/ledger/proof` | `included` with `diplomaEvaluated: false` |
+| 19 Signed tree head | `/chain` + `GET /api/v1/ledger/sth` | `signatureValid`; not CT; not diploma VALID |
 | Legal | `/legal` | Results are not a legal determination |
 
 Always re-run `npm run test:qa` and the [minimum ship set](CASES.md#minimum-ship-set-every-phase) after a change.

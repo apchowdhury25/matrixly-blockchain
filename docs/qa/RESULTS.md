@@ -1,4 +1,4 @@
-# QA results — 21 August 2026 (Phase 18)
+# QA results — 21 August 2026 (Phase 19)
 
 Catalog: [CASES.md](CASES.md). Procedures: [STEPS.md](STEPS.md). Last automated run: [LAST-RUN.md](LAST-RUN.md).
 
@@ -10,33 +10,34 @@ Score: **PASS** · **FAIL** · **BLOCKED**. A phase is not done if any required 
 
 | Phase | Verdict | Tests | Notes |
 |---|---|---|---|
-| 1–17 | PASS | included | Prior phases |
-| 18 Merkle proofs | PASS | included | RFC 6962 inclusion; included ≠ VALID |
+| 1–18 | PASS | included | Prior phases |
+| 19 Signed tree head | PASS | included | Ed25519 STH; not CT; not diploma VALID |
 
 ## Gate
 
 | Check | Status | Notes |
 |---|---|---|
-| `npm run test:qa` | PASS | 81 / 81 |
-| `npm run test:trust` | PASS | 126 / 126 |
+| `npm run test:qa` | PASS | 86 / 86 |
+| `npm run test:trust` | PASS | 129 / 129 |
 | `npm run typecheck` | PASS | |
-| Inclusion proof | PASS | `matrixly.merkle-proof.v1` |
-| Tampered path | PASS | not included |
+| STH signature | PASS | `matrixly.sth.v1` |
+| Tampered root | PASS | signature invalid |
 | Demo verify | PASS | still VALID |
 
-## Phase 18
+## Phase 19
 
 | Step | Status | Notes |
 |---|---|---|
-| 18.1 Fetch proof | PASS | diplomaEvaluated false |
-| 18.2 Recompute | PASS | included |
-| 18.3 Tamper path | PASS | audit path mismatch |
-| 18.4 Missing query | PASS | 400 |
-| 18.5 Regression | PASS | demo VALID |
+| 19.1 Fetch STH | PASS | SignedTreeHead, diplomaEvaluated false |
+| 19.2 Recompute | PASS | signatureValid |
+| 19.3 Tamper root | PASS | Ed25519 mismatch |
+| 19.4 Not CT | PASS | Chain page |
+| 19.5 Regression | PASS | demo VALID |
 
 ## Verdict
 
 | Item | Status |
 |---|---|
-| Phase 18 | PASS |
-| included is not diploma VALID | PASS |
+| Phase 19 | PASS |
+| Not Certificate Transparency | PASS |
+| STH is not diploma VALID | PASS |

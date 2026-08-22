@@ -827,6 +827,36 @@ Demo diploma still VALID.
 
 ---
 
+## Phase 19 — Signed tree head
+
+### 19.1 Fetch STH
+
+`GET /api/v1/ledger/sth`
+
+**PASS if** `type` includes `SignedTreeHead`, `format` is `matrixly.sth.v1`, a Data Integrity `proof` is present, `diplomaEvaluated` is false, and there is no `status: VALID`.
+
+### 19.2 Recompute
+
+POST that JSON to `/api/v1/ledger/sth/verify`.
+
+**PASS if** `signatureValid` is true and `diplomaEvaluated` is false.
+
+### 19.3 Tamper
+
+Set `tree.merkleRoot` to `sha256:` + 64 zeros and POST again.
+
+**PASS if** `signatureValid` is false.
+
+### 19.4 Not CT
+
+**Chain** page says this is not Certificate Transparency.
+
+### 19.5 Regression
+
+Demo diploma still VALID.
+
+---
+
 ## Traps (do not mis-score)
 
 | Action | Wrong reading | Correct |
@@ -847,6 +877,7 @@ Demo diploma still VALID.
 | Schema anchored | “Tamper should pass now” | Schema hash is independent of PDF SHA-256 |
 | Chain intact | “The diploma is VALID” | Chain integrity is necessary, not sufficient. `diplomaEvaluated` is always false on `/api/v1/ledger/*` |
 | included: true | “The diploma is VALID” | Membership in the Merkle tree is not signature, hash, or status |
+| STH signatureValid | “This is Certificate Transparency” | Matrixly log signature only; not a Chrome CT log |
 | Team invite | “Email was sent” | No SMTP; you must copy the URL |
 | SOC 2 page | “We passed the audit” | Mapping is readiness notes; REG-01 stays not-claimed |
 

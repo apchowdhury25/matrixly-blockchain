@@ -39,5 +39,6 @@ test("schema instance validation, ledger export, and legal notice are implemente
   assert.equal(COMPLIANCE_MATRIX.find((c) => c.id === "SCH-03")?.status, "implemented");
   assert.equal(COMPLIANCE_MATRIX.find((c) => c.id === "DLT-03")?.status, "implemented");
   assert.equal(COMPLIANCE_MATRIX.find((c) => c.id === "DLT-04")?.status, "implemented");
+  assert.equal(COMPLIANCE_MATRIX.find((c) => c.id === "DLT-05")?.status, "implemented");
   assert.equal(COMPLIANCE_MATRIX.find((c) => c.id === "LGL-01")?.status, "implemented");
 });

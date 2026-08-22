@@ -228,6 +228,16 @@ Expect `x-schema-hash: sha256:` + 64 hex and `content-type: application/schema+j
 | TC-18.4 | Missing query | GET `/api/v1/ledger/proof` | 400, `included: false` |
 | TC-18.5 | Regression | TC-8.2 | Demo still VALID |
 
+## Phase 19 — Signed tree head
+
+| ID | Title | Steps | Expected |
+|---|---|---|---|
+| TC-19.1 | Fetch STH | `GET /api/v1/ledger/sth` | `SignedTreeHead`, `diplomaEvaluated` false, proof present |
+| TC-19.2 | Recompute | POST to `/api/v1/ledger/sth/verify` | `signatureValid` true, not VALID |
+| TC-19.3 | Tamper root | Flip `tree.merkleRoot` | `signatureValid` false |
+| TC-19.4 | Chain copy | `/chain` | Says not Certificate Transparency |
+| TC-19.5 | Regression | TC-8.2 | Demo still VALID |
+
 ---
 
 ## Automated gate

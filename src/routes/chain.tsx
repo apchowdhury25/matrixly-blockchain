@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import {
   getDemoInclusionProof,
   getPublicLedgerExport,
+  getPublicTreeHead,
   verifyPublicInclusionProof,
   verifyPublicLedgerExport,
 } from "@/lib/trust/functions";
@@ -12,14 +13,18 @@ import { LEDGER_DIPLOMA_DISCLAIMER } from "@/lib/ledger/disclaimer";
 
 export const Route = createFileRoute("/chain")({
   loader: async () => {
-    const [chain, proof] = await Promise.all([getPublicLedgerExport(), getDemoInclusionProof()]);
-    return { chain, proof };
+    const [chain, proof, sth] = await Promise.all([
+      getPublicLedgerExport(),
+      getDemoInclusionProof(),
+      getPublicTreeHead(),
+    ]);
+    return { chain, proof, sth };
   },
   component: ChainPage,
 });
 
 function ChainPage() {
-  const { chain: data, proof } = Route.useLoaderData();
+  const { chain: data, proof, sth } = Route.useLoaderData();
   const [paste, setPaste] = useState("");
   const [proofPaste, setProofPaste] = useState(proof.proofJson);
   const [independent, setIndependent] = useState<Awaited<ReturnType<typeof verifyPublicLedgerExport>> | null>(null);
@@ -92,6 +97,21 @@ function ChainPage() {
         <p className="mt-2 break-all font-mono text-xs text-stone">
           Merkle {data.merkleRoot ?? "—"} ({data.merkleAlgorithm ?? "rfc6962-sha256"})
         </p>
+        <div className="mt-8 rounded-xl border border-rule bg-paper-raised p-5 text-sm">
+          <p className="font-medium">Signed tree head</p>
+          <p className="mt-2 text-ink-soft">
+            {sth.signatureValid ? "Ed25519 signature matches the log DID" : sth.reason ?? "Unsigned"}
+            . Not Certificate Transparency. Not diploma VALID.
+          </p>
+          <p className="mt-2 break-all font-mono text-xs text-stone">log {sth.logDid ?? "—"}</p>
+          <p className="mt-3">
+            <a href="/api/v1/ledger/sth" className="underline underline-offset-4">
+              GET /api/v1/ledger/sth
+            </a>
+            {" · "}
+            POST /api/v1/ledger/sth/verify
+          </p>
+        </div>
         <p className="mt-6 text-sm">
           <a href="/api/v1/ledger/chain" className="underline underline-offset-4">
             GET /api/v1/ledger/chain

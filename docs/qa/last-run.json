@@ -1,7 +1,7 @@
 {
   "base": "http://127.0.0.1:8080",
-  "when": "2026-08-22T04:07:14.804Z",
-  "pass": 81,
+  "when": "2026-08-22T04:12:36.217Z",
+  "pass": 86,
   "fail": 0,
   "blocked": 0,
   "rows": [
@@ -45,7 +45,7 @@
       "id": "TC-2.1",
       "title": "Public keys only (DID page)",
       "status": "PASS",
-      "notes": "did:key:z6MkjGU3kBDyqtPY… public"
+      "notes": "did:key:z6MkhE9dwJ1tTifn… public"
     },
     {
       "id": "TC-2.2",
@@ -111,7 +111,7 @@
       "id": "TC-6.1",
       "title": "Signed report exists after verify",
       "status": "PASS",
-      "notes": "reportRef EGmEF4BXz3Y5"
+      "notes": "reportRef wOxilMN73D2O"
     },
     {
       "id": "TC-6.2",
@@ -459,7 +459,7 @@
       "id": "TC-18.1",
       "title": "Inclusion proof",
       "status": "PASS",
-      "notes": "sha256:1bf055ed1d5"
+      "notes": "sha256:933d6ef8dac"
     },
     {
       "id": "TC-18.2",
@@ -481,6 +481,36 @@
     },
     {
       "id": "TC-18.5",
+      "title": "Diploma still VALID",
+      "status": "PASS",
+      "notes": "VALID"
+    },
+    {
+      "id": "TC-19.1",
+      "title": "Signed tree head",
+      "status": "PASS",
+      "notes": "sha256:40cd951eca0"
+    },
+    {
+      "id": "TC-19.2",
+      "title": "Recompute STH",
+      "status": "PASS",
+      "notes": "signatureValid"
+    },
+    {
+      "id": "TC-19.3",
+      "title": "Tampered STH root",
+      "status": "PASS",
+      "notes": "Ed25519 signature does not match"
+    },
+    {
+      "id": "TC-19.4",
+      "title": "Chain page shows STH",
+      "status": "PASS",
+      "notes": "200"
+    },
+    {
+      "id": "TC-19.5",
       "title": "Diploma still VALID",
       "status": "PASS",
       "notes": "VALID"

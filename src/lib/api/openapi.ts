@@ -286,6 +286,21 @@ export const openApiSpec = {
         },
       },
     },
+    "/api/v1/ledger/sth": {
+      get: {
+        summary: "Signed tree head over the Merkle root. Not Certificate Transparency. Not diploma VALID.",
+        description: "Ed25519 Data Integrity over merkleRoot + length. diplomaEvaluated is always false.",
+        security: [],
+        responses: { "200": { description: "matrixly.sth.v1 SignedTreeHead" } },
+      },
+    },
+    "/api/v1/ledger/sth/verify": {
+      post: {
+        summary: "Verify a signed tree head. signatureValid is not diploma VALID.",
+        security: [],
+        responses: { "200": { description: "signatureValid, diplomaEvaluated=false" } },
+      },
+    },
     "/healthz": {
       get: {
         summary: "Liveness. Does not imply the ledger is reachable.",
