@@ -141,7 +141,7 @@ export const COMPLIANCE_MATRIX: ComplianceControl[] = [
     area: "Regulation",
     control: "SOC 2 / ISO 27001 / eIDAS / GDPR certification of this deployment",
     status: "not-claimed",
-    evidence: "This matrix is an engineering control list, not an audit opinion",
+    evidence: "This matrix is an engineering control list, not an audit opinion. See /soc2",
   },
   {
     id: "OID-01",

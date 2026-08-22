@@ -31,6 +31,9 @@ export function PublicHeader() {
           <Link to="/compliance" className="hidden rounded-sm px-3 py-2 text-ink-soft hover:text-ink sm:inline">
             Compliance
           </Link>
+          <Link to="/soc2" className="hidden rounded-sm px-3 py-2 text-ink-soft hover:text-ink lg:inline">
+            SOC 2
+          </Link>
           <Link to="/ops" className="hidden rounded-sm px-3 py-2 text-ink-soft hover:text-ink lg:inline">
             Ops
           </Link>

@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { PublicHeader } from "@/components/layout/public-header";
 import { getComplianceMatrix } from "@/lib/trust/functions";
 
@@ -22,6 +22,13 @@ function CompliancePage() {
         <p className="font-mono text-xs tracking-[0.22em] text-pine uppercase">Controls</p>
         <h1 className="mt-3 font-display text-4xl">Compliance matrix</h1>
         <p className="mt-4 max-w-2xl text-lg leading-relaxed text-ink-soft">{data.disclaimer}</p>
+        <p className="mt-3 text-sm">
+          SOC 2 Type I/II is not claimed. Read the{" "}
+          <Link to="/soc2" className="underline underline-offset-4">
+            SOC 2 investigation
+          </Link>
+          .
+        </p>
         <div className="mt-8 overflow-x-auto rounded-xl border border-rule bg-paper-raised">
           <table className="w-full min-w-[720px] text-left text-sm">
             <thead className="border-b border-rule text-stone">

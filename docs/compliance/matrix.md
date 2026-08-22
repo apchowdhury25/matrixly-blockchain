@@ -36,7 +36,7 @@ A green badge that skipped a failed cryptographic check is a defect, not a contr
 | OPS-01 | Operations | Liveness and readiness are distinct; missing Fabric Gateway is not ready | implemented | `GET /healthz` ; `GET /readyz` ; `/ops` |
 | WH-01 | Integrity | Outbound verification events are HMAC-SHA256 signed; unsigned events are refused | implemented | Webhook deliveries; secret sealed at rest |
 | AUD-01 | Audit | Signed verification reports anchored by hash; tenant audit is hash-chained | implemented | VerificationReport + `audit_events.prev_hash` |
-| REG-01 | Regulation | SOC 2 / ISO 27001 / eIDAS / GDPR certification of this deployment | not-claimed | This matrix is an engineering control list, not an audit opinion |
+| REG-01 | Regulation | SOC 2 / ISO 27001 / eIDAS / GDPR certification of this deployment | not-claimed | Engineering control list, not an audit opinion. Investigation: `/soc2` |
 | OID-01 | Interop | OpenID4VP 1.0 `direct_post` + DCQL; nonce bound in Data Integrity challenge | implemented | `/oid4vp` ; `vp_token` object; SD-JWT/mdoc refused |
 | OID-02 | Interop | HAIP / SD-JWT VC / ISO mdoc certification | not-claimed | Unsupported formats fail closed and never return VALID. Notes: `/sd-jwt` |
 | OID-03 | Interop | OpenID4VCI 1.0 pre-authorized_code delivers an already-signed W3C `ldp_vc` | implemented | `/oid4vci` ; `/.well-known/openid-credential-issuer` ; authorization_code refused |

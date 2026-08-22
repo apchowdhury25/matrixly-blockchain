@@ -18,6 +18,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as OpsRouteImport } from './routes/ops'
 import { Route as ReadyzRouteImport } from './routes/readyz'
 import { Route as SdJwtRouteImport } from './routes/sd-jwt'
+import { Route as Soc2RouteImport } from './routes/soc2'
 import { Route as TrustRouteImport } from './routes/trust'
 import { Route as WalletRouteRouteImport } from './routes/wallet/route'
 import { Route as DotwellKnownOpenidCredentialIssuerRouteImport } from './routes/[.]well-known/openid-credential-issuer'
@@ -106,6 +107,11 @@ const ReadyzRoute = ReadyzRouteImport.update({
 const SdJwtRoute = SdJwtRouteImport.update({
   id: '/sd-jwt',
   path: '/sd-jwt',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const Soc2Route = Soc2RouteImport.update({
+  id: '/soc2',
+  path: '/soc2',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TrustRoute = TrustRouteImport.update({
@@ -344,6 +350,7 @@ export interface FileRoutesByFullPath {
   '/ops': typeof OpsRoute
   '/readyz': typeof ReadyzRoute
   '/sd-jwt': typeof SdJwtRoute
+  '/soc2': typeof Soc2Route
   '/trust': typeof TrustRoute
   '/.well-known/openid-credential-issuer': typeof DotwellKnownOpenidCredentialIssuerRoute
   '/app/api-keys': typeof AppApiKeysRoute
@@ -397,6 +404,7 @@ export interface FileRoutesByTo {
   '/ops': typeof OpsRoute
   '/readyz': typeof ReadyzRoute
   '/sd-jwt': typeof SdJwtRoute
+  '/soc2': typeof Soc2Route
   '/trust': typeof TrustRoute
   '/.well-known/openid-credential-issuer': typeof DotwellKnownOpenidCredentialIssuerRoute
   '/app/api-keys': typeof AppApiKeysRoute
@@ -453,6 +461,7 @@ export interface FileRoutesById {
   '/ops': typeof OpsRoute
   '/readyz': typeof ReadyzRoute
   '/sd-jwt': typeof SdJwtRoute
+  '/soc2': typeof Soc2Route
   '/trust': typeof TrustRoute
   '/.well-known/openid-credential-issuer': typeof DotwellKnownOpenidCredentialIssuerRoute
   '/app/api-keys': typeof AppApiKeysRoute
@@ -510,6 +519,7 @@ export interface FileRouteTypes {
     | '/ops'
     | '/readyz'
     | '/sd-jwt'
+    | '/soc2'
     | '/trust'
     | '/.well-known/openid-credential-issuer'
     | '/app/api-keys'
@@ -563,6 +573,7 @@ export interface FileRouteTypes {
     | '/ops'
     | '/readyz'
     | '/sd-jwt'
+    | '/soc2'
     | '/trust'
     | '/.well-known/openid-credential-issuer'
     | '/app/api-keys'
@@ -618,6 +629,7 @@ export interface FileRouteTypes {
     | '/ops'
     | '/readyz'
     | '/sd-jwt'
+    | '/soc2'
     | '/trust'
     | '/.well-known/openid-credential-issuer'
     | '/app/api-keys'
@@ -674,6 +686,7 @@ export interface RootRouteChildren {
   OpsRoute: typeof OpsRoute
   ReadyzRoute: typeof ReadyzRoute
   SdJwtRoute: typeof SdJwtRoute
+  Soc2Route: typeof Soc2Route
   TrustRoute: typeof TrustRoute
   DotwellKnownOpenidCredentialIssuerRoute: typeof DotwellKnownOpenidCredentialIssuerRoute
   DidWebSlugRoute: typeof DidWebSlugRoute
@@ -770,6 +783,13 @@ declare module '@tanstack/react-router' {
       path: '/sd-jwt'
       fullPath: '/sd-jwt'
       preLoaderRoute: typeof SdJwtRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/soc2': {
+      id: '/soc2'
+      path: '/soc2'
+      fullPath: '/soc2'
+      preLoaderRoute: typeof Soc2RouteImport
       parentRoute: typeof rootRouteImport
     }
     '/trust': {
@@ -1138,6 +1158,7 @@ const rootRouteChildren: RootRouteChildren = {
   OpsRoute: OpsRoute,
   ReadyzRoute: ReadyzRoute,
   SdJwtRoute: SdJwtRoute,
+  Soc2Route: Soc2Route,
   TrustRoute: TrustRoute,
   DotwellKnownOpenidCredentialIssuerRoute:
     DotwellKnownOpenidCredentialIssuerRoute,
